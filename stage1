@@ -1,0 +1,605 @@
+#!/bin/bash
+#
+# This script is the first stage in bootstrapping a Fedora build to a
+# new platform or architecture.  Running with no arguments builds a
+# cross-development environment, then cross-builds a minimal rootfs.
+# Once you have this minimal rootfs booted, run stage2 in that rootfs
+# to build the rest of the bootstrap packages.
+#
+# This script assumes that all the needed SRPMs are available in
+# $SRPMDIR (below) and that there is exactly one rev of each package's
+# SRPM.  The resulting rootfs will be build in $ROOTFS (below).
+#
+# Note that SRPMDIR_LOCAL is for local SRPMs that override the
+# official ones, for example, board-specific kernel RPMs.
+#
+# You may pass a single module name on the command line to rebuild
+# just that one module.  Module names match the big case statement
+# below.
+#
+# For reference, when a package is built multiple times...
+#
+# foo-host is the "runs on host" part of a standard cross-compiler
+# foo-target is the target libraries etc
+# target-foo is a cross-built target-native
+#
+# Note that the "dev" step requires sudo, as it installs special files
+# in $ROOTFS/dev/
+#
+# ------------------------------------------------------------
+
+TOP=$PWD
+MYDIR=${0%/*}
+STAGE2=$MYDIR/stage2
+
+SRPMDIR=$TOP/SRPMs
+SRPMDIR_LOCAL=$TOP/SRPMlocal
+SRC=$TOP/rpmbuild/BUILD
+J=-j12
+
+BUILDDIR=$TOP/builds
+PREFIX=$TOP/install
+KCONFIGDIR=$TOP/rpmbuild/SOURCES
+KCONFIG=config-armv7l-omap
+KARCH=arm
+
+# The cross-compiler target
+TARGET=armv7hl-redhat-linux-gnueabi
+# the RPMBUILD target for prepping sources
+RPMTARGET=armv7l-redhat-linux-gnu
+
+# this is where the new rootfs will be built
+ROOTFS=$TOP/rootfs
+
+if [ -f $MYDIR/local.conf ]
+then
+    . $MYDIR/local.conf
+fi
+
+# ------------------------------------------------------------
+
+mkdirp()
+{
+    test -d $1 || mkdir -p $1
+}
+
+mkdirp $ROOTFS
+mkdirp $PREFIX
+mkdirp $BUILDDIR
+
+export PATH=$PREFIX/bin:$PATH
+
+go()
+{
+  "$0" "$@"
+}
+
+mcd()
+{
+    test -d $1 || mkdir -p $1
+    cd $1
+}
+
+srpm()
+{
+    STOP=${2-$TOP}
+    SDIR=$SRPMDIR_LOCAL
+    SRPM=$(cd $SDIR; echo $1-*.src.rpm)
+    if [ -f $SDIR/$SRPM ]
+    then true; else
+	SDIR=$SRPMDIR
+	SRPM=$(cd $SDIR; echo $1-*.src.rpm)
+    fi
+    SPEC=${SRPM%-*}
+    SPEC=${SPEC%-*}
+    if [ -f $STOP/rpmbuild/SPECS/$SPEC.spec ]
+    then true; else
+	set -vx
+	test -f $SDIR/$SRPM || exit 1
+	HOME=$STOP rpm -i $SDIR/$SRPM
+	cd $STOP/rpmbuild/SPECS
+	HOME=$STOP rpmbuild --target=$RPMTARGET --nodeps -bp $SPEC.spec
+	cd $TOP
+	set +vx
+    fi
+}
+rsrpm()
+{
+    srpm $1 $ROOTFS/stage2
+}
+
+set -e
+
+BUILD=`$SRC/gcc-*/config.guess`
+
+# These are for cross-tools like gcc, binutils
+CONFIGARGS="--prefix=$PREFIX
+	    --target=$TARGET
+	    --with-cpu=cortex-a8
+	    --with-tune=cortex-a8
+	    --with-arch=armv7-a
+	    --with-float=hard
+	    --with-fpu=vfpv3-d16
+	    --with-abi=aapcs-linux
+	    --enable-languages=c,c++
+	    --with-sysroot=$ROOTFS
+	    --enable-threads=posix
+	    --disable-libssp
+"
+
+TCONFIGARGS="--prefix=/usr
+	     --build=$BUILD
+	     --host=$TARGET
+	     --target=$TARGET
+	     --enable-werror=no
+	     --enable-cxx
+	     --with-cpu=cortex-a8
+	     --with-tune=cortex-a8
+	     --with-arch=armv7-a
+	     --with-float=hard
+	     --with-fpu=vfpv3-d16
+	     --with-abi=aapcs-linux
+	     --enable-languages=c,c++
+	     --enable-threads=posix
+	     --disable-libssp
+"
+
+
+KERNELARGS="ARCH=arm CROSS_COMPILE=${TARGET}-"
+
+# Must use install_root=$ROOTFS on all makes
+# This path MUST be relative, not absolute
+GLIBCPORTSSRC=../$(cd $SRC; echo glibc-ports*)
+#GLIBCPORTSSRC=ports
+GV=$(cd $SRC; echo glibc-2*)
+GLIBCARGS0="--prefix=/usr
+	--with-headers=$ROOTFS/usr/include
+	--enable-kernel=2.6.32
+	--enable-bind-now
+	--build $BUILD
+	--host $TARGET
+	--disable-profile
+	--cache-file=config.cache
+	--without-cvs
+	--with-elf
+	--without-gd"
+GLIBCARGS1="$GLIBCARGS0
+	--enable-add-ons=$GLIBCPORTSSRC,nptl
+	--disable-sanity-checks
+	--with-tls
+	--with-__thread
+	"
+GLIBCARGS2="$GLIBCARGS0
+	--enable-add-ons=$GLIBCPORTSSRC,nptl
+	--disable-sanity-checks
+	--with-tls
+	--with-__thread
+	"
+GLIBCARGS3="$GLIBCARGS0
+	--enable-add-ons=$GLIBCPORTSSRC,nptl,c_stubs,libidn
+	--with-tls
+	--with-__thread
+	"
+
+prefill_glibc_cache()
+{
+    echo libc_cv_forced_unwind=yes > config.cache
+    echo libc_cv_c_cleanup=yes >> config.cache
+}
+
+notparallel()
+{
+    echo .NOTPARALLEL: >> Makefile
+}
+
+fix_la()
+{
+    for la in $ROOTFS/usr/lib/*$1*.la
+    do
+	rm $la
+    done
+}
+
+#--------------------------------------------------
+
+case "$1" in
+    "" )
+	go clean
+
+	go kernel-headers
+	go binutils
+	go gcc-host
+	go glibc-headers
+	go gcc-libgcc
+	go glibc
+	go gcc
+	go dev
+
+	go kernel
+	go x-loader
+	go u-boot
+
+
+	go gmp
+	go mpfr
+	go mpc
+	go ppl
+	go cloog
+	go libselinux
+	go zlib
+
+	go t-binutils
+	go t-gcc
+	go bash
+	go make
+	go sed
+	go coreutils
+	go util-linux
+	go tar
+	go gzip
+	go bzip2
+	go diffutils
+	go findutils
+	go gawk
+	go patch
+	go unzip
+	go which
+	go xz
+	go grep
+
+	go stage2
+
+	;;
+
+    "clean" )
+	quickrm binutils gcc glibc* install rootfs
+	;;
+
+    "sync" )
+	echo Copying built rootfs to panda-1...
+	rsync -a $ROOTFS/ root@panda-1:/hardfp/
+	;;
+
+#--------------------------------------------------
+# host cross-tools
+
+    "kernel-headers" )
+	srpm kernel
+	mcd $BUILDDIR/kernel
+	cd $SRC/kernel-*/linux-*
+	make $KERNELARGS INSTALL_HDR_PATH=$ROOTFS/usr headers_install
+	;;
+
+    "binutils" )
+	srpm binutils
+	mcd $BUILDDIR/binutils
+	$SRC/binutils-*/configure $CONFIGARGS
+	notparallel
+	make $J
+	make $J install
+	;;
+
+    "gcc-host" )
+	srpm gcc
+	mcd $BUILDDIR/gcc
+	$SRC/gcc-*/configure $CONFIGARGS --with-headers=$ROOTFS/usr/include
+	notparallel
+	make $J all-host
+	make $J install-host
+	;;
+
+    "glibc-headers" )
+	srpm glibc
+	mcd $BUILDDIR/glibc-stage1
+	prefill_glibc_cache 
+	$SRC/$GV/configure $GLIBCARGS1
+	notparallel
+	make $J ARCH=arm cross-compiling=yes install-headers install_root=$ROOTFS
+	touch $ROOTFS/usr/include/gnu/stubs.h
+	touch $ROOTFS/usr/include/bits/stdio_lim.h
+	cp $SRC/$GV/nptl/sysdeps/pthread/pthread.h $ROOTFS/usr/include
+
+	# We also build just enough files to link libgcc.so.  The fake
+	# libc.so will never actually get used.
+	mkdirp $ROOTFS/usr/lib
+	make $J ARCH=arm cross-compiling=yes csu/subdir_lib
+	cp csu/crt*.o $ROOTFS/usr/lib
+	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib/libc.so
+	;;
+
+    "gcc-libgcc" )
+	srpm gcc
+	mcd $BUILDDIR/gcc
+	$SRC/gcc-*/configure $CONFIGARGS --with-headers=$ROOTFS/usr/include
+	notparallel
+	make $J all-target-libgcc
+	make $J install-target-libgcc
+	;;
+
+    "glibc" )
+	srpm glibc
+	mcd $BUILDDIR/glibc
+	prefill_glibc_cache 
+	$SRC/$GV/configure $GLIBCARGS2
+	notparallel
+	make $J ARCH=arm cross-compiling=yes
+	make $J ARCH=arm cross-compiling=yes install install_root=$ROOTFS
+	;;
+
+    "gcc" )
+	srpm gcc
+	mcd $BUILDDIR/gcc
+	$SRC/gcc-*/configure $CONFIGARGS --with-headers=$ROOTFS/usr/include
+	notparallel
+	make $J
+	make $J install
+	mcd $ROOTFS/lib/gcc
+	rsync -av $PREFIX/lib/gcc/ $ROOTFS/lib/gcc/
+	rsync -av $PREFIX/$TARGET/lib/ $ROOTFS/lib/
+	;;
+
+#--------------------------------------------------
+# target boot support
+
+    "dev" )
+	sudo rsync -av $TOP/dev-template/ $ROOTFS/
+	;;
+
+    "kernel" )
+	srpm kernel
+	mcd $BUILDDIR/kernel
+	rsync -a --delete $SRC/kernel-*/linux-*/ ./
+	cp $KCONFIGDIR/$KCONFIG .config
+	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- silentoldconfig
+	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- uImage
+	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- modules
+	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- INSTALL_MOD_PATH=$ROOTFS modules_install
+
+	mkdirp $ROOTFS/boot
+	mkdirp $ROOTFS/lib/firmware
+	cp arch/$KARCH/boot/uImage $ROOTFS/boot
+	;;
+
+    "x-loader" )
+	if [ ! -f $BUILDDIR/x-loader/README ]
+	then
+	    cd $BUILDDIR
+	    git clone git://gitorious.org/x-loader/x-loader.git
+	fi
+	cd $BUILDDIR/x-loader
+	make $J distclean
+	make $J CROSS_COMPILE=${TARGET}- omap4430panda_config
+	make $J CROSS_COMPILE=${TARGET}-
+	;;
+
+    "u-boot" )
+	# git git://git.denx.de/u-boot.git
+	if [ ! -f $BUILDDIR/u-boot/README ]
+	then
+	    cd $BUILDDIR
+	    git clone git://git.denx.de/u-boot.git
+	fi
+	cd $BUILDDIR/u-boot
+	make $J distclean
+	make $J CROSS_COMPILE=${TARGET}- omap4_panda_config
+	make $J CROSS_COMPILE=${TARGET}-
+	;;
+
+    "djtest" )
+	cd $TOP/djtest
+	make $J
+	make $J install ROOTFS=${ROOTFS}
+	;;
+
+#--------------------------------------------------
+# target-side libraries
+
+    gmp | mpfr | mpc | ppl )
+	L=$1
+	srpm $L
+	mcd $BUILDDIR/t-$L
+	$SRC/${L}-*/configure $TCONFIGARGS
+	make $J
+	make $J install DESTDIR=${ROOTFS}
+	fix_la $L
+	;;
+
+    zlib )
+	srpm zlib
+	mcd $BUILDDIR/t-zlib
+	rsync -av $SRC/zlib-*/ ./
+	CHOST=${TARGET} \
+	    ./configure 
+	make $J
+	make $J install DESTDIR=${ROOTFS}
+	fix_la zlib
+	;;
+
+    "cloog" )
+	srpm cloog
+	mcd $BUILDDIR/t-cloog
+	$SRC/cloog-*/configure $TCONFIGARGS --with-ppl
+	make $J
+	make $J install DESTDIR=${ROOTFS}
+	fix_la cloog
+	;;
+
+    libselinux )
+	srpm libselinux
+	mcd $BUILDDIR/t-libselinux
+	rsync -av $SRC/libselinux*/ ./
+	make $J \
+	    CC=${TARGET}-gcc \
+	    AS=${TARGET}-as \
+	    AR=${TARGET}-ar \
+	    STRIP=${TARGET}-strip \
+	    RANLIB=${TARGET}-ranlib \
+	    CFLAGS="" \
+	    all
+	make $J \
+	    DESTDIR=${ROOTFS} \
+	    install
+	;;
+
+#--------------------------------------------------
+# target-side applications
+
+    "bash" )
+	srpm bash
+	mcd $BUILDDIR/bash
+	cat <<EOF > config.cache
+bash_cv_func_ctype_nonascii=yes
+bash_cv_opendir_not_robust=no
+bash_cv_ulimit_maxfds=yes
+bash_cv_func_sigsetjmp=present
+bash_cv_printf_a_format=yes
+bash_cv_job_control_missing=present
+bash_cv_sys_named_pipes=present
+bash_cv_unusable_rtsigs=no
+EOF
+	$SRC/bash-*/configure --prefix=/ --cache-file=config.cache --build=$BUILD --host=$TARGET
+	make $J
+	make $J install DESTDIR=${ROOTFS}
+	(cd $ROOTFS/bin; ln -s bash sh)
+	;;
+
+    "t-binutils" )
+	srpm binutils
+	mcd $BUILDDIR/t-binutils
+	$SRC/binutils-*/configure $TCONFIGARGS
+	notparallel
+	make $J
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+    "t-gcc" )
+	srpm gcc
+	mcd $BUILDDIR/t-gcc
+	$SRC/gcc-*/configure $TCONFIGARGS
+	notparallel
+	make
+	make install DESTDIR=${ROOTFS}
+	;;
+
+     make | sed | tar | gzip | diffutils | findutils | gawk | which | grep )
+	srpm $1
+	mcd $BUILDDIR/$1
+	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     patch )
+	srpm patch
+	mcd $BUILDDIR/$1
+	cat <<EOF > config.cache
+ac_cv_func_strnlen_working=yes
+EOF
+	$SRC/${1}-*/configure $TCONFIGARGS --cache-file=config.cache
+	notparallel
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     xz )
+	srpm xz
+	mcd $BUILDDIR/$1
+	$SRC/${1}-*/configure \
+	    --prefix=/usr \
+	    --build=$BUILD \
+	    --host=$TARGET \
+	notparallel
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     unzip )
+	srpm unzip
+	mcd $BUILDDIR/$1
+	rsync -av $SRC/unzip*/ ./
+	make $J -f unix/Makefile \
+	    CC=${TARGET}-gcc \
+	    AS=${TARGET}-as \
+	    AR=${TARGET}-ar \
+	    STRIP=${TARGET}-strip \
+	    RANLIB=${TARGET}-ranlib \
+	    prefix=/usr \
+	    generic
+	make $J -f unix/Makefile \
+	    CC=${TARGET}-gcc \
+	    AS=${TARGET}-as \
+	    AR=${TARGET}-ar \
+	    STRIP=${TARGET}-strip \
+	    RANLIB=${TARGET}-ranlib \
+	    prefix=${ROOTFS}/usr \
+	    install 
+	;;
+
+     coreutils )
+	srpm coreutils
+	mcd $BUILDDIR/$1
+	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	for i in $(cd $SRC/${1}-*/man; echo *.x)
+	do
+	    base=`echo $i | sed 's/\.x//'`
+	    touch man/$base.1
+	done
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     util-linux )
+	srpm util-linux
+	mcd $BUILDDIR/$1
+	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses --disable-wall
+	notparallel
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+    bzip2 )
+	srpm bzip2
+	mcd $BUILDDIR/bzip2
+	rsync -av $SRC/bzip2-*/ ./
+	make $J \
+	    CC=${TARGET}-gcc \
+	    AR=${TARGET}-ar \
+	    RANLIB=${TARGET}-ranlib \
+	    libbz2.a bzip2 bzip2recover
+	make $J \
+	    CC=${TARGET}-gcc \
+	    AR=${TARGET}-ar \
+	    RANLIB=${TARGET}-ranlib \
+	    PREFIX=${ROOTFS} \
+	    install
+	;;
+
+    stage2 )
+	# install source trees in rootfs, so stage2 will have them for
+	# its builds.
+
+	mkdirp $ROOTFS/stage2
+
+	rsrpm cpio
+	rsrpm nspr
+	rsrpm rpm
+
+	cp $STAGE2 $ROOTFS/stage2/stage2
+
+	(
+	    echo TARGET=$TARGET
+	    echo RPMTARGET=$RPMTARGET
+	    echo TCONFIGARGS=\"$TCONFIGARGS\" \
+		| sed 's/--build=[^ ]*//' \
+		| sed 's/--host=[^ ]*//' \
+		| sed 's/--target=[^ ]*//'
+	) > $ROOTFS/stage2/local.conf
+
+	;;
+
+esac
+
+exit 0

@@ -1,0 +1,111 @@
+#!/bin/bash
+
+#
+# This script is the second stage in bootstrapping a Fedora build to a
+# new platform or architecture.  Running with no arguments builds a
+# cross-development environment, then cross-builds a minimal rootfs.
+# Once you have this minimal rootfs booted, run stage2 in that rootfs
+# to build the rest of the bootstrap packages.
+#
+# This script assumes that all the needed sources are installed in
+# $SRC (below).  Each build installs into /usr.
+#
+# You may pass a single package name on the command line to rebuild
+# just that one package.
+#
+# ------------------------------------------------------------
+
+TOP=/stage2
+MYDIR=${0%/*}
+STAGE2=$MYDIR/stage2
+
+SRC=$TOP/rpmbuild/BUILD
+J=-j1
+
+BUILDDIR=$TOP/builds
+
+# The cross-compiler target
+TARGET=armv7hl-redhat-linux-gnueabi
+
+if [ -f $MYDIR/local.conf ]
+then
+    . $MYDIR/local.conf
+fi
+
+# ------------------------------------------------------------
+
+mkdirp()
+{
+    test -d $1 || mkdir -p $1
+}
+
+mkdirp $ROOTFS
+mkdirp $PREFIX
+mkdirp $BUILDDIR
+
+export PATH=$PREFIX/bin:$PATH
+
+go()
+{
+  "$0" "$@"
+}
+
+mcd()
+{
+    test -d $1 || mkdir -p $1
+    cd $1
+}
+
+notparallel()
+{
+    echo .NOTPARALLEL: >> Makefile
+}
+
+fix_la()
+{
+    for la in $ROOTFS/usr/lib/*$1*.la
+    do
+	rm $la
+    done
+}
+
+case "$1" in
+    "" )
+	go clean
+
+	go cpio
+
+	;;
+
+    "clean" )
+	;;
+
+#--------------------------------------------------
+
+    cpio )
+	mcd $BUILDDIR/$1
+	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	make $J
+	make $J install
+	;;
+
+    nspr )
+	mcd $BUILDDIR/nspr
+	$SRC/${1}-*/mozilla/nsprpub/configure $TCONFIGARGS --disable-debug
+	notparallel
+	make $J
+	make $J install
+	;;
+
+    rpm )
+	mcd $BUILDDIR/rpm
+	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	make $J
+	make $J install
+	;;
+
+esac
+
+exit 0
