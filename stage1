@@ -34,7 +34,6 @@ STAGE2=$MYDIR/stage2
 
 SRPMDIR=$TOP/SRPMs
 SRPMDIR_LOCAL=$TOP/SRPMlocal
-SRC=$TOP/rpmbuild/BUILD
 J=-j12
 
 BUILDDIR=$TOP/builds
@@ -57,22 +56,47 @@ then
 fi
 
 # ------------------------------------------------------------
+# Sanity checks
+
+error()
+{
+    echo Error: "$@" 1>&2
+    ERROR=1
+}
+
+if [ ! -d $SRPMDIR/. ]
+then
+    error SRPMDIR set to $SRPMDIR, but I see no directory there
+    echo '$'SRPMDIR usually refers to a symlink to a directory with all the '*'.src.rpm files in it.
+    echo SRPMDIR_LOCAL may likewise refer to a directory with local srpm overrides in it
+fi
+
+test x"$ERROR" = x"1" && exit 1
+
+# ------------------------------------------------------------
+
+echo
+echo Running: $0 $*
+echo Date: `date`
+echo Cwd: `pwd`
+echo
+
+SRCTOP=$TOP/rpmbuild
+SRC=$SRCTOP/BUILD
+SPECS=$SRCTOP/SPECS
 
 mkdirp()
 {
     test -d $1 || mkdir -p $1
 }
 
+mkdirp $SRC
 mkdirp $ROOTFS
 mkdirp $PREFIX
 mkdirp $BUILDDIR
+mkdirp $TOP/done
 
 export PATH=$PREFIX/bin:$PATH
-
-go()
-{
-  "$0" "$@"
-}
 
 mcd()
 {
@@ -84,23 +108,21 @@ srpm()
 {
     STOP=${2-$TOP}
     SDIR=$SRPMDIR_LOCAL
-    SRPM=$(cd $SDIR; echo $1-*.src.rpm)
+    SRPM=$(cd $SDIR; \ls -1 $1-*.src.rpm 2>/dev/null | tail -1)
     if [ -f $SDIR/$SRPM ]
     then true; else
 	SDIR=$SRPMDIR
-	SRPM=$(cd $SDIR; echo $1-*.src.rpm)
+	SRPM=$(cd $SDIR; \ls -1 $1-*.src.rpm 2>/dev/null | tail -1)
     fi
     SPEC=${SRPM%-*}
     SPEC=${SPEC%-*}
     if [ -f $STOP/rpmbuild/SPECS/$SPEC.spec ]
     then true; else
-	set -vx
 	test -f $SDIR/$SRPM || exit 1
 	HOME=$STOP rpm -i $SDIR/$SRPM
 	cd $STOP/rpmbuild/SPECS
 	HOME=$STOP rpmbuild --target=$RPMTARGET --nodeps -bp $SPEC.spec
 	cd $TOP
-	set +vx
     fi
 }
 rsrpm()
@@ -110,7 +132,7 @@ rsrpm()
 
 set -e
 
-BUILD=`$SRC/gcc-*/config.guess`
+BUILD=`gcc -v 2>&1 | grep Target: | sed 's/.*: //'`
 
 # These are for cross-tools like gcc, binutils
 CONFIGARGS="--prefix=$PREFIX
@@ -148,11 +170,15 @@ TCONFIGARGS="--prefix=/usr
 KERNELARGS="ARCH=arm CROSS_COMPILE=${TARGET}-"
 
 # Must use install_root=$ROOTFS on all makes
-# This path MUST be relative, not absolute
-GLIBCPORTSSRC=../$(cd $SRC; echo glibc-ports*)
-#GLIBCPORTSSRC=ports
-GV=$(cd $SRC; echo glibc-2*)
-GLIBCARGS0="--prefix=/usr
+
+setup_glibc()
+{
+    # This path MUST be relative, not absolute
+    GLIBCPORTSSRC=../$(cd $SRC; echo glibc-ports*)
+    #GLIBCPORTSSRC=ports
+
+    GV=$(cd $SRC; echo glibc-2*)
+    GLIBCARGS0="--prefix=/usr
 	--with-headers=$ROOTFS/usr/include
 	--enable-kernel=2.6.32
 	--enable-bind-now
@@ -163,23 +189,19 @@ GLIBCARGS0="--prefix=/usr
 	--without-cvs
 	--with-elf
 	--without-gd"
-GLIBCARGS1="$GLIBCARGS0
+    GLIBCARGS1="$GLIBCARGS0
 	--enable-add-ons=$GLIBCPORTSSRC,nptl
 	--disable-sanity-checks
 	--with-tls
 	--with-__thread
 	"
-GLIBCARGS2="$GLIBCARGS0
+    GLIBCARGS2="$GLIBCARGS0
 	--enable-add-ons=$GLIBCPORTSSRC,nptl
 	--disable-sanity-checks
 	--with-tls
 	--with-__thread
 	"
-GLIBCARGS3="$GLIBCARGS0
-	--enable-add-ons=$GLIBCPORTSSRC,nptl,c_stubs,libidn
-	--with-tls
-	--with-__thread
-	"
+}
 
 prefill_glibc_cache()
 {
@@ -196,16 +218,30 @@ fix_la()
 {
     for la in $ROOTFS/usr/lib/*$1*.la
     do
-	rm $la
+	if test -f $la
+	then
+	    rm $la
+	fi
     done
 }
 
 #--------------------------------------------------
 
+go()
+{
+    test -f $TOP/done/$1 && return 0
+    if "$0" "$@"
+    then
+	date > $TOP/done/$1
+    else
+	echo
+	echo Module "$@" failed
+	return 1
+    fi
+}
+
 case "$1" in
     "" )
-	go clean
-
 	go kernel-headers
 	go binutils
 	go gcc-host
@@ -252,12 +288,26 @@ case "$1" in
 	;;
 
     "clean" )
-	quickrm binutils gcc glibc* install rootfs
+	set -vx
+	mkdir .quickrm.$$
+	mv -f $SRCTOP $ROOTFS $PREFIX $BUILDDIR $TOP/done .quickrm.$$
+	rm -rf .quickrm.$$ &
 	;;
 
     "sync" )
 	echo Copying built rootfs to panda-1...
 	rsync -a $ROOTFS/ root@panda-1:/hardfp/
+	;;
+
+    "test1" )
+	echo test running
+	go test
+	echo test passed
+	;;
+
+    "test" )
+	echo Testing
+	exit 1
 	;;
 
 #--------------------------------------------------
@@ -289,7 +339,9 @@ case "$1" in
 	;;
 
     "glibc-headers" )
+	set -vx
 	srpm glibc
+	setup_glibc
 	mcd $BUILDDIR/glibc-stage1
 	prefill_glibc_cache 
 	$SRC/$GV/configure $GLIBCARGS1
@@ -298,6 +350,12 @@ case "$1" in
 	touch $ROOTFS/usr/include/gnu/stubs.h
 	touch $ROOTFS/usr/include/bits/stdio_lim.h
 	cp $SRC/$GV/nptl/sysdeps/pthread/pthread.h $ROOTFS/usr/include
+
+	( cd $ROOTFS/usr/include/bits
+	  sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
+	  mv mathdef.h.new mathdef.h
+	)
+	
 
 	# We also build just enough files to link libgcc.so.  The fake
 	# libc.so will never actually get used.
@@ -318,12 +376,18 @@ case "$1" in
 
     "glibc" )
 	srpm glibc
+	setup_glibc
 	mcd $BUILDDIR/glibc
 	prefill_glibc_cache 
 	$SRC/$GV/configure $GLIBCARGS2
 	notparallel
 	make $J ARCH=arm cross-compiling=yes
 	make $J ARCH=arm cross-compiling=yes install install_root=$ROOTFS
+
+	( cd $ROOTFS/usr/include/bits
+	  sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
+	  mv mathdef.h.new mathdef.h
+	)
 	;;
 
     "gcc" )
@@ -342,12 +406,36 @@ case "$1" in
 # target boot support
 
     "dev" )
-	sudo rsync -av $TOP/dev-template/ $ROOTFS/
+	rsync -av $TOP/dev-template/ $ROOTFS/
+
+	mcd $ROOTFS/tmp
+	chmod 1777 .
+
+	mcd $ROOTFS/dev
+	sudo mknod null		c   1 3
+	sudo mknod zero		c   1 5
+	sudo mknod tty		c   5 0
+	sudo mknod console	c   5 1
+	sudo mknod sda		b   8 0
+	sudo mknod sda1		b   8 1
+	sudo mknod sda2		b   8 2
+	sudo mknod sda3		b   8 3
+	sudo mknod sda4		b   8 4
+	sudo mknod mmcblk0	b 179 0
+	sudo mknod mmcblk0p1	b 179 1
+	sudo mknod mmcblk0p2	b 179 2
+	sudo mknod mmcblk0p3	b 179 3
+	sudo mknod mmcblk0p4	b 179 4
+	sudo mknod ttyO0	c 253 0
+	sudo mknod ttyO1	c 253 1
+	sudo mknod ttyO2	c 253 2
+	sudo mknod ttyO3	c 253 3
 	;;
 
     "kernel" )
 	srpm kernel
 	mcd $BUILDDIR/kernel
+	echo copying kernel sources to build area...
 	rsync -a --delete $SRC/kernel-*/linux-*/ ./
 	cp $KCONFIGDIR/$KCONFIG .config
 	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- silentoldconfig
@@ -367,6 +455,8 @@ case "$1" in
 	    git clone git://gitorious.org/x-loader/x-loader.git
 	fi
 	cd $BUILDDIR/x-loader
+	sed s/-Werror// cpu/omap4/config.mk > cpu/omap4/config.mk.new
+	mv cpu/omap4/config.mk.new cpu/omap4/config.mk
 	make $J distclean
 	make $J CROSS_COMPILE=${TARGET}- omap4430panda_config
 	make $J CROSS_COMPILE=${TARGET}-
@@ -394,7 +484,7 @@ case "$1" in
 #--------------------------------------------------
 # target-side libraries
 
-    gmp | mpfr | mpc | ppl )
+    gmp | mpfr | ppl )
 	L=$1
 	srpm $L
 	mcd $BUILDDIR/t-$L
@@ -404,13 +494,24 @@ case "$1" in
 	fix_la $L
 	;;
 
+    mpc )
+	L=$1
+	srpm libmpc
+	mcd $BUILDDIR/t-$L
+	$SRC/${L}-*/configure $TCONFIGARGS
+	make
+	make $J install DESTDIR=${ROOTFS}
+	fix_la $L
+	;;
+
     zlib )
 	srpm zlib
 	mcd $BUILDDIR/t-zlib
 	rsync -av $SRC/zlib-*/ ./
 	CHOST=${TARGET} \
+	    prefix=/usr \
 	    ./configure 
-	make $J
+	make
 	make $J install DESTDIR=${ROOTFS}
 	fix_la zlib
 	;;
