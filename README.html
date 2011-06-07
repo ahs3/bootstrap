@@ -1,0 +1,57 @@
+<style type=text/css>
+TD { text-align: center; }
+TABLE { border-collapse: collapse; border: 1px solid black; }
+</style>
+
+<title> Fedora Bootstrap </title>
+
+<h1 align=center> Fedora Bootstrap </h1>
+
+<p> These two scripts are designed to help you bootstrap Fedora to a
+new architecture.  Generally, one Fedora release is built upon the
+previous release, but this cannot be done for a new platform - you
+must cross-compile enough packages to "bootstrap" the new platform.
+This can be a tricky endeavor, and these scripts try to do it for you.
+
+<p> There are a few convenience functions in the scripts that you may
+wish to edit and take advantage of.  Search for the "sync" module that
+rsync's the rootfs to a running target as /hardfp for one example.
+Also, the first section of the stage1 script has some variables that
+define the target you're building for.
+
+<p> The stage1 script is run first.  It expects a symbolic link in the
+current directory called "SRPMs" that points to a directory full of
+SRPMS.  You may also have a link SRPMlocal that points to a directory
+with local SRPMs; any SRPM in the local directory will be used instead
+of a corresponding one in the SRPMs directory - this is most likely
+going to be a board-specific kernel, for example.
+
+<p> Stage1 will take a long time to build, but will eventually produce
+a cross-development toolchain and a bootable rootfs.  How you turn
+that rootfs tree into a bootable media depends on the board; this
+script targets SDcard-based OMAP boards, and creates both MLO and
+uboot in the /boot/ subdirectory in the rootfs, which you would need
+to copy to the FAT partition where the OMAP chip expects to find them.
+
+<p> Stage1 will also pre-populate your rootfs image with all the
+sources needed for stage2, so expect the rootfs to be large.
+
+<p>Stage2 is run on the new platform.  Boot stage1, cd to /stage2, and
+run the stage2 script.  It should take even longer and build even more
+packages.  When done, you should have a platform on which you can run
+"rpmbuild" for the remainder of the packages you need.
+
+
+<h2> Status </h2>
+
+<p> As you use this script, please update the table below for which
+targets and releases are known to work.
+
+<p><table border=1 cellspacing=0 cellpadding=4>
+
+<tr><th> Date		<th> Architecture	<th> Fedora	<th> Works?
+
+<tr><td> 2011-Jun-06	<td> armv7hl		<td> 15		<td> Yes
+
+</table>
+
