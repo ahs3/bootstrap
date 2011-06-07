@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo
+echo
+echo
+echo DJ Was Here
+echo
+echo
+
+export HOME=/root
+cd $HOME
+
+/bin/bash -i -l
