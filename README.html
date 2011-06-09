@@ -19,12 +19,14 @@ rsync's the rootfs to a running target as /hardfp for one example.
 Also, the first section of the stage1 script has some variables that
 define the target you're building for.
 
-<p> The stage1 script is run first.  It expects a symbolic link in the
-current directory called "SRPMs" that points to a directory full of
-SRPMS.  You may also have a link SRPMlocal that points to a directory
-with local SRPMs; any SRPM in the local directory will be used instead
-of a corresponding one in the SRPMs directory - this is most likely
-going to be a board-specific kernel, for example.
+<p> The stage1 script is run first, on any host.  It expects a
+symbolic link in the current directory called "SRPMs" that points to a
+directory full of SRPMs.  You may also have a link SRPMlocal that
+points to a directory with local SRPMs; any SRPM in the local
+directory will be used instead of a corresponding one in the SRPMs
+directory - this is most likely going to be a board-specific kernel,
+for example.  Also, GIT will be used to fetch x-loader and u-boot
+sources.
 
 <p> Stage1 will take a long time to build, but will eventually produce
 a cross-development toolchain and a bootable rootfs.  How you turn
@@ -32,14 +34,22 @@ that rootfs tree into a bootable media depends on the board; this
 script targets SDcard-based OMAP boards, and creates both MLO and
 uboot in the /boot/ subdirectory in the rootfs, which you would need
 to copy to the FAT partition where the OMAP chip expects to find them.
+Note that no uInitrd is created, so any drivers you need should be
+compiled-in to the kernel.
 
 <p> Stage1 will also pre-populate your rootfs image with all the
 sources needed for stage2, so expect the rootfs to be large.
 
-<p>Stage2 is run on the new platform.  Boot stage1, cd to /stage2, and
-run the stage2 script.  It should take even longer and build even more
-packages.  When done, you should have a platform on which you can run
-"rpmbuild" for the remainder of the packages you need.
+<p> Note that it is possible to NFS-mount your just-built rootfs on a
+compatible platform, and chroot into it, providing you allow root
+permissions to that mount.  However, this method is only useful for
+minor variations on an architecture - for example, bootstrapping a
+hard-float OS on a soft-float OS.
+
+<p> Stage2 is run on the new platform.  Boot stage1, cd to /stage2,
+and run the stage2 script.  It should take even longer and build even
+more packages.  When done, you should have a platform on which you can
+run "rpmbuild" for the remainder of the packages you need.
 
 
 <h2> Status </h2>
@@ -55,3 +65,44 @@ targets and releases are known to work.
 
 </table>
 
+
+<h2> Packages </h2>
+
+Packages are listed in alphabetical order, not build order.
+
+<h3> Stage 1 </h3> <tt>
+
+bash
+binutils
+bzip2
+cloog
+coreutils
+diffutils
+findutils
+gawk
+gcc
+glibc
+gmp
+gzip
+kernel
+libselinux
+make
+mpc
+mpfr
+patch
+ppl
+sed
+tar
+u-boot
+unzip
+util-linux
+which
+x-loader
+xz
+zlib
+
+</tt> <h3> Stage 2 </h3> <tt>
+
+cpio
+
+</tt>
