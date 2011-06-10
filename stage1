@@ -73,6 +73,14 @@ fi
 
 test x"$ERROR" = x"1" && exit 1
 
+unset CC
+unset CXX
+unset CFLAGS
+unset CXXFLAGS
+unset AR
+unset LD
+unset AS
+
 # ------------------------------------------------------------
 
 echo
