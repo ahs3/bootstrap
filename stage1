@@ -685,6 +685,14 @@ EOF
 	mkdirp $ROOTFS/stage2
 
 	rsrpm cpio
+	rsrpm ncurses
+	rsrpm curl
+	rsrpm m4
+	rsrpm flex
+	rsrpm bison
+	rsrpm texinfo
+	rsrpm gdb
+	rsrpm nss-softokn
 	rsrpm nspr
 	rsrpm rpm
 

@@ -20,7 +20,7 @@ MYDIR=${0%/*}
 STAGE2=$MYDIR/stage2
 
 SRC=$TOP/rpmbuild/BUILD
-J=-j1
+J=-j2
 
 BUILDDIR=$TOP/builds
 
@@ -74,6 +74,16 @@ case "$1" in
 	go clean
 
 	go cpio
+	go ncurses
+	go m4
+	go flex
+	go bison
+	go texinfo
+	go gdb
+
+	go curl
+	# go nspr	# not yet
+	# go rpm	# not yet
 
 	;;
 
@@ -90,10 +100,67 @@ case "$1" in
 	make $J install
 	;;
 
+    ncurses )
+	mcd $BUILDDIR/ncurses
+	$SRC/ncurses-*/configure $TCONFIGARGS \
+	    --with-shared --without-ada --with-ospeed=unsigned \
+	    --enable-hard-tabs --enable-xmc-glitch --enable-colorfgbg \
+	    --enable-overwrite \
+	    --enable-pc-files \
+	    --with-termlib=tinfo \
+	    --with-chtype=long \
+	    --with-ticlib
+	notparallel
+	make $J
+	make $J install
+	;;
+
+    m4 )
+	mcd $BUILDDIR/m4
+	$SRC/m4-*/configure $TCONFIGARGS
+	make $J -k
+	make $J -k install
+	;;
+
+    flex )
+	mcd $BUILDDIR/flex
+	$SRC/flex-*/configure $TCONFIGARGS --disable-dependency-tracking
+	make $J -k
+	make $J -k install
+	;;
+
+    bison )
+	mcd $BUILDDIR/bison
+	$SRC/bison-*/configure $TCONFIGARGS
+	make $J -k
+	make $J -k install
+	;;
+
+    texinfo )
+	mcd $BUILDDIR/texinfo
+	$SRC/texinfo-*/configure $TCONFIGARGS
+	make $J -k
+	make $J -k install
+	;;
+
+    gdb )
+	mcd $BUILDDIR/gdb
+	$SRC/gdb-*/configure $TCONFIGARGS --without-rpm
+	notparallel
+	make $J -k
+	make $J -k install
+	;;
+
+    curl )
+	mcd $BUILDDIR/curl
+	$SRC/curl-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
     nspr )
 	mcd $BUILDDIR/nspr
-	$SRC/${1}-*/mozilla/nsprpub/configure $TCONFIGARGS --disable-debug
-	notparallel
+	$SRC/nspr-*/mozilla/nsprpub/configure $TCONFIGARGS --enable-thumb2
 	make $J
 	make $J install
 	;;
