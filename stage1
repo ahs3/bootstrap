@@ -460,6 +460,8 @@ case "$1" in
 	make $J distclean
 	make $J CROSS_COMPILE=${TARGET}- omap4430panda_config
 	make $J CROSS_COMPILE=${TARGET}-
+	mkdirp $ROOTFS/boot
+	cp MLO $ROOTFS/boot
 	;;
 
     "u-boot" )
@@ -472,7 +474,9 @@ case "$1" in
 	cd $BUILDDIR/u-boot
 	make $J distclean
 	make $J CROSS_COMPILE=${TARGET}- omap4_panda_config
-	make $J CROSS_COMPILE=${TARGET}-
+	make $J CROSS_COMPILE=${TARGET}- u-boot.img
+	mkdirp $ROOTFS/boot
+	cp u-boot.img $ROOTFS/boot/u-boot.img
 	;;
 
     "djtest" )
