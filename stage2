@@ -32,6 +32,30 @@ then
     . $MYDIR/local.conf
 fi
 
+if [ ! -c /dev/null -a -w / ]
+then
+    echo Creating /dev devices...
+    mkdir /dev
+    mknod /dev/null		c   1 3
+    mknod /dev/zero		c   1 5
+    mknod /dev/tty		c   5 0
+    mknod /dev/console		c   5 1
+    mknod /dev/sda		b   8 0
+    mknod /dev/sda1		b   8 1
+    mknod /dev/sda2		b   8 2
+    mknod /dev/sda3		b   8 3
+    mknod /dev/sda4		b   8 4
+    mknod /dev/mmcblk0		b 179 0
+    mknod /dev/mmcblk0p1	b 179 1
+    mknod /dev/mmcblk0p2	b 179 2
+    mknod /dev/mmcblk0p3	b 179 3
+    mknod /dev/mmcblk0p4	b 179 4
+    mknod /dev/ttyO0		c 253 0
+    mknod /dev/ttyO1		c 253 1
+    mknod /dev/ttyO2		c 253 2
+    mknod /dev/ttyO3		c 253 3
+fi
+
 # ------------------------------------------------------------
 
 mkdirp()
