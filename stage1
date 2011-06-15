@@ -537,6 +537,8 @@ case "$1" in
 	fix_la cloog
 	;;
 
+    # TLSFLAGS are set in order to avoid a bogus check in
+    # libselinux/src/Makefile.
     libselinux )
 	srpm libselinux
 	mcd $BUILDDIR/t-libselinux
@@ -548,6 +550,7 @@ case "$1" in
 	    STRIP=${TARGET}-strip \
 	    RANLIB=${TARGET}-ranlib \
 	    CFLAGS="" \
+	    TLSFLAGS="" \
 	    all
 	make $J \
 	    DESTDIR=${ROOTFS} \
@@ -594,13 +597,27 @@ EOF
 	make install DESTDIR=${ROOTFS}
 	;;
 
-     make | sed | tar | gzip | diffutils | findutils | gawk | which | grep )
+     make | tar | gzip | diffutils | findutils | gawk | which | grep )
 	srpm $1
 	mcd $BUILDDIR/$1
 	$SRC/${1}-*/configure $TCONFIGARGS
 	notparallel
 	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
 	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     sed )
+	srpm $1
+	mcd $BUILDDIR/$1
+	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	# Touch sed.1 so that it will not be built.
+	# The makefile in the sed/doc directory attempts to run the
+	# built sed binary in order to extract the --help output, but
+	# this fails because the sed binary is a cross-tool.
+	touch doc/sed.1
+	make $J V=1 
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
