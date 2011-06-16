@@ -134,6 +134,9 @@ case "$1" in
     "" )
 	go clean
 
+	# Keep these in the order in which they must be built.  You
+	# will thus normally add new packages to the end of the list.
+
 	go cpio
 	go ncurses
 	go m4
@@ -144,14 +147,12 @@ case "$1" in
 
 	go curl
 	go nspr
-	go rpm	# not yet
-        go pcre
-        go readline
+	go pcre
+	go readline
 
 	go chkconfig
 	go sqlite
 	go gdbm
-	go gnupg # not yet
 	go gawk
 	go pth
 	go libtool
@@ -164,10 +165,17 @@ case "$1" in
 	go pkgconfig
 	go nss
 
+	# Packages known to not build yet - should be a clause later
+	# in the file describing why.
+
+	# go gnupg	# not yet
+	# go rpm	# not yet
 	;;
 
     "clean" )
 	;;
+
+    # Packages built by stage1
 
     binutils | gcc | glibc | kernel | x-loader | u-boot \
     | gmp | mpfr | mpc | ppl | cloog | libselinux | zlib \
