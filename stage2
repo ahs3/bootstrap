@@ -1,17 +1,54 @@
 #!/bin/bash
-
 #
 # This script is the second stage in bootstrapping a Fedora build to a
-# new platform or architecture.  Running with no arguments builds a
-# cross-development environment, then cross-builds a minimal rootfs.
-# Once you have this minimal rootfs booted, run stage2 in that rootfs
-# to build the rest of the bootstrap packages.
+# new platform or architecture.  Running stage1 with no arguments
+# builds a cross-development environment, then cross-builds a minimal
+# rootfs.  Once you have this minimal rootfs booted (or chroot'd), run
+# stage2 (this script) in that rootfs to build the rest of the
+# bootstrap packages.
 #
 # This script assumes that all the needed sources are installed in
-# $SRC (below).  Each build installs into /usr.
+# $SRC (below) by stage1.  Each build installs into /usr.
 #
 # You may pass a single package name on the command line to rebuild
 # just that one package.
+#
+# The master upstream for this script is:
+#   git://fedorapeople.org/~djdelorie/bootstrap.git
+#
+# ------------------------------------------------------------
+#
+#	      --- NOTES FOR PACKAGE PORTING ---
+#
+# This script is stage TWO of a bootstrap process.  EVERYTHING that
+# this script uses MUST be provided by the stage ONE script -
+# filesystem, utilities, sources, etc.  Please keep this in mind when
+# editing this script - anything you do manually to "prepare" for your
+# build, will NOT be reproducible.
+#
+# Please make sure your package is not in either stage1 or stage2, and
+# that nobody else is already working on your package, before
+# starting.  Grep is your friend.  See the wiki page for details.
+#
+# There are FOUR places you must edit when adding packages to the
+# bootstrap build:
+#
+# 1. Add a clause at the end of this script to actually build your
+#    package.
+#
+# 2. Add your package to the "" case at the beginning of the package
+#    list, about a page down from these comments.  Put in the order in
+#    which it needs to build based on its dependencies.
+#
+# 3. Add your SRPM to the list at the end of the stage1 script so that
+#    your sources are available in the bootstrap rootfs.
+#
+# 4. Update the Fedora/ARM bootstrap wiki page.
+#
+# If you attempt to add a package and discover some unsatisfied build
+# dependency, add a clause for it here that documents the dependency
+# and exits with a non-zero code.  In that case, do not add your
+# package to the "" case.
 #
 # ------------------------------------------------------------
 
@@ -106,13 +143,40 @@ case "$1" in
 	go gdb
 
 	go curl
-	# go nspr	# not yet
-	# go rpm	# not yet
+	go nspr
+	go rpm	# not yet
+        go pcre
+        go readline
+
+	go chkconfig
+	go sqlite
+	go gdbm
+	go gnupg # not yet
+	go gawk
+	go pth
+	go libtool
+	go db4
+	go perl
+	go openssl
+	go gettext
+	go popt
+	go glib2
+	go pkgconfig
+	go nss
 
 	;;
 
     "clean" )
 	;;
+
+    binutils | gcc | glibc | kernel | x-loader | u-boot \
+    | gmp | mpfr | mpc | ppl | cloog | libselinux | zlib \
+    | bash | make | sed | coreutils | util-linux | tar | gzip \
+    | bzip2 | diffutils | findutils | gawk | patch | unzip | which | gz | grep )
+
+        echo "$1 is built in stage1"
+        exit 1
+        ;;
 
 #--------------------------------------------------
 
@@ -196,7 +260,156 @@ case "$1" in
 	make $J
 	make $J install
 	;;
+    
+    pth )
+	mcd $BUILDDIR/pth
+	$SRC/${1}-*/configure $TCONFIGARGS
+	make $J
+        make $J install
+	;;
+    
+    chkconfig )
+        mcd $BUILDDIR/pth
+        #$SRC/${1}-*/configure $TCONFIGARGS
+        make $J
+        make $J install
+        ;;
 
+    sqlite )
+	#####################################################
+	# sqlite is choking on sqlite_int64 definition
+	#####################################################
+	mcd $BUILDDIR/sqlite
+	export CFLAGS="$RPM_OPT_FLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_DISABLE_DIRSYNC=1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 -Wall -fno-strict-aliasing"
+	$SRC/sqlite-*/configure --disable-tcl --enable-threadsafe --enable-threads-override-locks --enable-load-extension $TCONFIGARGS
+	# the compile would fail here, so on a host you need to run
+	# tclsh ../../rpmbuild/BUILD/sqlite-src-3070500/tool/mksqlite3h.tcl ../../rpmbuild/BUILD/sqlite-src-3070500 > sqlite3.h
+	# Also possibly add -ldl to TLIB in the Makefile
+	make $J
+	make $J install
+	;;
+
+     gdbm )
+	mcd $BUILDDIR/gdbm
+	$SRC/${1}-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+     nss ) 
+	########################################################
+	# needs perl
+	########################################################
+        mcd $BUILDDIR/nss
+	BUILD_OPT=1
+	export BUILD_OPT
+	PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+
+	export PKG_CONFIG_ALLOW_SYSTEM_LIBS
+	export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
+	NSPR_INCLUDE_DIR=/usr/include/nspr
+	NSPR_LIB_DIR=/usr/lib
+	export NSPR_INCLUDE_DIR
+	export NSPR_LIB_DIR
+	NSS_USE_SYSTEM_SQLITE=1
+	export NSS_USE_SYSTEM_SQLITE
+        make -C $SRC/${1}-3.12.10/mozilla/security/coreconf
+	make -C $SRC/${1}-3.12.10/mozilla/security/dbm
+	make -C $SRC/${1}-3.12.10/mozilla/security/nss
+        cd $SRC/${1}-3.12.10/mozilla/security/coreconf
+        make install
+        cd $SRC/${1}-3.12.10/mozilla/security/dbm
+        make install
+        cd $SRC/${1}-3.12.10/mozilla/security/nss
+        make install
+        ;;
+  
+     gnupg )
+	####################################################### 
+	# needs libgpg-error, libgcrypt, libassuan, libksba
+	#######################################################
+	mcd $BUILDDIR/gnupg2
+	$SRC/${1}-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+    pcre )
+	mcd $BUILDDIR/pcre
+	$SRC/pcre-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+    readline )
+	mcd $BUILDDIR/readline
+	$SRC/readline-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+    libtool )
+	mcd $BUILDDIR/libtool
+	$SRC/libtool-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+    db4 )
+	mcd $BUILDDIR/db4
+	$SRC/db-*/dist/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+    perl )
+	mcd $BUILDDIR/perl
+	cd $SRC/perl-*
+	sh $SRC/perl-*/Configure -des -Dprefix=/usr -DDEBUGGING=-g  -Dcc=gcc -Dmyhostname=localhost -Dperladmin=root@localhost -Duseshrplib -Dusethreads -Duseithreads -Uusedtrace -Duselargefiles -Dd_semctl_semun -Di_db -Ui_ndbm -Di_gdbm -Di_shadow -Di_syslog -Dman3ext=3pm -Duseperlio -Dinstallusrbinperl=n -Ubincompat5005 -Uversiononly -Dd_gethostent_r_proto -Ud_endhostent_r_proto -Ud_sethostent_r_proto -Ud_endprotoent_r_proto -Ud_setprotoent_r_proto -Ud_endservent_r_proto -Ud_setservent_r_proto
+	make
+	make install
+;;
+
+    openssl )
+        mcd $BUILDDIR/openssl
+        cd $SRC/openssl-*
+       ./Configure --prefix=/usr --openssldir=/etc/pki/tls zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ecdh no-ecdsa shared linux-generic32
+        make depend
+        make all
+        make rehash
+        make install
+        ;;
+
+    gettext )
+	mcd $BUILDDIR/gettext
+	$SRC/gettext-*/configure $TCONFIGARGS --disable-static --enable-shared --with-pic-=yes --disable-csharp --disable-rpath
+	make $J
+	make $J install
+	;;
+
+    popt )
+	mcd $BUILDDIR/popt
+	$SRC/popt-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+	;;
+
+    glib2 )
+	mcd $BUILDDIR/glib2
+	# glib2 expects --enable-threads=yes to enable threads,
+	#  anything else disables threads
+	$SRC/glib-*/configure `echo $TCONFIGARGS | sed 's/posix/yes/'` --enable-static
+	make $J
+	make $J install
+	;;
+
+    pkgconfig )
+	mcd $BUILDDIR/pkg-config
+	$SRC/pkg-config-*/configure $TCONFIGARGS --disable-shared --with-installed-glib --with-installed-popt
+	make $J
+	make $J install
+	
 esac
 
 exit 0
