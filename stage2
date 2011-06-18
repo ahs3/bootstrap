@@ -93,6 +93,13 @@ then
     mknod /dev/ttyO3		c 253 3
 fi
 
+if [ ! -d /tmp ]
+then
+    echo Creating /tmp...
+    mkdir /tmp
+    chmod 1777 /tmp
+fi
+
 # ------------------------------------------------------------
 
 mkdirp()
