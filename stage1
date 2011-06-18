@@ -705,6 +705,13 @@ EOF
 	    RANLIB=${TARGET}-ranlib \
 	    PREFIX=${ROOTFS} \
 	    install
+	# the installation makes symbols links with our host's paths
+	# in them, we need to redo those.
+	cd $ROOTFS/bin
+	rm bzless;  ln -s bzmore bzless
+	rm bzfgrep; ln -s bzgrep bzfgrep
+	rm bzcmp;   ln -s bzdiff bzcmp
+	rm bzegrep; ln -s bzgrep bzegrep
 	;;
 
     stage2 )
