@@ -178,7 +178,7 @@ case "$1" in
     # Packages built by stage1
 
     binutils | gcc | glibc | kernel | x-loader | u-boot \
-    | gmp | mpfr | mpc | ppl | cloog | libselinux | zlib \
+    | gmp | mpfr | libmpc | mpc | ppl | cloog | libselinux | zlib \
     | bash | make | sed | coreutils | util-linux | tar | gzip \
     | bzip2 | diffutils | findutils | gawk | patch | unzip | which | gz | grep )
 

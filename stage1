@@ -713,17 +713,34 @@ EOF
 
 	mkdirp $ROOTFS/stage2
 
-	rsrpm cpio
-	rsrpm ncurses
-	rsrpm curl
-	rsrpm m4
-	rsrpm flex
+	# Might as well keep these sorted, so we can check them easier.
+
 	rsrpm bison
-	rsrpm texinfo
+	rsrpm chkconfig
+	rsrpm cpio
+	rsrpm curl
+	rsrpm db4
+	rsrpm flex
 	rsrpm gdb
-	rsrpm nss-softokn
+	rsrpm gdbm
+	rsrpm gettext
+	rsrpm glib2
+	rsrpm libtool
+	rsrpm m4
+	rsrpm ncurses
 	rsrpm nspr
+	rsrpm nss
+	rsrpm nss-softokn
+	rsrpm openssl
+	rsrpm pcre
+	rsrpm perl
+	rsrpm pkgconfig
+	rsrpm popt
+	rsrpm pth
+	rsrpm readline
 	rsrpm rpm
+	rsrpm sqlite
+	rsrpm texinfo
 
 	cp $STAGE2 $ROOTFS/stage2/stage2
 
