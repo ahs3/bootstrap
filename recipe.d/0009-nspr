@@ -1,0 +1,5 @@
+        mcd $BUILDDIR/nspr
+        $SRC/nspr-*/mozilla/nsprpub/configure $TCONFIGARGS --enable-thumb2
+        make $J
+        make $J install
+

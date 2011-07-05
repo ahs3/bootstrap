@@ -1,0 +1,7 @@
+        mcd $BUILDDIR/glib2
+        # glib2 expects --enable-threads=yes to enable threads,
+        #  anything else disables threads
+        $SRC/glib-*/configure `echo $TCONFIGARGS | sed 's/posix/yes/'` --enable-static
+        make $J
+        make $J install
+

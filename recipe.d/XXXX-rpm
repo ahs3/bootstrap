@@ -1,0 +1,6 @@
+        mcd $BUILDDIR/rpm
+        $SRC/${1}-*/configure $TCONFIGARGS
+        notparallel
+        make $J
+        make $J install
+    

@@ -1,0 +1,13 @@
+        mcd $BUILDDIR/ncurses
+        $SRC/ncurses-*/configure $TCONFIGARGS \
+            --with-shared --without-ada --with-ospeed=unsigned \
+            --enable-hard-tabs --enable-xmc-glitch --enable-colorfgbg \
+            --enable-overwrite \
+            --enable-pc-files \
+            --with-termlib=tinfo \
+            --with-chtype=long \
+            --with-ticlib
+        notparallel
+        make $J
+        make $J install
+

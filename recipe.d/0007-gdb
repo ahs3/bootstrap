@@ -1,0 +1,6 @@
+        mcd $BUILDDIR/gdb
+        $SRC/gdb-*/configure $TCONFIGARGS --without-rpm
+        notparallel
+        make $J -k
+        make $J -k install
+

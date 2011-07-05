@@ -1,0 +1,4 @@
+cd $SRC/rsync-*
+./configure $TCONFIGARGS
+make $J
+make $J install

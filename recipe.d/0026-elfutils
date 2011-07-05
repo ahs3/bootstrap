@@ -1,0 +1,4 @@
+        mcd $BUILDDIR/elfutils
+        $SRC/elfutils-*/configure $TCONFIGARGS --program-prefix=eu-
+        make $J
+        make $J install

@@ -52,6 +52,8 @@
 #
 # ------------------------------------------------------------
 
+#set -vx
+
 TOP=/stage2
 MYDIR=${0%/*}
 STAGE2=$MYDIR/stage2
@@ -91,6 +93,7 @@ then
     mknod /dev/ttyO1		c 253 1
     mknod /dev/ttyO2		c 253 2
     mknod /dev/ttyO3		c 253 3
+    chmod a+rw /dev/null /dev/zero
 fi
 
 if [ ! -d /tmp ]
@@ -141,42 +144,15 @@ case "$1" in
     "" )
 	go clean
 
-	# Keep these in the order in which they must be built.  You
-	# will thus normally add new packages to the end of the list.
+    # build recipes are now in /stage2/recipe.d/
+    # enabled recipes start with [0-9]{4}-
+    # disabled recipes start with XXXX-
 
-	go cpio
-	go ncurses
-	go m4
-	go flex
-	go bison
-	go texinfo
-	go gdb
-
-	go curl
-	go nspr
-	go pcre
-	go readline
-
-	go chkconfig
-	go sqlite
-	go gdbm
-	go gawk
-	go pth
-	go libtool
-	go db4
-	go perl
-	go openssl
-	go gettext
-	go popt
-	go glib2
-	go pkgconfig
-	go nss
-
-	# Packages known to not build yet - should be a clause later
-	# in the file describing why.
-
-	# go gnupg	# not yet
-	# go rpm	# not yet
+    for PKG in /stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
+    do
+        PKG="$(basename $PKG|sed 's/^[0-9]{4}-//')"
+        go "$PKG"
+    done
 	;;
 
     "clean" )
@@ -189,242 +165,22 @@ case "$1" in
     | bash | make | sed | coreutils | util-linux | tar | gzip \
     | bzip2 | diffutils | findutils | gawk | patch | unzip | which | gz | grep )
 
-        echo "$1 is built in stage1"
+        echo "$1 is built in stage1" >&2
         exit 1
         ;;
 
 #--------------------------------------------------
 
-    cpio )
-	mcd $BUILDDIR/$1
-	$SRC/${1}-*/configure $TCONFIGARGS
-	notparallel
-	make $J
-	make $J install
-	;;
+    * )
+    	if [ -f "/stage2/recipe.d/"[0-9][0-9][0-9][0-9]"-$1" ]
+    	then
+    		. /stage2/recipe.d/[0-9][0-9][0-9][0-9]-$1
+    	else
+    		echo "No build recipe found for $1" >&2
+    		exit 2
+    	fi
 
-    ncurses )
-	mcd $BUILDDIR/ncurses
-	$SRC/ncurses-*/configure $TCONFIGARGS \
-	    --with-shared --without-ada --with-ospeed=unsigned \
-	    --enable-hard-tabs --enable-xmc-glitch --enable-colorfgbg \
-	    --enable-overwrite \
-	    --enable-pc-files \
-	    --with-termlib=tinfo \
-	    --with-chtype=long \
-	    --with-ticlib
-	notparallel
-	make $J
-	make $J install
-	;;
-
-    m4 )
-	mcd $BUILDDIR/m4
-	$SRC/m4-*/configure $TCONFIGARGS
-	make $J -k
-	make $J -k install
-	;;
-
-    flex )
-	mcd $BUILDDIR/flex
-	$SRC/flex-*/configure $TCONFIGARGS --disable-dependency-tracking
-	make $J -k
-	make $J -k install
-	;;
-
-    bison )
-	mcd $BUILDDIR/bison
-	$SRC/bison-*/configure $TCONFIGARGS
-	make $J -k
-	make $J -k install
-	;;
-
-    texinfo )
-	mcd $BUILDDIR/texinfo
-	$SRC/texinfo-*/configure $TCONFIGARGS
-	make $J -k
-	make $J -k install
-	;;
-
-    gdb )
-	mcd $BUILDDIR/gdb
-	$SRC/gdb-*/configure $TCONFIGARGS --without-rpm
-	notparallel
-	make $J -k
-	make $J -k install
-	;;
-
-    curl )
-	mcd $BUILDDIR/curl
-	$SRC/curl-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    nspr )
-	mcd $BUILDDIR/nspr
-	$SRC/nspr-*/mozilla/nsprpub/configure $TCONFIGARGS --enable-thumb2
-	make $J
-	make $J install
-	;;
-
-    rpm )
-	mcd $BUILDDIR/rpm
-	$SRC/${1}-*/configure $TCONFIGARGS
-	notparallel
-	make $J
-	make $J install
-	;;
-    
-    pth )
-	mcd $BUILDDIR/pth
-	$SRC/${1}-*/configure $TCONFIGARGS
-	make $J
-        make $J install
-	;;
-    
-    chkconfig )
-        mcd $BUILDDIR/pth
-        #$SRC/${1}-*/configure $TCONFIGARGS
-        make $J
-        make $J install
-        ;;
-
-    sqlite )
-	#####################################################
-	# sqlite is choking on sqlite_int64 definition
-	#####################################################
-	mcd $BUILDDIR/sqlite
-	export CFLAGS="$RPM_OPT_FLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_DISABLE_DIRSYNC=1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 -Wall -fno-strict-aliasing"
-	$SRC/sqlite-*/configure --disable-tcl --enable-threadsafe --enable-threads-override-locks --enable-load-extension $TCONFIGARGS
-	# the compile would fail here, so on a host you need to run
-	# tclsh ../../rpmbuild/BUILD/sqlite-src-3070500/tool/mksqlite3h.tcl ../../rpmbuild/BUILD/sqlite-src-3070500 > sqlite3.h
-	# Also possibly add -ldl to TLIB in the Makefile
-	make $J
-	make $J install
-	;;
-
-     gdbm )
-	mcd $BUILDDIR/gdbm
-	$SRC/${1}-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-     nss ) 
-	########################################################
-	# needs perl
-	########################################################
-        mcd $BUILDDIR/nss
-	BUILD_OPT=1
-	export BUILD_OPT
-	PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
-	PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
-
-	export PKG_CONFIG_ALLOW_SYSTEM_LIBS
-	export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
-	NSPR_INCLUDE_DIR=/usr/include/nspr
-	NSPR_LIB_DIR=/usr/lib
-	export NSPR_INCLUDE_DIR
-	export NSPR_LIB_DIR
-	NSS_USE_SYSTEM_SQLITE=1
-	export NSS_USE_SYSTEM_SQLITE
-        make -C $SRC/${1}-3.12.10/mozilla/security/coreconf
-	make -C $SRC/${1}-3.12.10/mozilla/security/dbm
-	make -C $SRC/${1}-3.12.10/mozilla/security/nss
-        cd $SRC/${1}-3.12.10/mozilla/security/coreconf
-        make install
-        cd $SRC/${1}-3.12.10/mozilla/security/dbm
-        make install
-        cd $SRC/${1}-3.12.10/mozilla/security/nss
-        make install
-        ;;
-  
-     gnupg )
-	####################################################### 
-	# needs libgpg-error, libgcrypt, libassuan, libksba
-	#######################################################
-	mcd $BUILDDIR/gnupg2
-	$SRC/${1}-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    pcre )
-	mcd $BUILDDIR/pcre
-	$SRC/pcre-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    readline )
-	mcd $BUILDDIR/readline
-	$SRC/readline-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    libtool )
-	mcd $BUILDDIR/libtool
-	$SRC/libtool-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    db4 )
-	mcd $BUILDDIR/db4
-	$SRC/db-*/dist/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    perl )
-	mcd $BUILDDIR/perl
-	cd $SRC/perl-*
-	sh $SRC/perl-*/Configure -des -Dprefix=/usr -DDEBUGGING=-g  -Dcc=gcc -Dmyhostname=localhost -Dperladmin=root@localhost -Duseshrplib -Dusethreads -Duseithreads -Uusedtrace -Duselargefiles -Dd_semctl_semun -Di_db -Ui_ndbm -Di_gdbm -Di_shadow -Di_syslog -Dman3ext=3pm -Duseperlio -Dinstallusrbinperl=n -Ubincompat5005 -Uversiononly -Dd_gethostent_r_proto -Ud_endhostent_r_proto -Ud_sethostent_r_proto -Ud_endprotoent_r_proto -Ud_setprotoent_r_proto -Ud_endservent_r_proto -Ud_setservent_r_proto
-	make
-	make install
-;;
-
-    openssl )
-        mcd $BUILDDIR/openssl
-        cd $SRC/openssl-*
-       ./Configure --prefix=/usr --openssldir=/etc/pki/tls zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ecdh no-ecdsa shared linux-generic32
-        make depend
-        make all
-        make rehash
-        make install
-        ;;
-
-    gettext )
-	mcd $BUILDDIR/gettext
-	$SRC/gettext-*/configure $TCONFIGARGS --disable-static --enable-shared --with-pic-=yes --disable-csharp --disable-rpath
-	make $J
-	make $J install
-	;;
-
-    popt )
-	mcd $BUILDDIR/popt
-	$SRC/popt-*/configure $TCONFIGARGS
-	make $J
-	make $J install
-	;;
-
-    glib2 )
-	mcd $BUILDDIR/glib2
-	# glib2 expects --enable-threads=yes to enable threads,
-	#  anything else disables threads
-	$SRC/glib-*/configure `echo $TCONFIGARGS | sed 's/posix/yes/'` --enable-static
-	make $J
-	make $J install
-	;;
-
-    pkgconfig )
-	mcd $BUILDDIR/pkg-config
-	$SRC/pkg-config-*/configure $TCONFIGARGS --disable-shared --with-installed-glib --with-installed-popt
-	make $J
-	make $J install
-	
 esac
 
 exit 0
+

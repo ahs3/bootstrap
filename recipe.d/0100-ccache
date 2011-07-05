@@ -1,0 +1,4 @@
+	mcd $BUILDDIR/ccache
+	$SRC/ccache-*/configure $TCONFIGARGS
+	make $J
+	make $J install

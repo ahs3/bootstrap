@@ -1,0 +1,8 @@
+        ####################################################### 
+        # needs libgpg-error, libgcrypt, libassuan, libksba
+        #######################################################
+        mcd $BUILDDIR/gnupg2
+        $SRC/${1}-*/configure $TCONFIGARGS
+        make $J
+        make $J install
+

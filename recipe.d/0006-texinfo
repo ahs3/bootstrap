@@ -1,0 +1,5 @@
+        mcd $BUILDDIR/texinfo
+        $SRC/texinfo-*/configure $TCONFIGARGS
+        make $J -k
+        make $J -k install
+

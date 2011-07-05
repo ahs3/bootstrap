@@ -1,0 +1,6 @@
+        mcd $BUILDDIR/gdbm
+	echo "Current in: $PWD"
+        $SRC/${1}-*/configure $TCONFIGARGS
+        make $J
+        make $J install
+

@@ -1,0 +1,5 @@
+cd $SRC/$1-*
+make $J CC=gcc
+make $J CC=gcc all-shared
+make $J CC=gcc install
+

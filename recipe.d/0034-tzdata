@@ -1,0 +1,7 @@
+#
+# Note: java tzdata is not built (unlike tzdata.spec)
+#
+cd $SRC/$1
+make $J 
+make $J install
+

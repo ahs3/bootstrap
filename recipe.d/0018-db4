@@ -1,0 +1,5 @@
+        mcd $BUILDDIR/db4
+        $SRC/db-*/dist/configure $TCONFIGARGS
+        make $J
+        make $J install
+

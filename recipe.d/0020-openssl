@@ -1,0 +1,8 @@
+        mcd $BUILDDIR/openssl
+        cd $SRC/openssl-*
+       ./Configure --prefix=/usr --openssldir=/etc/pki/tls zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ecdh no-ecdsa shared linux-generic32
+        make depend
+        make all
+        make rehash
+        make install
+

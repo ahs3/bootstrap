@@ -1,0 +1,9 @@
+        ####################################################### 
+        # needs: libprelude, libcap, openldap, python, 
+	#	 tcp_wrappers, swig
+        #######################################################
+	mcd $BUILDDIR/audit
+	$SRC/audit-*/configure $TCONFIGARGS
+	make $J
+	make $J install
+
