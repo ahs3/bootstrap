@@ -438,6 +438,7 @@ case "$1" in
 	sudo mknod ttyO1	c 253 1
 	sudo mknod ttyO2	c 253 2
 	sudo mknod ttyO3	c 253 3
+	sudo chmod a+rw null zero
 	;;
 
     "kernel" )
