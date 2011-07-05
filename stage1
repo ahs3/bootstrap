@@ -698,16 +698,18 @@ EOF
 	    CC=${TARGET}-gcc \
 	    AR=${TARGET}-ar \
 	    RANLIB=${TARGET}-ranlib \
+	    PREFIX=/usr \
+	    CFLAGS="$CFLAGS -fpic -fPIC" \
 	    libbz2.a bzip2 bzip2recover
 	make $J \
 	    CC=${TARGET}-gcc \
 	    AR=${TARGET}-ar \
 	    RANLIB=${TARGET}-ranlib \
-	    PREFIX=${ROOTFS} \
+	    PREFIX=${ROOTFS}/usr \
 	    install
 	# the installation makes symbols links with our host's paths
 	# in them, we need to redo those.
-	cd $ROOTFS/bin
+	cd $ROOTFS/usr/bin
 	rm bzless;  ln -s bzmore bzless
 	rm bzfgrep; ln -s bzgrep bzfgrep
 	rm bzcmp;   ln -s bzdiff bzcmp
@@ -720,34 +722,21 @@ EOF
 
 	mkdirp $ROOTFS/stage2
 
-	# Might as well keep these sorted, so we can check them easier.
+	# FIXME: the recipe files need to be copied into the rootfs
+	# before they can be used.
 
-	rsrpm bison
-	rsrpm chkconfig
-	rsrpm cpio
-	rsrpm curl
-	rsrpm db4
-	rsrpm flex
-	rsrpm gdb
-	rsrpm gdbm
-	rsrpm gettext
-	rsrpm glib2
-	rsrpm libtool
-	rsrpm m4
-	rsrpm ncurses
-	rsrpm nspr
-	rsrpm nss
-	rsrpm nss-softokn
-	rsrpm openssl
-	rsrpm pcre
-	rsrpm perl
-	rsrpm pkgconfig
-	rsrpm popt
-	rsrpm pth
-	rsrpm readline
-	rsrpm rpm
-	rsrpm sqlite
-	rsrpm texinfo
+	for PKG in $ROOTFS/stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
+	do
+		PKG=$(echo $PKG | sed "s/.*\\/[0-9][0-9][0-9][0-9]-//")
+		echo "Installing SRPM for $PKG"
+		rsrpm $PKG
+	done
+
+	(
+	    cd $ROOTFS/stage2/rpmbuild/BUILD/sqlite-*
+	    test -f sqlite3.h.stage1 \
+	    || tclsh tool/mksqlite3h.tcl . > sqlite3.h.stage1
+	)
 
 	cp $STAGE2 $ROOTFS/stage2/stage2
 
