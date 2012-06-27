@@ -1,5 +1,10 @@
-        mcd $BUILDDIR/nspr
-        $SRC/nspr-*/mozilla/nsprpub/configure $TCONFIGARGS --enable-thumb2
-        make $J
-        make $J install
+case "$TARGET" in
+     *armv[567]* ) FLAGS2="--enable-thumb2" ;;
+     * ) FLAGS2="" ;;
+esac
+
+mcd $BUILDDIR/nspr
+$SRC/nspr-*/mozilla/nsprpub/configure $TCONFIGARGS $FLAGS2
+make $J
+make $J install
 

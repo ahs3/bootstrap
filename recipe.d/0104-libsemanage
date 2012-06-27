@@ -1,0 +1,5 @@
+mcd $BUILDDIR/libsemanage
+rsync -av $SRC/libsemanage-*/ ./
+
+make $J
+make $J install

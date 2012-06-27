@@ -1,4 +1,4 @@
-cd $SRC/${1}-*
+cd $SRC/libusb-1*
 ./configure $TCONFIGARGS
 make $J
 make install

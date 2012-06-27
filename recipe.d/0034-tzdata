@@ -2,6 +2,7 @@
 # Note: java tzdata is not built (unlike tzdata.spec)
 #
 cd $SRC/$1
+test -d obj && rm -rf obj
 make $J 
 make $J install
 

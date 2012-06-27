@@ -1,4 +1,0 @@
-	mcd $BUILDDIR/libxcb
-	$SRC/libxcb-*/configure $TCONFIGARGS
-	make $J
-	make $J install

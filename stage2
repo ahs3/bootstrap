@@ -66,6 +66,8 @@ BUILDDIR=$TOP/builds
 # The cross-compiler target
 TARGET=armv7hl-redhat-linux-gnueabi
 
+export TARGET BUILDDIR J SRC STAGE2 MYDIR TOP
+
 if [ -f $MYDIR/local.conf ]
 then
     . $MYDIR/local.conf
@@ -140,6 +142,8 @@ fix_la()
     done
 }
 
+test -d /stage2/done || mkdir /stage2/done
+
 case "$1" in
     "" )
 	go clean
@@ -148,11 +152,20 @@ case "$1" in
     # enabled recipes start with [0-9]{4}-
     # disabled recipes start with XXXX-
 
-    for PKG in /stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
-    do
-        PKG="$(basename $PKG|sed 's/^[0-9]{4}-//')"
-        go "$PKG"
-    done
+
+	for PKG in /stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
+	do
+            PKG="$(basename $PKG|sed 's/^[0-9]*-//')"
+	    if [ ! -f "/stage2/done/$PKG" ]
+	    then
+                if go "$PKG"
+		then
+		    echo "$PKG" OK
+		else
+		    echo "$PKG" BAD
+		fi
+	    fi
+	done
 	;;
 
     "clean" )
@@ -171,10 +184,25 @@ case "$1" in
 
 #--------------------------------------------------
 
+    *~ ) ;;
+
     * )
     	if [ -f "/stage2/recipe.d/"[0-9][0-9][0-9][0-9]"-$1" ]
     	then
-    		. /stage2/recipe.d/[0-9][0-9][0-9][0-9]-$1
+		echo
+		echo
+		echo Building $1 . . .
+		echo
+		set -e
+
+    		. /stage2/recipe.d/[0-9][0-9][0-9][0-9]-"$1"
+
+		set +e
+		echo
+		echo Building $1 succeeded
+		echo
+		: > /stage2/done/$1
+		exit 0
     	else
     		echo "No build recipe found for $1" >&2
     		exit 2

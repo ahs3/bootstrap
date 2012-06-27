@@ -1,6 +1,11 @@
         mcd $BUILDDIR/glib2
         # glib2 expects --enable-threads=yes to enable threads,
         #  anything else disables threads
+
+	GIO=`cd $SRC/glib-*/gio; pwd`
+	sed 's@gdbus-2.0/codegen@@g' $GIO/Makefile.in | sed 's/ tests$//' > $GIO/Makefile.stage2
+	mv $GIO/Makefile.stage2 $GIO/Makefile.in
+
         $SRC/glib-*/configure `echo $TCONFIGARGS | sed 's/posix/yes/'` --enable-static
         make $J
         make $J install

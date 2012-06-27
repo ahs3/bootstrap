@@ -1,4 +1,0 @@
-	mcd $BUILDDIR/strace
-	$SRC/strace-*/configure $TCONFIGARGS
-	make $J
-	make $J install
