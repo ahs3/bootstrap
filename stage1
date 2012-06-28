@@ -35,6 +35,8 @@ STAGE2=$MYDIR/stage2
 SRPMDIR=$TOP/SRPMs
 SRPMDIR_LOCAL=$TOP/SRPMlocal
 J=-j12
+# default port for native builds is 3632, don't use that
+DISTCC_PORT=3639
 
 BUILDDIR=$TOP/builds
 PREFIX=$TOP/install
@@ -356,6 +358,7 @@ case "$1" in
 	go which
 	go xz
 	go grep
+	go distcc
 
 	go stage2
 
@@ -556,6 +559,10 @@ fi
 	do
 	    ln -s usr/$i $ROOTFS/$i
 	    mkdir $ROOTFS/usr/$i
+	done
+	for i in etc
+	do
+	    mkdir $ROOTFS/$i
 	done
 	;;
 
@@ -894,6 +901,22 @@ EOF
 	rm bzegrep; ln -s bzgrep bzegrep
 	;;
 
+    distcc )
+	srpm distcc
+	mcd $BUILDDIR distcc
+	$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror
+	notparallel
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+
+	mcd $ROOTFS/stage2/distcc-bin
+	for p in gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
+	do
+	    test -f $p && rm $p
+	    ln -s /usr/bin/distcc $p
+	done
+	;;
+
     stage2 )
 	# install source trees in rootfs, so stage2 will have them for
 	# its builds.
@@ -938,7 +961,11 @@ EOF
 	cp $STAGE2 $ROOTFS/stage2/stage2
 
 	(
-	    grep '^J=' local.conf || true
+	    newJ=$(echo $J | sed 's/-j//')
+	    echo J=-j$newJ
+	    echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
+	    echo DISTCC_BACKOFF_PERIOD=0
+	    echo PATH=/stage2/distcc-bin:\$PATH
 	    echo TARGET=$TARGET
 	    echo RPMTARGET=$RPMTARGET
 	    echo TCONFIGARGS=\"$TCONFIGARGS\" \
@@ -947,8 +974,30 @@ EOF
 		| sed 's/--target=[^ ]*//' \
 		| sed 's/--with-sysroot=[^ ]*//' \
 		| sed 's/--with-build-sysroot=[^ ]*//'
+
+	    echo export J DISTCC_HOSTS DISTCC_BACKOFF_PERIOD PATH
 	    echo export TARGET RPMTARGET TCONFIGARGS
 	) > $ROOTFS/stage2/local.conf
+
+	mcd $PREFIX/distccd-bin
+	rm -f gcc cc g++ c++ as
+	ln -s $PREFIX/bin/${TARGET}-gcc gcc
+	ln -s $PREFIX/bin/${TARGET}-gcc ${TARGET}-gcc
+	ln -s $PREFIX/bin/${TARGET}-gcc cc
+	ln -s $PREFIX/bin/${TARGET}-g++ ${TARGET}-g++
+	ln -s $PREFIX/bin/${TARGET}-g++ g++
+	ln -s $PREFIX/bin/${TARGET}-g++ c++
+	ln -s $PREFIX/bin/${TARGET}-as as
+	ln -s $PREFIX/bin/${TARGET}-as ${TARGET}-as
+	cd $TOP
+	(
+	    echo #!/bin/sh
+	    echo export PATH=$PREFIX/distccd-bin:\$PATH
+	    # The allow means "anyone" since we don't know which host the target is.
+	    # add --wizard to shut off background mode and logs info to stdout
+	    echo distccd --daemon --allow 0.0.0.0/0 --port $DISTCC_PORT '"$@"'
+	) > distccd.script
+	chmod a+x distccd.script
 
 	echo stage2 ready
 
