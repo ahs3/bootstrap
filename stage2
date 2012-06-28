@@ -112,11 +112,7 @@ mkdirp()
     test -d $1 || mkdir -p $1
 }
 
-mkdirp $ROOTFS
-mkdirp $PREFIX
 mkdirp $BUILDDIR
-
-export PATH=$PREFIX/bin:$PATH
 
 go()
 {
