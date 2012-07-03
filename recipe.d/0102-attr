@@ -1,3 +1,6 @@
+#requires libtool
+#requires gettext
+
 mcd $BUILDDIR/attr
 rsync -av $SRC/attr-*/ ./
 ./configure $TCONFIGARGS --libexecdir=/usr/lib

@@ -1,3 +1,5 @@
+#requires texinfo
+
         mcd $BUILDDIR/libtool
         $SRC/libtool-*/configure $TCONFIGARGS
         make $J

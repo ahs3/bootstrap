@@ -1,3 +1,7 @@
+#requires libtool
+#requires gettext
+#requires attr
+
 mcd $BUILDDIR/acl
 rsync -av $SRC/acl-*/ ./
 touch .census

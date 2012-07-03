@@ -1,5 +1,5 @@
         mcd $BUILDDIR/pth
-        $SRC/${1}-*/configure $TCONFIGARGS
+        $SRC/pth-*/configure $TCONFIGARGS
         make $J
         make $J install
     

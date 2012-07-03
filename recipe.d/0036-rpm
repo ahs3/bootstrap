@@ -1,3 +1,19 @@
+#requires cpio
+#requires ncurses
+#requires readline
+#requires gdb
+#requires curl
+#requires sqlite
+#requires gettext
+#requires popt
+#requires pkgconfig
+#requires nss-softokn
+#requires nss
+#requires elfutils
+#requires fakechroot
+#requires file
+#requires redhat-rpm-config
+
 	mcd $BUILDDIR/rpm
 	$SRC/rpm-*/configure $TCONFIGARGS \
 		--build=armv7hl-redhat-linux-gnueabi \

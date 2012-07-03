@@ -1,0 +1,38 @@
+#!/usr/bin/make
+
+SCRIPTDIR := recipe.d
+FRAGDIR := recipe.mk
+RCFILE := ./scripts.rc
+
+SCRIPTS := $(sort $(wildcard ${SCRIPTDIR}/*[0-9A-Za-z]))
+FRAGS := $(addsuffix .mk,$(addprefix ${FRAGDIR}/,$(notdir $(SCRIPTS))))
+
+${FRAGDIR}/%.mk : ${SCRIPTDIR}/%
+	@( \
+	  if grep '^#skip' $< >/dev/null ; then true; else \
+	  deps=`grep '^#requires ' $< | sed 's@#requires @done\/@'` ;\
+	  deps=`echo $$deps` ;\
+	  base=`echo $* | sed 's/^[0-9][0-9][0-9][0-9]-//'` ;\
+	  echo TARGETS += done/$$base ;\
+	  echo ".PHONY: $$base" ;\
+	  echo "$$base : done/$$base" ;\
+	  echo "	@true" ;\
+	  echo "done/$$base : $$deps" ;\
+	  echo "	@echo " ;\
+	  echo "	@echo Building $$base" ;\
+	  echo "	@echo " ;\
+	  echo "	@bash --rcfile ${RCFILE} -i ${SCRIPTDIR}/$*" ;\
+	  echo "	@true > done/$$base" ;\
+	  fi \
+	) > $@
+
+all.first : all.targets
+	@true
+
+TARGETS :=
+
+include ${FRAGS}
+
+all.targets : ${TARGETS}
+	@echo
+	@echo 'done!'

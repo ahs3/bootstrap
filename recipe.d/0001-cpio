@@ -1,5 +1,5 @@
-        mcd $BUILDDIR/$1
-        $SRC/${1}-*/configure $TCONFIGARGS
+        mcd $BUILDDIR/cpio
+        $SRC/cpio-*/configure $TCONFIGARGS
         notparallel
         make $J
         make $J install

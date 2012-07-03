@@ -1,3 +1,5 @@
+go acl
+
 	mcd $BUILDDIR/strace
 	$SRC/strace-*/configure $TCONFIGARGS
 	make $J

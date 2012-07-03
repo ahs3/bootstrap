@@ -1,3 +1,6 @@
+#requires bison
+#requires libtool
+
         mcd $BUILDDIR/gettext
         $SRC/gettext-*/configure $TCONFIGARGS --disable-static --enable-shared --with-pic-=yes --disable-csharp --disable-rpath
         make $J

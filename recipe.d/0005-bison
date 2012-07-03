@@ -1,3 +1,5 @@
+#requires m4
+
         mcd $BUILDDIR/bison
         $SRC/bison-*/configure $TCONFIGARGS
         make $J -k

@@ -68,10 +68,7 @@ TARGET=armv7hl-redhat-linux-gnueabi
 
 export TARGET BUILDDIR J SRC STAGE2 MYDIR TOP
 
-if [ -f $MYDIR/local.conf ]
-then
-    . $MYDIR/local.conf
-fi
+. $MYDIR/macros.bashrc
 
 if [ ! -c /dev/null -a -w / ]
 then
@@ -107,61 +104,28 @@ fi
 
 # ------------------------------------------------------------
 
-mkdirp()
-{
-    test -d $1 || mkdir -p $1
-}
-
 mkdirp $BUILDDIR
 
-go()
-{
-  "$0" "$@"
-}
-
-mcd()
-{
-    test -d $1 || mkdir -p $1
-    cd $1
-}
-
-notparallel()
-{
-    echo .NOTPARALLEL: >> Makefile
-}
-
-fix_la()
-{
-    for la in $ROOTFS/usr/lib/*$1*.la
-    do
-	rm $la
-    done
-}
-
 test -d /stage2/done || mkdir /stage2/done
+
+scriptmake()
+{
+    test -d $TOP/recipe.mk || mkdir -p $TOP/recipe.mk
+    make -f $MYDIR/script2makefile \
+	SCRIPTDIR=$TOP/recipe.d \
+	FRAGDIR=$TOP/recipe.mk \
+	RCFILE=$TOP/macros.bashrc \
+	SRC="$SRC" \
+	J="$J" \
+	BUILDDIR="$BUILDDIR" \
+	TARGET="$TARGET" \
+	$1
+}
 
 case "$1" in
     "" )
 	go clean
-
-    # build recipes are now in /stage2/recipe.d/
-    # enabled recipes start with [0-9]{4}-
-    # disabled recipes start with XXXX-
-
-
-	for PKG in /stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
-	do
-            PKG="$(basename $PKG|sed 's/^[0-9]*-//')"
-	    if [ ! -f "/stage2/done/$PKG" ]
-	    then
-                if go "$PKG"
-		then
-		    echo "$PKG" OK
-		else
-		    echo "$PKG" BAD
-		fi
-	    fi
-	done
+        scriptmake
 	;;
 
     "clean" )
@@ -183,27 +147,8 @@ case "$1" in
     *~ ) ;;
 
     * )
-    	if [ -f "/stage2/recipe.d/"[0-9][0-9][0-9][0-9]"-$1" ]
-    	then
-		echo
-		echo
-		echo Building $1 . . .
-		echo
-		set -e
-
-    		. /stage2/recipe.d/[0-9][0-9][0-9][0-9]-"$1"
-
-		set +e
-		echo
-		echo Building $1 succeeded
-		echo
-		: > /stage2/done/$1
-		exit 0
-    	else
-    		echo "No build recipe found for $1" >&2
-    		exit 2
-    	fi
-
+        scriptmake "$1"
+	;;
 esac
 
 exit 0

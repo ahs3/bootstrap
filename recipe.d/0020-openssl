@@ -1,3 +1,5 @@
+#requires perl
+
         mcd $BUILDDIR/openssl
         cd $SRC/openssl-*
 ./Configure \

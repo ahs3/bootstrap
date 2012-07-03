@@ -1,3 +1,7 @@
+#requires flex
+#requires bison
+#requires gettext
+
         mcd $BUILDDIR/elfutils
         $SRC/elfutils-*/configure $TCONFIGARGS --program-prefix=eu-
         make $J

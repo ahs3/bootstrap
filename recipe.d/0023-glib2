@@ -1,3 +1,9 @@
+#requires libffi
+#requires pcre
+#requires libtool
+#requires gettext
+#requires pkgconfig
+
         mcd $BUILDDIR/glib2
         # glib2 expects --enable-threads=yes to enable threads,
         #  anything else disables threads

@@ -1,3 +1,9 @@
+#requires ncurses
+#requires flex
+#requires bison
+#requires readline
+#requires texinfo
+
         mcd $BUILDDIR/gdb
         $SRC/gdb-*/configure $TCONFIGARGS --without-rpm --with-system-readline
         notparallel

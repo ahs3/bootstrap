@@ -1,3 +1,6 @@
+#requires gdbm
+#requires db4
+
         mcd $BUILDDIR/perl
         cd $SRC/perl-*
 

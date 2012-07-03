@@ -1,3 +1,6 @@
+#requires ncurses
+#requires readline
+
         #####################################################
         # sqlite is choking on sqlite_int64 definition
         #####################################################

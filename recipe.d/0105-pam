@@ -1,3 +1,12 @@
+#requires flex
+#requires bison
+#requires libtool
+#requires db4
+#requires perl
+#requires gettext
+#requires pkgconfig
+#requires cracklib
+
 # FIXME: this possibly has a problem with pam_faillock.8
 # not sure if configure would re-generate that warning at this point
 mcd $BUILDDIR/pam

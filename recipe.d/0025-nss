@@ -1,6 +1,8 @@
-        ########################################################
-        # needs perl
-        ########################################################
+#requires nspr
+#requires perl
+#requires nss-util
+#requires nss-softokn
+
         mcd $BUILDDIR/nss
         BUILD_OPT=1
         export BUILD_OPT
@@ -19,17 +21,17 @@
 	FREEBL_LIB_DIR=/usr/lib
 	export FREEBL_LIB_DIR
 
-        make -C $SRC/${1}-3.*/mozilla/security/coreconf
-        make -C $SRC/${1}-3.*/mozilla/security/dbm
-        make -C $SRC/${1}-3.*/mozilla/security/nss
-        cd $SRC/${1}-3.*/mozilla/security/coreconf
+        make -C $SRC/nss-3.*/mozilla/security/coreconf
+        make -C $SRC/nss-3.*/mozilla/security/dbm
+        make -C $SRC/nss-3.*/mozilla/security/nss
+        cd $SRC/nss-3.*/mozilla/security/coreconf
         make install
-        cd $SRC/${1}-3.*/mozilla/security/dbm
+        cd $SRC/nss-3.*/mozilla/security/dbm
         make install
-        cd $SRC/${1}-3.*/mozilla/security/nss
+        cd $SRC/nss-3.*/mozilla/security/nss
         make install
 	# Copy the binary libraries we want
-	cd $SRC/${1}-3.*
+	cd $SRC/nss-3.*
 	for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so libnssutil3.so libnssdbm3.chk libfreebl3.chk libfreebl3.so libnssdbm3.so libsoftokn3.chk libsoftokn3.so
 	do
 	  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib/

@@ -1,5 +1,5 @@
 mcd $BUILDDIR/libsepol
 rsync -av $SRC/libsepol-*/ ./
 
-make $J
-make $J install
+make CC=gcc $J
+make CC=gcc $J install

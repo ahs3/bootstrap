@@ -359,6 +359,7 @@ case "$1" in
 	go xz
 	go grep
 	go distcc
+	go ccache
 
 	go stage2
 
@@ -776,6 +777,7 @@ EOF
 	notparallel
 	make $J
 	make $J install DESTDIR=${ROOTFS}
+	ln -s gcc ${ROOTFS}/usr/bin/cc
 	;;
 
      make | tar | gzip | diffutils | findutils | gawk | which | grep )
@@ -912,8 +914,24 @@ EOF
 	mcd $ROOTFS/stage2/distcc-bin
 	for p in gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
 	do
-	    test -f $p && rm $p
+	    test -e $p && rm $p
 	    ln -s /usr/bin/distcc $p
+	done
+	;;
+
+    ccache )
+	srpm ccache
+	mcd $BUILDDIR ccache
+	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+
+	mcd $ROOTFS/stage2/ccache-bin
+	for p in gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
+	do
+	    test -e $p && rm $p
+	    ln -s /usr/bin/ccache $p
 	done
 	;;
 
@@ -939,6 +957,8 @@ EOF
 	# before they can be used.
 
 	cp $MYDIR/recipe.d/* $ROOTFS/stage2/recipe.d
+	cp $MYDIR/macros.bashrc $ROOTFS/stage2
+	cp $MYDIR/script2makefile $ROOTFS/stage2
 
 	for PKG in $ROOTFS/stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
 	do
@@ -963,9 +983,13 @@ EOF
 	(
 	    newJ=$(echo $J | sed 's/-j//')
 	    echo J=-j$newJ
+
 	    echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
 	    echo DISTCC_BACKOFF_PERIOD=0
 	    echo PATH=/stage2/distcc-bin:\$PATH
+
+	    echo PATH=/stage2/ccache-bin:\$PATH
+
 	    echo TARGET=$TARGET
 	    echo RPMTARGET=$RPMTARGET
 	    echo TCONFIGARGS=\"$TCONFIGARGS\" \
@@ -980,10 +1004,10 @@ EOF
 	) > $ROOTFS/stage2/local.conf
 
 	mcd $PREFIX/distccd-bin
-	rm -f gcc cc g++ c++ as
+	rm -f gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
 	ln -s $PREFIX/bin/${TARGET}-gcc gcc
-	ln -s $PREFIX/bin/${TARGET}-gcc ${TARGET}-gcc
 	ln -s $PREFIX/bin/${TARGET}-gcc cc
+	ln -s $PREFIX/bin/${TARGET}-gcc ${TARGET}-gcc
 	ln -s $PREFIX/bin/${TARGET}-g++ ${TARGET}-g++
 	ln -s $PREFIX/bin/${TARGET}-g++ g++
 	ln -s $PREFIX/bin/${TARGET}-g++ c++

@@ -1,7 +1,8 @@
-#
+#requires perl
+
 # Note: java tzdata is not built (unlike tzdata.spec)
 #
-cd $SRC/$1
+cd $SRC/tzdata
 test -d obj && rm -rf obj
 make $J 
 make $J install

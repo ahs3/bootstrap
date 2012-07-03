@@ -1,3 +1,5 @@
+#requires ncurses
+
         mcd $BUILDDIR/texinfo
         $SRC/texinfo-*/configure $TCONFIGARGS
         make $J -k

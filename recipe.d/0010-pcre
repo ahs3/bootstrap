@@ -1,3 +1,6 @@
+#requires readline
+#requires libtool
+
 # install fails if these files already exist!
 rm -f /usr/share/man/man3/pcre* || true
         mcd $BUILDDIR/pcre

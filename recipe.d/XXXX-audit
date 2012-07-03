@@ -1,3 +1,5 @@
+#skip
+
         ####################################################### 
         # needs: libprelude, libcap, openldap, python, 
 	#	 tcp_wrappers, swig

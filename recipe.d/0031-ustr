@@ -1,4 +1,4 @@
-cd $SRC/$1-*
+cd $SRC/ustr-*
 make $J CC=gcc
 make $J CC=gcc all-shared
 make $J CC=gcc install

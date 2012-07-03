@@ -1,4 +1,4 @@
-cd $SRC/${1}-*
+cd $SRC/file-*
 ./configure $TCONFIGARGS
 make $J
 make install

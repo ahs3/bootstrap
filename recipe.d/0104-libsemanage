@@ -1,3 +1,8 @@
+#requires flex
+#requires bison
+#requires ustr
+#requires libsepol
+
 mcd $BUILDDIR/libsemanage
 rsync -av $SRC/libsemanage-*/ ./
 
