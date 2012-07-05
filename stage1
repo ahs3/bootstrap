@@ -459,7 +459,7 @@ fi
 	 done
 	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib/libc.so
 
-	ln -s ld-linux-armhf.so.3 $ROOTFS/ld-linux.so.3
+	ln -s ld-linux-armhf.so.3 $ROOTFS/lib/ld-linux.so.3
 
 	;;
 
