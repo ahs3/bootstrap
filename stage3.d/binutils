@@ -1,0 +1,3 @@
+rpmi binutils
+rpmb -bb --without testsuite binutils
+rpminst binutils binutils-devel
