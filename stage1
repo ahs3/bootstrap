@@ -31,6 +31,7 @@
 TOP=$PWD
 MYDIR=${0%/*}
 STAGE2=$MYDIR/stage2
+STAGE3=$MYDIR/stage3
 
 SRPMDIR=$TOP/SRPMs
 SRPMDIR_LOCAL=$TOP/SRPMlocal
@@ -51,7 +52,7 @@ NEED_UBOOT=yes
 # The cross-compiler target
 TARGET=armv7hl-redhat-linux-gnueabi
 # the RPMBUILD target for prepping sources
-RPMTARGET=armv7l-redhat-linux-gnu
+RPMTARGET=armv7hl-redhat-linux-gnu
 
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
@@ -362,6 +363,7 @@ case "$1" in
 	go ccache
 
 	go stage2
+	go stage3
 
 	;;
 
@@ -773,10 +775,11 @@ EOF
     "t-gcc" )
 	srpm gcc
 	mcd $BUILDDIR/t-gcc
-	$SRC/gcc-*/configure $TCONFIGARGS
+	$SRC/gcc-*/configure $TCONFIGARGS --enable-linker-build-id
 	notparallel
 	make $J
 	make $J install DESTDIR=${ROOTFS}
+	test -e ${ROOTFS}/usr/bin/cc && rm ${ROOTFS}/usr/bin/cc
 	ln -s gcc ${ROOTFS}/usr/bin/cc
 	;;
 
@@ -905,7 +908,7 @@ EOF
 
     distcc )
 	srpm distcc
-	mcd $BUILDDIR distcc
+	mcd $BUILDDIR/distcc
 	$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror
 	notparallel
 	make $J V=1
@@ -921,7 +924,7 @@ EOF
 
     ccache )
 	srpm ccache
-	mcd $BUILDDIR ccache
+	mcd $BUILDDIR/ccache
 	$SRC/${1}-*/configure $TCONFIGARGS
 	notparallel
 	make $J V=1
@@ -960,12 +963,14 @@ EOF
 	cp $MYDIR/macros.bashrc $ROOTFS/stage2
 	cp $MYDIR/script2makefile $ROOTFS/stage2
 
-	for PKG in $ROOTFS/stage2/recipe.d/[0-9][0-9][0-9][0-9]-*
+	for PKG in $ROOTFS/stage2/recipe.d/*
 	do
 	    case "$PKG" in
 		*~ ) ;;
+		*# ) ;;
+		*/XXXX-* ) ;;
 		*)
-		PKG=$(echo $PKG | sed "s/.*\\/[0-9][0-9][0-9][0-9]-//")
+		PKG=$(echo $PKG | sed "s/.*\\///; s/^[0-9][0-9][0-9][0-9]-//")
 		echo "Installing SRPM for $PKG"
 		rsrpm $PKG
 		;;
@@ -1024,6 +1029,25 @@ EOF
 	chmod a+x distccd.script
 
 	echo stage2 ready
+
+	;;
+
+    stage3 )
+	# This assumes stage2 was run and the fies are available
+
+	test -e $ROOTFS/stage3/local.conf && rm $ROOTFS/stage3/local.conf
+	ln -s ../stage2/local.conf $ROOTFS/stage3/local.conf
+
+	mkdirp $ROOTFS/stage3/stage3.d
+	cp $MYDIR/stage3.d/* $ROOTFS/stage3/stage3.d
+	cp $MYDIR/macros.bashrc $ROOTFS/stage3
+	cp $MYDIR/script2makefile $ROOTFS/stage3
+
+	cp $STAGE3 $ROOTFS/stage3/stage3
+
+	test -d $ROOTFS/stage3/done || mkdir $ROOTFS/stage3/done
+
+	echo stage3 ready
 
 	;;
 

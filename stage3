@@ -1,0 +1,85 @@
+#!/bin/bash
+#
+# This script is the third stage in bootstrapping a Fedora build to a
+# new platform or architecture.
+#
+# This script assumes that all the needed source RPMs are installed in
+# /SRPMS unless local.conf overrides $SRPMS.  It's up to you to figure
+# out how to get them there.  If you're building in a chroot, you'll
+# also need to bind mount /proc into the chroot.
+#
+# You may pass a single package name on the command line to rebuild
+# just that one package.
+#
+# The master upstream for this script is:
+#   git://fedorapeople.org/~djdelorie/bootstrap.git
+#
+# ------------------------------------------------------------
+#
+#	      --- NOTES FOR PACKAGE PORTING ---
+#
+# This script is stage THREE of a bootstrap process.  EVERYTHING that
+# this script uses MUST be provided by the stage ONE or TWO scripts -
+# filesystem, utilities, sources, etc.  Please keep this in mind when
+# editing this script - anything you do manually to "prepare" for your
+# build, will NOT be reproducible.
+#
+# To "port" a package, create a shell script in stage3.d/ that calls
+# one of the rpm* macros in macros.bashrc (rpmi to install, rpmb to
+# build, or rpma to do it all).  List dependencies with #requires
+# lines which name other scripts which must be built first.
+# ------------------------------------------------------------
+
+TOP=/stage3
+MYDIR=${0%/*}
+STAGE3=$MYDIR/stage3
+
+HOME=$TOP
+J=-j2
+
+# The cross-compiler target
+TARGET=armv7hl-redhat-linux-gnueabi
+
+export TARGET BUILDDIR J SRC STAGE2 MYDIR TOP
+
+. $MYDIR/macros.bashrc
+
+mkdirp $BUILDDIR
+
+test -d /stage2/done || mkdir /stage2/done
+
+scriptmake()
+{
+    export HOME=/stage3
+    test -d $TOP/stage3.mk || mkdir -p $TOP/stage3.mk
+    make -f $MYDIR/script2makefile \
+	SCRIPTDIR=$TOP/stage3.d \
+	FRAGDIR=$TOP/stage3.mk \
+	RCFILE=$TOP/macros.bashrc \
+	SRC="$SRC" \
+	J="$J" \
+	BUILDDIR="$BUILDDIR" \
+	TARGET="$TARGET" \
+	$1
+}
+
+case "$1" in
+    "" )
+	go clean
+        scriptmake
+	;;
+
+    "clean" )
+	;;
+
+#--------------------------------------------------
+
+    *~ ) ;;
+
+    * )
+        scriptmake "$@"
+	;;
+esac
+
+exit 0
+
