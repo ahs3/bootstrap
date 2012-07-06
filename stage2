@@ -102,6 +102,14 @@ then
     chmod 1777 /tmp
 fi
 
+if [ ! -d /var/tmp ]
+then
+    echo Creating /var/tmp...
+    mkdir /var/tmp
+    chmod 1777 /var/tmp
+    ln -s ../var/tmp /usr/tmp
+fi
+
 # ------------------------------------------------------------
 
 mkdirp $BUILDDIR
