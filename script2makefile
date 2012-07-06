@@ -21,7 +21,7 @@ ${FRAGDIR}/%.mk : ${SCRIPTDIR}/%
 	  echo "	@echo " ;\
 	  echo "	@echo Building $$base" ;\
 	  echo "	@echo " ;\
-	  echo "	@bash --rcfile ${RCFILE} -i ${SCRIPTDIR}/$*" ;\
+	  echo "	@bash --rcfile ${RCFILE} -i -e ${SCRIPTDIR}/$*" ;\
 	  echo "	@true > done/$$base" ;\
 	  fi \
 	) > $@
