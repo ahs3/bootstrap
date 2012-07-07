@@ -1,0 +1,2 @@
+#requires help2man
+rpma texinfo info texinfo-tex
