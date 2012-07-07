@@ -67,7 +67,7 @@ rpminst()
 		*/$i-*-*-*) ;;
 		*/$i-*-*.rpm)
 		    rf=$r
-		    (set -x; rpm -i --nodeps $r)
+		    (set -x; rpm -i --nodeps --force $r)
 		    ;;
 	    esac
 	done
@@ -84,5 +84,5 @@ rpma()
 {
     rpmi "$1"
     rpmb -bb "$1"
-    rpminst "$1"
+    rpminst "$@"
 }
