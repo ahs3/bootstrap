@@ -1,0 +1,8 @@
+rpmi autoconf
+
+S=$HOME/rpmbuild/SPECS
+sed '/\/emacs\//d' $S/autoconf.spec > $S/autoconf.spec.new
+mv $S/autoconf.spec.new $S/autoconf.spec
+
+rpmb -bb --without check autoconf
+rpminst autoconf

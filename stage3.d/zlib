@@ -1,0 +1,5 @@
+#requires automake
+#requires autoconf
+
+rpma zlib zlib-devel
+

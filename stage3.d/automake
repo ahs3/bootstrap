@@ -1,0 +1,5 @@
+#requires autoconf
+
+rpmi automake
+rpmb -bb --without check automake
+rpminst automake

@@ -1,0 +1,11 @@
+#requires bzip2
+#requires zlib
+#requires xz
+
+rpma	elfutils \
+	elfutils-devel \
+	elfutils-devel-static \
+	elfutils-libelf \
+	elfutils-libelf-devel \
+	elfutils-libelf-devel-static \
+	elfutils-libs
