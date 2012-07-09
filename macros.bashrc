@@ -58,6 +58,7 @@ rpminst()
 {
     cd $HOME/rpmbuild/RPMS
 
+    to_inst=""
     for i in "$@"
     do
 	rf=
@@ -67,7 +68,7 @@ rpminst()
 		*/$i-*-*-*) ;;
 		*/$i-*-*.rpm)
 		    rf=$r
-		    (set -x; rpm -i --nodeps --force $r)
+		    to_inst="$to_inst $r"
 		    ;;
 	    esac
 	done
@@ -78,6 +79,7 @@ rpminst()
 	fi
         # HOME set by higher level script
     done
+    (set -x; rpm -i --nodeps --force $to_inst)
 }
 
 rpma()
