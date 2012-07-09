@@ -63,6 +63,14 @@ scriptmake()
 	$1
 }
 
+cat <<EOF > $TOP/.rpmmacros
+
+%check \\
+%%check \\
+exit 0
+ 
+EOF
+
 case "$1" in
     "" )
 	go clean
