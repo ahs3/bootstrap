@@ -1,5 +1,6 @@
 #requires automake
 #requires autoconf
 
-rpma zlib zlib-devel
+rpma zlib zlib-devel minizip minizip-devel
+
 
