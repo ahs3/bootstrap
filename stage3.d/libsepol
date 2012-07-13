@@ -1,0 +1,3 @@
+unset TARGET
+printenv
+rpma libsepol libsepol-devel libsepol-static
