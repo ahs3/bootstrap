@@ -52,14 +52,14 @@ scriptmake()
 {
     export HOME=/stage3
     test -d $TOP/stage3.mk || mkdir -p $TOP/stage3.mk
-    make -f $MYDIR/script2makefile \
-	SCRIPTDIR=$TOP/stage3.d \
-	FRAGDIR=$TOP/stage3.mk \
-	RCFILE=$TOP/macros.bashrc \
-	SRC="$SRC" \
+    SRC="$SRC" \
 	J="$J" \
 	BUILDDIR="$BUILDDIR" \
 	TARGET="$TARGET" \
+	make -f $MYDIR/script2makefile \
+	RCFILE=$TOP/macros.bashrc \
+	SCRIPTDIR=$TOP/stage3.d \
+	FRAGDIR=$TOP/stage3.mk \
 	$1
 }
 
