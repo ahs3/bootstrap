@@ -48,6 +48,8 @@ mkdirp $BUILDDIR
 
 test -d /stage2/done || mkdir /stage2/done
 
+test -d /etc/ld.so.conf || true > /etc/ld.so.conf
+
 scriptmake()
 {
     export HOME=/stage3
