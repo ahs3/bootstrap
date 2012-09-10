@@ -44,25 +44,23 @@ PREFIX=$TOP/install
 KCONFIGDIR=$BUILDDIR/kernel/configs
 KCONFIG=kernel-3.*-armv7hl-tegra.config
 # used by kernel and glibc
-KARCH=arm
+KARCH=arm64
 KIMAGE=uImage
 NEED_XLOADER=yes
 NEED_UBOOT=yes
 
 # The cross-compiler target
-TARGET=armv7hl-redhat-linux-gnueabi
+TARGET=aarch64-redhat-linux-gnu
 # the RPMBUILD target for prepping sources
-RPMTARGET=armv7hl-redhat-linux-gnu
+RPMTARGET=aarch64-redhat-linux-gnu
 
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
 
-CONFIG_EXTRA="--with-cpu=cortex-a8
-	    --with-tune=cortex-a8
-	    --with-arch=armv7-a
-	    --with-float=hard
-	    --with-fpu=vfpv3-d16
-	    --with-abi=aapcs-linux
+CONFIG_EXTRA="--march=armv8-a
+	      --mfpu=fp-armv8
+	      --mfpu=neon-fp-armv8
+	      --mfpu=crypto-neon-fp-armv8
 "
 
 if [ -f $MYDIR/local.conf ]
