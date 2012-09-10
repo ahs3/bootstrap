@@ -57,7 +57,7 @@ RPMTARGET=aarch64-redhat-linux-gnu
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
 
-CONFIG_EXTRA="-march=armv8-a
+CONFIG_EXTRA="-march=armv8
 	      -mfpu=fp-armv8
 	      -mfpu=neon-fp-armv8
 	      -mfpu=crypto-neon-fp-armv8
