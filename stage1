@@ -46,8 +46,8 @@ KCONFIG=kernel-3.*-armv7hl-tegra.config
 # used by kernel and glibc
 KARCH=arm64
 KIMAGE=uImage
-NEED_XLOADER=yes
-NEED_UBOOT=yes
+NEED_XLOADER=no
+NEED_UBOOT=no
 
 # The cross-compiler target
 TARGET=aarch64-redhat-linux-gnu
