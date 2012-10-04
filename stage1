@@ -58,12 +58,12 @@ RPMTARGET=arm64-redhat-linux-gnu
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
 
-CONFIG_EXTRA="--with-arch=armv8
-	      --with-fpu=neon-fp-armv8
-"
-
-#CONFIG_EXTRA="--with-arch=armv8-a
+#CONFIG_EXTRA="--with-arch=armv8
+#	      --with-fpu=neon-fp-armv8
 #"
+
+CONFIG_EXTRA="--with-arch=armv8-a
+"
 
 if [ -f $MYDIR/local.conf ]
 then
@@ -323,10 +323,10 @@ case "$1" in
 	go binutils
 	go gcc-host
 	go glibc-headers
-#	only run this far, for now
-	exit 0
 	go gcc-libgcc
 	go glibc
+#	only run this far, for now
+	exit 0
 	go gcc
 	go dev
 
@@ -463,8 +463,6 @@ fi
 	 done
 	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib/libc.so
 
-	ln -s ld-linux-armhf.so.3 $ROOTFS/lib/ld-linux.so.3
-
 	;;
 
     "eglibc-headers" )
@@ -520,8 +518,6 @@ fi
 	  sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
 	  mv mathdef.h.new mathdef.h
 	)
-
-	ln -s ld-linux-armhf.so.3 $ROOTFS/lib/ld-linux.so.3
 
 	;;
 
