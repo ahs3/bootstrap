@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # This script is the first stage in bootstrapping a Fedora build to a
 # new platform or architecture.  Running with no arguments builds a
@@ -52,7 +52,8 @@ NEED_UBOOT=no
 # The cross-compiler target
 TARGET=aarch64-redhat-linux-gnu
 # the RPMBUILD target for prepping sources
-RPMTARGET=aarch64-redhat-linux-gnu
+#RPMTARGET=aarch64-redhat-linux-gnu
+RPMTARGET=arm64-redhat-linux-gnu
 
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
@@ -60,6 +61,9 @@ ROOTFS=$TOP/rootfs
 CONFIG_EXTRA="--with-arch=armv8
 	      --with-fpu=neon-fp-armv8
 "
+
+#CONFIG_EXTRA="--with-arch=armv8-a
+#"
 
 if [ -f $MYDIR/local.conf ]
 then
@@ -319,6 +323,8 @@ case "$1" in
 	go binutils
 	go gcc-host
 	go glibc-headers
+#	only run this far, for now
+	exit 0
 	go gcc-libgcc
 	go glibc
 	go gcc
@@ -371,8 +377,8 @@ case "$1" in
 	;;
 
     "sync" )
-	echo Copying built rootfs to panda-1...
-	rsync -a $ROOTFS/ root@panda-1:/hardfp/
+#	echo Copying built rootfs to panda-1...
+#	rsync -a $ROOTFS/ root@panda-1:/hardfp/
 	;;
 
     "test1" )
