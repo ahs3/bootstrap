@@ -41,8 +41,8 @@ DISTCC_PORT=3639
 
 BUILDDIR=$TOP/builds
 PREFIX=$TOP/install
-KCONFIGDIR=$BUILDDIR/kernel/configs
-KCONFIG=kernel-3.*-armv7hl-tegra.config
+KCONFIGDIR=$BUILDDIR/kernel
+KCONFIG=kernel-3.*-arm64.config
 # used by kernel and glibc
 KARCH=arm64
 KIMAGE=uImage
@@ -52,17 +52,18 @@ NEED_UBOOT=no
 # The cross-compiler target
 TARGET=aarch64-redhat-linux-gnu
 # the RPMBUILD target for prepping sources
-#RPMTARGET=aarch64-redhat-linux-gnu
-RPMTARGET=arm64-redhat-linux-gnu
+RPMTARGET=aarch64-redhat-linux-gnu
+# due to naming politics, the kernel may or may not have a different target
+KERNEL_RPMTARGET=arm64-redhat-linux-gnu
 
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
 
-#CONFIG_EXTRA="--with-arch=armv8
-#	      --with-fpu=neon-fp-armv8
-#"
+CONFIG_EXTRA="--with-arch=armv8
+	      --with-fpu=neon-fp-armv8
+"
 
-CONFIG_EXTRA="--with-arch=armv8-a
+GCC_CONFIG_EXTRA="--with-arch=armv8-a
 "
 
 if [ -f $MYDIR/local.conf ]
@@ -137,6 +138,7 @@ mcd()
 srpm()
 {
     STOP=${2-$TOP}
+    STARGET=${3-$RPMTARGET}
     SDIR=$SRPMDIR_LOCAL
     SRPM=$(cd $SDIR; \ls -1 $1-*.src.rpm 2>/dev/null | egrep -v $1'-.*-.*-' | tail -1)
     if [ -f $SDIR/$SRPM ]
@@ -153,7 +155,7 @@ srpm()
 	test -f $SDIR/$SRPM || exit 1
 	HOME=$STOP rpm -i $SDIR/$SRPM
 	cd $STOP/rpmbuild/SPECS
-	HOME=$STOP rpmbuild --target=$RPMTARGET --nodeps -bp $SPEC.spec
+	HOME=$STOP rpmbuild --target=$STARGET --nodeps -bp $SPEC.spec
 	cd $TOP
     fi
 }
@@ -166,7 +168,7 @@ set -e
 
 BUILD=`gcc -v 2>&1 | grep Target: | sed 's/.*: //'`
 
-# These are for cross-tools like gcc, binutils
+# These are for cross-tools like binutils
 CONFIGARGS="--prefix=$PREFIX
 	    --target=$TARGET
 	    ${CONFIG_EXTRA}
@@ -186,6 +188,31 @@ TCONFIGARGS="--prefix=/usr
 	     --enable-werror=no
 	     --enable-cxx
 	     ${CONFIG_EXTRA}
+	     --enable-languages=c,c++
+	     --enable-threads=posix
+"
+
+# These are for gcc cross-tools (politics sometime result in slightly
+# different arch names)
+GCC_CONFIGARGS="--prefix=$PREFIX
+	    --target=$TARGET
+	    ${GCC_CONFIG_EXTRA}
+	    --enable-languages=c,c++
+	    --with-sysroot=$ROOTFS
+	    --enable-threads=posix
+	    --enable-64-bit-bfd
+	    $WITHPPL
+"
+
+GCC_TCONFIGARGS="--prefix=/usr
+	     --with-sysroot=/
+	     --with-build-sysroot=$ROOTFS
+	     --build=$BUILD
+	     --host=$TARGET
+	     --target=$TARGET
+	     --enable-werror=no
+	     --enable-cxx
+	     ${GCC_CONFIG_EXTRA}
 	     --enable-languages=c,c++
 	     --enable-threads=posix
 "
@@ -325,12 +352,10 @@ case "$1" in
 	go glibc-headers
 	go gcc-libgcc
 	go glibc
-#	only run this far, for now
-	exit 0
 	go gcc
 	go dev
 
-#	go kernel
+#       go kernel
 	test x"$NEED_XLOADER" == x"yes" && go x-loader
 	test x"$NEED_UBOOT" == x"yes" && go u-boot
 
@@ -338,6 +363,8 @@ case "$1" in
 	go mpfr
 	go mpc
 	go ppl
+#	only run this far, for now
+	exit 0
 	go cloog
 	go libsepol
 	go libselinux
@@ -396,7 +423,7 @@ case "$1" in
 # host cross-tools
 
     "kernel-headers" )
-	srpm kernel
+	srpm kernel $TOP $KERNEL_RPMTARGET
 	mcd $BUILDDIR/kernel
 	cd $SRC/kernel-*/linux-*
 	make $KERNELARGS INSTALL_HDR_PATH=$ROOTFS/usr headers_install
@@ -415,7 +442,7 @@ case "$1" in
 	srpm gcc
 	mcd $BUILDDIR/gcc
 	prefill_gcc_cache
-	$SRC/gcc-*/configure $CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
+	$SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
 	notparallel
 	make $J all-host
 	make $J install-host
@@ -498,7 +525,7 @@ fi
 	srpm gcc
 	mcd $BUILDDIR/gcc
 	prefill_gcc_cache
-	$SRC/gcc-*/configure $CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
+	$SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
 	notparallel
 	make $J all-target-libgcc all-target-libssp
 	make $J install-target-libgcc install-target-libssp
@@ -541,7 +568,7 @@ fi
        srpm gcc
        mcd $BUILDDIR/gcc
        prefill_gcc_cache
-       $SRC/gcc-*/configure $CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
+       $SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
 	notparallel
 	make $J
 	make $J install
@@ -601,13 +628,14 @@ fi
 	;;
 
     "kernel" )
-	srpm kernel
+	srpm kernel $TOP $KERNEL_RPMTARGET
 	mcd $BUILDDIR/kernel
 	echo copying kernel sources to build area...
 	rsync -a --delete $SRC/kernel-*/linux-*/ ./
 	cp $KCONFIGDIR/$KCONFIG .config
 	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- silentoldconfig
-	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- $KIMAGE
+	#make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- $KIMAGE
+	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- 
 	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- modules
 	make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- INSTALL_MOD_PATH=$ROOTFS modules_install
 
