@@ -364,8 +364,6 @@ case "$1" in
 	go mpc
 	go ppl
 	go cloog
-#	only run this far, for now
-	exit 0
 	go libsepol
 	go libselinux
 	go zlib
@@ -378,6 +376,8 @@ case "$1" in
 	go coreutils
 	go util-linux
 	go tar
+#	only run this far, for now
+	exit 0
 	go gzip
 	go bzip2
 	go diffutils
@@ -720,7 +720,7 @@ fi
 	srpm cloog
 	mcd $BUILDDIR/t-cloog
 	$SRC/cloog-*/configure $TCONFIGARGS --with-ppl
-	make $J
+	make $J LDADD="-rpath ${ROOTFS}/lib -lcloog"
 	make $J install DESTDIR=${ROOTFS}
 	fix_la cloog
 	;;
@@ -761,7 +761,7 @@ fi
 	    RANLIB=${TARGET}-ranlib \
 	    CFLAGS="" \
 	    TLSFLAGS="" \
-	    all
+	    all LDFLAGS="-Wl,-rpath -Wl,${ROOTFS}/lib"
 	make $J \
 	    DESTDIR=${ROOTFS} \
 	    install
@@ -801,7 +801,7 @@ EOF
     "t-gcc" )
 	srpm gcc
 	mcd $BUILDDIR/t-gcc
-	$SRC/gcc-*/configure $TCONFIGARGS --enable-linker-build-id
+	$SRC/gcc-*/configure $GCC_TCONFIGARGS --enable-linker-build-id
 	notparallel
 	make $J
 	make $J install DESTDIR=${ROOTFS}
@@ -829,7 +829,7 @@ EOF
 	# built sed binary in order to extract the --help output, but
 	# this fails because the sed binary is a cross-tool.
 	touch doc/sed.1
-	make $J V=1 
+	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib"
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
@@ -889,7 +889,7 @@ EOF
 	    base=`echo $i | sed 's/\.x//'`
 	    touch man/$base.1
 	done
-	make $J V=1
+	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib"
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
