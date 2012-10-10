@@ -364,6 +364,8 @@ case "$1" in
 	go mpc
 	go ppl
 	go cloog
+#	only run this far, for now
+	exit 0
 	go libsepol
 	go libselinux
 	go zlib
