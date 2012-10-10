@@ -372,8 +372,6 @@ case "$1" in
 	go t-gcc
 	go bash
 	go make
-#	only run this far, for now
-	exit 0
 	go sed
 	go coreutils
 	go util-linux
@@ -390,6 +388,8 @@ case "$1" in
 	go grep
 	go distcc
 	go ccache
+#	only run this far, for now
+	exit 0
 
 	go stage2
 	go stage3
@@ -809,10 +809,20 @@ EOF
 	ln -s gcc ${ROOTFS}/usr/bin/cc
 	;;
 
-     make | tar | gzip | diffutils | findutils | gawk | which | grep )
+     make | tar | gzip | diffutils | gawk | which | grep )
 	srpm $1
 	mcd $BUILDDIR/$1
 	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     findutils )
+	srpm $1
+	mcd $BUILDDIR/$1
+	FINDLIBS="-lselinux -ldl" $SRC/${1}-*/configure $TCONFIGARGS
 	notparallel
 	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
 	make $J V=1
@@ -829,7 +839,7 @@ EOF
 	# built sed binary in order to extract the --help output, but
 	# this fails because the sed binary is a cross-tool.
 	touch doc/sed.1
-	make $J V=1 
+	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib"
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
@@ -889,7 +899,7 @@ EOF
 	    base=`echo $i | sed 's/\.x//'`
 	    touch man/$base.1
 	done
-	make $J V=1
+	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib"
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
@@ -935,7 +945,7 @@ EOF
     distcc )
 	srpm distcc
 	mcd $BUILDDIR/distcc
-	$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror
+	$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror --without-avahi
 	notparallel
 	make $J V=1
 	make $J install DESTDIR=${ROOTFS}
