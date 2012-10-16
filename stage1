@@ -388,10 +388,10 @@ case "$1" in
 	go grep
 	go distcc
 	go ccache
-#	only run this far, for now
-	exit 0
 
 	go stage2
+#	only run this far, for now
+	exit 0
 	go stage3
 
 	;;
@@ -910,7 +910,9 @@ EOF
 ax_cv_have_tls=yes
 scanf_cv_alloc_modifier=yes
 EOF
-	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses --disable-wall --cache-file=config.cache
+	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses \
+           --prefix=/usr --libexecdir=/usr/lib --libdir=/usr/lib \
+           --disable-wall --cache-file=config.cache
 	notparallel
 	make $J V=1
 	make $J install DESTDIR=${ROOTFS}
