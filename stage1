@@ -374,6 +374,7 @@ case "$1" in
 	go make
 	go sed
 	go coreutils
+        go sysvinit
 	go util-linux
 	go tar
 	go gzip
@@ -903,6 +904,25 @@ EOF
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
+     sysvinit )
+        srpm sysvinit
+        mcd $BUILDDIR/$1
+        notparallel
+	rsync -av $SRC/sysvinit-*/ ./
+        cp src/init.c.single src/init.c
+        make \
+	    CC=${TARGET}-gcc \
+	    AS=${TARGET}-as \
+	    AR=${TARGET}-ar \
+	    STRIP=${TARGET}-strip \
+	    RANLIB=${TARGET}-ranlib \
+	    CFLAGS="" \
+	    LDFLAGS="-ldl" \
+	    WITH_SELINUX=yes \
+            -C src
+        make install ROOT=${ROOTFS}
+        ;;
+
      util-linux )
 	srpm util-linux
 	mcd $BUILDDIR/$1
@@ -1024,10 +1044,12 @@ EOF
 	cp $STAGE2 $ROOTFS/stage2/stage2
 
 	(
-	    newJ=$(echo $J | sed 's/-j//')
-	    echo J=-j$newJ
+	    #newJ=$(echo $J | sed 's/-j//')
+	    #echo J=-j$newJ
+            echo J=-j1
 
-	    echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
+	    #echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
+	    echo DISTCC_HOSTS=localhost
 	    echo DISTCC_BACKOFF_PERIOD=0
 	    echo PATH=/stage2/distcc-bin:\$PATH
 
