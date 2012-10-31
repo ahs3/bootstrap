@@ -921,6 +921,7 @@ EOF
 	    WITH_SELINUX=yes \
             -C src
         make install ROOT=${ROOTFS}
+        echo 'id:S:initdefault:' > ${ROOTFS}/etc/inittab
         ;;
 
      util-linux )
