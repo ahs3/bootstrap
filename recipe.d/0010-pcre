@@ -6,5 +6,6 @@ rm -f /usr/share/man/man3/pcre* || true
         mcd $BUILDDIR/pcre
         $SRC/pcre-*/configure $TCONFIGARGS
         make $J
-        make $J install
+        #make $J install
+        make $J install-exec install-includeHEADERS install-nodist_includeHEADERS install-pkgconfigDATA
 
