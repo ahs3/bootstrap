@@ -1,17 +1,8 @@
 
--- During stage1, found it necessary to remove the line:
-
-        +_libc_intl_domainname D 0x5
-
-   from the patch for the glibc source file:
-   
-        glibc-ports/sysdeps/unix/sysv/linux/aarch64/nptl/libc.abilist
-
-   This is Not A Good Thing.  It needs to go back, and we need to understand
-   why the final link for glibc fails in stage1 when that line is present in
-   that file; the failure is reported by ld as a relocation it cannot figure
-   out.
-
 -- During stage1, found it necessary to add -rpath ${ROOTFS}/lib to several
    of the build steps; is this a libtool bug or what?  And does it matter?
 
+-- When the stage1 script builds distccd.script, it picks up 127.0.0.1
+   as my hostname IP address.  While technically correct, it's not very
+   useful.  Granted my network setup is a little odd out of necessity,
+   is there some way to accomodate this better?
