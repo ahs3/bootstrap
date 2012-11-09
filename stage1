@@ -921,7 +921,6 @@ EOF
 	    WITH_SELINUX=yes \
             -C src
         make install ROOT=${ROOTFS}
-        echo 'id:S:initdefault:' > ${ROOTFS}/etc/inittab
         ;;
 
      util-linux )
@@ -1045,12 +1044,10 @@ EOF
 	cp $STAGE2 $ROOTFS/stage2/stage2
 
 	(
-	    #newJ=$(echo $J | sed 's/-j//')
-	    #echo J=-j$newJ
-            echo J=-j1
+	    newJ=$(echo $J | sed 's/-j//')
+	    echo J=-j$newJ
 
-	    #echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
-	    echo DISTCC_HOSTS=localhost
+	    echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
 	    echo DISTCC_BACKOFF_PERIOD=0
 	    echo PATH=/stage2/distcc-bin:\$PATH
 
@@ -1063,7 +1060,9 @@ EOF
 		| sed 's/--host=[^ ]*//' \
 		| sed 's/--target=[^ ]*//' \
 		| sed 's/--with-sysroot=[^ ]*//' \
-		| sed 's/--with-build-sysroot=[^ ]*//'
+		| sed 's/--with-build-sysroot=[^ ]*//' \
+		| sed 's/--with-arch=armv8//' \
+		| sed 's/--with-fpu=neon-fp-armv8//'
 
 	    echo export J DISTCC_HOSTS DISTCC_BACKOFF_PERIOD PATH
 	    echo export TARGET RPMTARGET TCONFIGARGS
