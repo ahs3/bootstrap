@@ -374,7 +374,7 @@ case "$1" in
 	go make
 	go sed
 	go coreutils
-        go sysvinit
+        go busybox
 	go util-linux
 	go tar
 	go gzip
@@ -583,13 +583,14 @@ fi
 
     "usrlinks" )
 	test -d $ROOTFS || mkdir -p $ROOTFS
-	mkdir $ROOTFS/usr
-	for i in bin sbin lib libexec
-	do
-	    ln -s usr/$i $ROOTFS/$i
-	    mkdir $ROOTFS/usr/$i
-	done
-	for i in etc
+	#mkdir $ROOTFS/usr
+	#for i in bin sbin lib libexec
+	#do
+	#    ln -s usr/$i $ROOTFS/$i
+	#    mkdir $ROOTFS/usr/$i
+	#done
+	#for i in etc proc sys
+	for i in proc sys
 	do
 	    mkdir $ROOTFS/$i
 	done
@@ -904,23 +905,22 @@ EOF
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
-     sysvinit )
-        srpm sysvinit
+     busybox )
+        srpm busybox
         mcd $BUILDDIR/$1
+        rsync -av $SRC/busybox-*/ ./
         notparallel
-	rsync -av $SRC/sysvinit-*/ ./
-        cp src/init.c.single src/init.c
-        make \
-	    CC=${TARGET}-gcc \
-	    AS=${TARGET}-as \
-	    AR=${TARGET}-ar \
-	    STRIP=${TARGET}-strip \
-	    RANLIB=${TARGET}-ranlib \
-	    CFLAGS="" \
-	    LDFLAGS="-ldl" \
-	    WITH_SELINUX=yes \
-            -C src
-        make install ROOT=${ROOTFS}
+        make TEST_aarch64_f17_defconfig CROSS_COMPILE=${TARGET}-
+        make busybox CROSS_COMPILE=${TARGET}-
+        make install CONFIG_PREFIX=${ROOTFS}
+
+        # simple start up script to be invoked by hand, if desired
+	(
+	    echo '#!/bin/sh'
+	    echo mount -t proc proc /proc
+	    echo mount -t sysfs sysfs /sys
+	) > $ROOTFS/do_mounts.sh
+        chmod +x $ROOTFS/do_mounts.sh
         ;;
 
      util-linux )
