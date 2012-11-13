@@ -374,6 +374,7 @@ case "$1" in
 	go make
 	go sed
 	go coreutils
+        go busybox
 	go util-linux
 	go tar
 #	only run this far, for now
@@ -392,6 +393,8 @@ case "$1" in
 	go ccache
 
 	go stage2
+#	only run this far, for now
+	exit 0
 	go stage3
 
 	;;
@@ -582,13 +585,14 @@ fi
 
     "usrlinks" )
 	test -d $ROOTFS || mkdir -p $ROOTFS
-	mkdir $ROOTFS/usr
-	for i in bin sbin lib
-	do
-	    ln -s usr/$i $ROOTFS/$i
-	    mkdir $ROOTFS/usr/$i
-	done
-	for i in etc
+	#mkdir $ROOTFS/usr
+	#for i in bin sbin lib libexec
+	#do
+	#    ln -s usr/$i $ROOTFS/$i
+	#    mkdir $ROOTFS/usr/$i
+	#done
+	#for i in etc proc sys
+	for i in proc sys
 	do
 	    mkdir $ROOTFS/$i
 	done
@@ -809,10 +813,20 @@ EOF
 	ln -s gcc ${ROOTFS}/usr/bin/cc
 	;;
 
-     make | tar | gzip | diffutils | findutils | gawk | which | grep )
+     make | tar | gzip | diffutils | gawk | which | grep )
 	srpm $1
 	mcd $BUILDDIR/$1
 	$SRC/${1}-*/configure $TCONFIGARGS
+	notparallel
+	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	;;
+
+     findutils )
+	srpm $1
+	mcd $BUILDDIR/$1
+	FINDLIBS="-lselinux -ldl" $SRC/${1}-*/configure $TCONFIGARGS
 	notparallel
 	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
 	make $J V=1
@@ -893,6 +907,33 @@ EOF
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
+     busybox )
+        srpm busybox
+        mcd $BUILDDIR/$1
+        rsync -av $SRC/busybox-*/ ./
+        notparallel
+        make TEST_aarch64_f17_defconfig CROSS_COMPILE=${TARGET}-
+        make busybox CROSS_COMPILE=${TARGET}-
+        make install CONFIG_PREFIX=${ROOTFS}
+
+        # add in some basic mount points
+        [ -d ${ROOTFS}/proc ] || mkdir ${ROOTFS}/proc
+        [ -d ${ROOTFS}/sys ] || mkdir ${ROOTFS}/sys
+	(
+	    echo "proc   /proc   proc     defaults        0       0"
+	    echo "sysfs  /sys    sysfs    defaults        0       0"
+	) > $ROOTFS/etc/fstab
+
+        # and a place holder for other useful initializations
+        [ -d ${ROOTFS}/etc/init.d ] || mkdir -p ${ROOTFS}/etc/init.d
+        echo "#!/bin/sh" > ${ROOTFS}/etc/init.d/rcS
+	(
+	    echo "#!/bin/sh"
+	    echo "/bin/mount -a"
+	) > $ROOTFS/etc/init.d/rcS
+        chmod +x ${ROOTFS}/etc/init.d/rcS
+        ;;
+
      util-linux )
 	srpm util-linux
 	mcd $BUILDDIR/$1
@@ -900,7 +941,9 @@ EOF
 ax_cv_have_tls=yes
 scanf_cv_alloc_modifier=yes
 EOF
-	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses --disable-wall --cache-file=config.cache
+	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses \
+           --prefix=/usr --libexecdir=/usr/lib --libdir=/usr/lib \
+           --disable-wall --cache-file=config.cache
 	notparallel
 	make $J V=1
 	make $J install DESTDIR=${ROOTFS}
@@ -935,7 +978,7 @@ EOF
     distcc )
 	srpm distcc
 	mcd $BUILDDIR/distcc
-	$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror
+	$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror --without-avahi
 	notparallel
 	make $J V=1
 	make $J install DESTDIR=${ROOTFS}
@@ -1028,7 +1071,9 @@ EOF
 		| sed 's/--host=[^ ]*//' \
 		| sed 's/--target=[^ ]*//' \
 		| sed 's/--with-sysroot=[^ ]*//' \
-		| sed 's/--with-build-sysroot=[^ ]*//'
+		| sed 's/--with-build-sysroot=[^ ]*//' \
+		| sed 's/--with-arch=armv8//' \
+		| sed 's/--with-fpu=neon-fp-armv8//'
 
 	    echo export J DISTCC_HOSTS DISTCC_BACKOFF_PERIOD PATH
 	    echo export TARGET RPMTARGET TCONFIGARGS

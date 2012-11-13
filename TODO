@@ -1,0 +1,8 @@
+
+-- During stage1, found it necessary to add -rpath ${ROOTFS}/lib to several
+   of the build steps; is this a libtool bug or what?  And does it matter?
+
+-- When the stage1 script builds distccd.script, it picks up 127.0.0.1
+   as my hostname IP address.  While technically correct, it's not very
+   useful.  Granted my network setup is a little odd out of necessity,
+   is there some way to accomodate this better?

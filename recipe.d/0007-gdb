@@ -5,7 +5,11 @@
 #requires texinfo
 
         mcd $BUILDDIR/gdb
-        $SRC/gdb-*/configure $TCONFIGARGS --without-rpm --with-system-readline
+	OTHERARGS="--disable-gdbserver --disable-multi-ice \
+                   --without-expat --without-python --without-tcl \
+                   --without-tk --without-x --disable-gtk \
+                   --without-rpm --with-system-readline"
+        $SRC/gdb-*/configure $TCONFIGARGS $OTHERARGS
         notparallel
         make $J -k
         make $J -k install

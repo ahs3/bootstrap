@@ -1,0 +1,14 @@
+.*.swp
+.ccache
+bld.log
+builds
+distccd.log
+distccd.script
+done
+f17-local
+f17-sources
+install
+rootfs
+rpmbuild
+SRPMlocal
+SRPMs
