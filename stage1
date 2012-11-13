@@ -914,13 +914,22 @@ EOF
         make busybox CROSS_COMPILE=${TARGET}-
         make install CONFIG_PREFIX=${ROOTFS}
 
-        # simple start up script to be invoked by hand, if desired
+        # add in some basic mount points
+        [ -d ${ROOTFS}/proc ] || mkdir ${ROOTFS}/proc
+        [ -d ${ROOTFS}/sys ] || mkdir ${ROOTFS}/sys
 	(
-	    echo '#!/bin/sh'
-	    echo mount -t proc proc /proc
-	    echo mount -t sysfs sysfs /sys
-	) > $ROOTFS/do_mounts.sh
-        chmod +x $ROOTFS/do_mounts.sh
+	    echo "proc   /proc   proc     defaults        0       0"
+	    echo "sysfs  /sys    sysfs    defaults        0       0"
+	) > $ROOTFS/etc/fstab
+
+        # and a place holder for other useful initializations
+        [ -d ${ROOTFS}/etc/init.d ] || mkdir -p ${ROOTFS}/etc/init.d
+        echo "#!/bin/sh" > ${ROOTFS}/etc/init.d/rcS
+	(
+	    echo "#!/bin/sh"
+	    echo "/bin/mount -a"
+	) > $ROOTFS/etc/init.d/rcS
+        chmod +x ${ROOTFS}/etc/init.d/rcS
         ;;
 
      util-linux )
