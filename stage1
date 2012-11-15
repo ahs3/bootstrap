@@ -346,6 +346,8 @@ go()
 case "$1" in
     "" )
 	go usrlinks
+#	only run this far, for now
+	exit 0
 	go kernel-headers
 	go binutils
 	go gcc-host
@@ -391,8 +393,6 @@ case "$1" in
 	go ccache
 
 	go stage2
-#	only run this far, for now
-	exit 0
 	go stage3
 
 	;;
@@ -583,14 +583,15 @@ fi
 
     "usrlinks" )
 	test -d $ROOTFS || mkdir -p $ROOTFS
-	#mkdir $ROOTFS/usr
-	#for i in bin sbin lib libexec
-	#do
-	#    ln -s usr/$i $ROOTFS/$i
-	#    mkdir $ROOTFS/usr/$i
-	#done
-	#for i in etc proc sys
-	for i in proc sys
+	mkdir $ROOTFS/usr
+	for i in bin sbin lib64 libexec
+	do
+	    ln -s usr/$i $ROOTFS/$i
+	    mkdir $ROOTFS/usr/$i
+	done
+        ln -s usr/lib64 $ROOTFS/lib
+        ln -s usr/lib64 $ROOTFS/lib64
+	for i in etc proc sys
 	do
 	    mkdir $ROOTFS/$i
 	done
