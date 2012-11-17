@@ -56,6 +56,12 @@ RPMTARGET=aarch64-redhat-linux-gnu
 # due to naming politics, the kernel may or may not have a different target
 KERNEL_RPMTARGET=arm64-redhat-linux-gnu
 
+# Default library path
+case $TARGET in
+    aarch64-*) SUFFIX=64 ;;
+    *) SUFFIX= ;;
+esac
+
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
 
@@ -170,6 +176,7 @@ BUILD=`gcc -v 2>&1 | grep Target: | sed 's/.*: //'`
 
 # These are for cross-tools like binutils
 CONFIGARGS="--prefix=$PREFIX
+            --libdir=$PREFIX/lib${SUFFIX}
 	    --target=$TARGET
 	    ${CONFIG_EXTRA}
 	    --enable-languages=c,c++
@@ -180,6 +187,7 @@ CONFIGARGS="--prefix=$PREFIX
 "
 
 TCONFIGARGS="--prefix=/usr
+             --libdir=/usr/lib${SUFFIX}
 	     --with-sysroot=/
 	     --with-build-sysroot=$ROOTFS
 	     --build=$BUILD
@@ -195,6 +203,7 @@ TCONFIGARGS="--prefix=/usr
 # These are for gcc cross-tools (politics sometime result in slightly
 # different arch names)
 GCC_CONFIGARGS="--prefix=$PREFIX
+            --libdir=$PREFIX/lib${SUFFIX}
 	    --target=$TARGET
 	    ${GCC_CONFIG_EXTRA}
 	    --enable-languages=c,c++
@@ -205,6 +214,7 @@ GCC_CONFIGARGS="--prefix=$PREFIX
 "
 
 GCC_TCONFIGARGS="--prefix=/usr
+             --libdir=/usr/lib${SUFFIX}
 	     --with-sysroot=/
 	     --with-build-sysroot=$ROOTFS
 	     --build=$BUILD
@@ -236,6 +246,7 @@ setup_glibc()
 
     GV=$(cd $SRC; echo glibc-2*)
     GLIBCARGS0="--prefix=/usr
+        --libdir=/usr/lib${SUFFIX}
 	--with-headers=$ROOTFS/usr/include
 	--enable-kernel=2.6.32
 	--enable-bind-now
@@ -278,6 +289,7 @@ setup_eglibc()
 
     GV=$(cd $SRC; echo eglibc-*/libc)
     EGLIBCARGS0="--prefix=/usr
+        --libdir=/usr/lib${SUFFIX}
         --includedir=/usr/include
 	--with-headers=$ROOTFS/usr/include
 	--enable-kernel=2.6.32
@@ -319,7 +331,7 @@ notparallel()
 
 fix_la()
 {
-    for la in $ROOTFS/usr/lib/*$1*.la
+    for la in $ROOTFS/usr/lib${SUFFIX}/*$1*.la
     do
 	if test -f $la
 	then
@@ -346,8 +358,6 @@ go()
 case "$1" in
     "" )
 	go usrlinks
-#	only run this far, for now
-	exit 0
 	go kernel-headers
 	go binutils
 	go gcc-host
@@ -393,6 +403,8 @@ case "$1" in
 	go ccache
 
 	go stage2
+#	only run this far, for now
+	exit 0
 	go stage3
 
 	;;
@@ -450,14 +462,14 @@ case "$1" in
 
 
 if false; then
-	mkdirp $ROOTFS/usr/lib
+	mkdirp $ROOTFS/usr/lib${SUFFIX}
 	for o in crt Scrt1 crti crtbegin crtbeginS crtend crtendS crtn
 	do
-	  $TARGET-gcc -nostdlib -nostartfiles -c -x c /dev/null -c -o $ROOTFS/usr/lib/$o.o
+	  $TARGET-gcc -nostdlib -nostartfiles -c -x c /dev/null -c -o $ROOTFS/usr/lib${SUFFIX}/$o.o
 	done
 	for so in gcc gcc_s c
 	do
-	  $TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib/lib$so.so
+	  $TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib${SUFFIX}/lib$so.so
 	done
 fi
 	;;
@@ -483,13 +495,13 @@ fi
 
 	# We also build just enough files to link libgcc.so.  The fake
 	# libc.so will never actually get used.
-	mkdirp $ROOTFS/usr/lib
+	mkdirp $ROOTFS/usr/lib${SUFFIX}
 	make $J ARCH=${KARCH} cross-compiling=yes csu/subdir_lib
-#	cp csu/crt*.o $ROOTFS/usr/lib
+#	cp csu/crt*.o $ROOTFS/usr/lib${SUFFIX}
 	for C in `cd csu; echo crt*.o`; do
-	    echo "" | $TARGET-as -o $ROOTFS/usr/lib/$C
+	    echo "" | $TARGET-as -o $ROOTFS/usr/lib${SUFFIX}/$C
 	 done
-	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib/libc.so
+	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib${SUFFIX}/libc.so
 
 	;;
 
@@ -514,12 +526,12 @@ fi
 
 	# We also build just enough files to link libgcc.so.  The fake
 	# libc.so will never actually get used.
-	mkdirp $ROOTFS/usr/lib
+	mkdirp $ROOTFS/usr/lib${SUFFIX}
 	make $J ARCH=arm cross-compiling=yes csu/subdir_lib
-	cp csu/crt*.o $ROOTFS/usr/lib
-	cp csu/elf-init*.o $ROOTFS/usr/lib
-	cp csu/libc-start*.o $ROOTFS/usr/lib
-	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib/libc.so
+	cp csu/crt*.o $ROOTFS/usr/lib${SUFFIX}
+	cp csu/elf-init*.o $ROOTFS/usr/lib${SUFFIX}
+	cp csu/libc-start*.o $ROOTFS/usr/lib${SUFFIX}
+	$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib${SUFFIX}/libc.so
 	;;
 
     "gcc-libgcc" )
@@ -573,9 +585,9 @@ fi
 	notparallel
 	make $J
 	make $J install
-	mcd $ROOTFS/lib/gcc
-	rsync -av $PREFIX/lib/gcc/ $ROOTFS/lib/gcc/
-	rsync -av $PREFIX/$TARGET/lib/ $ROOTFS/lib/
+	mcd $ROOTFS/lib${SUFFIX}/gcc
+	rsync -av $PREFIX/lib${SUFFIX}/gcc/ $ROOTFS/lib${SUFFIX}/gcc/
+	rsync -av $PREFIX/$TARGET/lib/ $ROOTFS/lib${SUFFIX}/
 	;;
 
 #--------------------------------------------------
@@ -584,13 +596,12 @@ fi
     "usrlinks" )
 	test -d $ROOTFS || mkdir -p $ROOTFS
 	mkdir $ROOTFS/usr
-	for i in bin sbin lib64 libexec
+	for i in bin sbin lib${SUFFIX} libexec
 	do
 	    ln -s usr/$i $ROOTFS/$i
 	    mkdir $ROOTFS/usr/$i
 	done
-        ln -s usr/lib64 $ROOTFS/lib
-        ln -s usr/lib64 $ROOTFS/lib64
+        ln -s usr/lib${SUFFIX} $ROOTFS/lib
 	for i in etc proc sys
 	do
 	    mkdir $ROOTFS/$i
@@ -622,6 +633,10 @@ fi
 	sudo mknod ttyO1	c 253 1
 	sudo mknod ttyO2	c 253 2
 	sudo mknod ttyO3	c 253 3
+
+	sudo mknod tty2 	c 4 2
+	sudo mknod tty3 	c 4 3
+	sudo mknod tty4 	c 4 4
 
 	sudo mknod ttyS0	c 4 64
 	sudo mknod ttyS1	c 4 65
@@ -711,9 +726,13 @@ fi
 	srpm zlib
 	mcd $BUILDDIR/t-zlib
 	rsync -av $SRC/zlib-*/ ./
+        if [ "$SUFFIX" = "64" ]
+        then
+            ARGS="--libdir=/usr/lib64"
+        fi
 	CHOST=${TARGET} \
 	    prefix=/usr \
-	    ./configure 
+	    ./configure $ARGS
 	make
 	make $J install DESTDIR=${ROOTFS}
 	fix_la zlib
@@ -723,7 +742,7 @@ fi
 	srpm cloog
 	mcd $BUILDDIR/t-cloog
 	$SRC/cloog-*/configure $TCONFIGARGS --with-ppl
-	make $J LDADD="-rpath ${ROOTFS}/lib -lcloog"
+	make $J LDADD="-rpath ${ROOTFS}/lib${SUFFIX} -lcloog"
 	make $J install DESTDIR=${ROOTFS}
 	fix_la cloog
 	;;
@@ -741,9 +760,12 @@ fi
 	    CFLAGS="" \
 	    TLSFLAGS="" \
 	    all
-	make $J \
-	    DESTDIR=${ROOTFS} \
-	    install
+        ARGS="DESTDIR=${ROOTFS}"
+        if [ "$SUFFIX" = "64" ]
+        then
+            ARGS="$ARGS LIBDIR=${ROOTFS}/usr/lib64 SHLIBDIR=${ROOTFS}/usr/lib64"
+        fi
+	make $J $ARGS install
 	;;
 
     # TLSFLAGS are set in order to avoid a bogus check in
@@ -764,10 +786,13 @@ fi
 	    RANLIB=${TARGET}-ranlib \
 	    CFLAGS="" \
 	    TLSFLAGS="" \
-	    all LDFLAGS="-Wl,-rpath -Wl,${ROOTFS}/lib"
-	make $J \
-	    DESTDIR=${ROOTFS} \
-	    install
+	    all LDFLAGS="-Wl,-rpath -Wl,${ROOTFS}/lib${SUFFIX}"
+        ARGS="DESTDIR=${ROOTFS}"
+        if [ "$SUFFIX" = "64" ]
+        then
+            ARGS="$ARGS LIBDIR=${ROOTFS}/usr/lib64 SHLIBDIR=${ROOTFS}/usr/lib64"
+        fi
+	make $J $ARGS install
 	;;
 
 #--------------------------------------------------
@@ -842,7 +867,7 @@ EOF
 	# built sed binary in order to extract the --help output, but
 	# this fails because the sed binary is a cross-tool.
 	touch doc/sed.1
-	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib"
+	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib${SUFFIX}"
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
@@ -863,6 +888,7 @@ EOF
 	mcd $BUILDDIR/$1
 	$SRC/${1}-*/configure \
 	    --prefix=/usr \
+            --libdir=/usr/lib64 \
 	    --build=$BUILD \
 	    --host=$TARGET \
 	notparallel
@@ -902,7 +928,7 @@ EOF
 	    base=`echo $i | sed 's/\.x//'`
 	    touch man/$base.1
 	done
-	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib"
+	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib${SUFFIX}"
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
@@ -941,7 +967,7 @@ ax_cv_have_tls=yes
 scanf_cv_alloc_modifier=yes
 EOF
 	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses \
-           --prefix=/usr --libexecdir=/usr/lib --libdir=/usr/lib \
+           --prefix=/usr --libexecdir=/usr/lib${SUFFIX} --libdir=/usr/lib${SUFFIX} \
            --disable-wall --cache-file=config.cache
 	notparallel
 	make $J V=1
@@ -959,7 +985,11 @@ EOF
 	    PREFIX=/usr \
 	    CFLAGS="$CFLAGS -fpic -fPIC" \
 	    libbz2.a bzip2 bzip2recover
-	make $J \
+        if [ "$SUFFIX" = "64" ]
+        then
+            ARGS="BITS=64"
+        fi
+	make $J $ARGS \
 	    CC=${TARGET}-gcc \
 	    AR=${TARGET}-ar \
 	    RANLIB=${TARGET}-ranlib \
