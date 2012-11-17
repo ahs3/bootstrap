@@ -943,6 +943,11 @@ EOF
         make busybox CROSS_COMPILE=${TARGET}-
         make install CONFIG_PREFIX=${ROOTFS}
 
+        # add in an password file for cleaniness (even if it has no passwd)
+        (
+            echo "root::0:0:root:/:/bin/bash"
+        ) > $ROOTFS/etc/passwd
+
         # add in some basic mount points
         [ -d ${ROOTFS}/proc ] || mkdir ${ROOTFS}/proc
         [ -d ${ROOTFS}/sys ] || mkdir ${ROOTFS}/sys
@@ -950,10 +955,10 @@ EOF
 	    echo "proc   /proc   proc     defaults        0       0"
 	    echo "sysfs  /sys    sysfs    defaults        0       0"
 	) > $ROOTFS/etc/fstab
+        touch $ROOTFS/etc/mtab
 
         # and a place holder for other useful initializations
         [ -d ${ROOTFS}/etc/init.d ] || mkdir -p ${ROOTFS}/etc/init.d
-        echo "#!/bin/sh" > ${ROOTFS}/etc/init.d/rcS
 	(
 	    echo "#!/bin/sh"
 	    echo "/bin/mount -a"
@@ -1105,9 +1110,10 @@ EOF
 		| sed 's/--with-build-sysroot=[^ ]*//' \
 		| sed 's/--with-arch=armv8//' \
 		| sed 's/--with-fpu=neon-fp-armv8//'
+            echo SUFFIX=$SUFFIX
 
 	    echo export J DISTCC_HOSTS DISTCC_BACKOFF_PERIOD PATH
-	    echo export TARGET RPMTARGET TCONFIGARGS
+	    echo export TARGET RPMTARGET TCONFIGARGS SUFFIX
 	) > $ROOTFS/stage2/local.conf
 
 	mcd $PREFIX/distccd-bin
