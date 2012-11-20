@@ -4,7 +4,7 @@
         mcd $BUILDDIR/perl
         cd $SRC/perl-*
 
-        sh $SRC/perl-*/Configure -des -Dprefix=/usr -DDEBUGGING=-g  -Dcc=gcc -Dmyhostname=localhost -Dperladmin=root@localhost -Duseshrplib -Dusethreads -Duseithreads -Uusedtrace -Duselargefiles -Dd_semctl_semun -Di_db -Ui_ndbm -Di_gdbm -Di_shadow -Di_syslog -Dman3ext=3pm -Duseperlio -Dinstallusrbinperl=n -Ubincompat5005 -Uversiononly -Dd_gethostent_r_proto -Ud_endhostent_r_proto -Ud_sethostent_r_proto -Ud_endprotoent_r_proto -Ud_setprotoent_r_proto -Ud_endservent_r_proto -Ud_setservent_r_proto
+        sh $SRC/perl-*/Configure -des -Dprefix=/usr -Dlibpth="/usr/local/lib$SUFFIX /lib$SUFFIX /usr/lib$SUFFIX" -Darchlib="/usr/lib$SUFFIX/perl5" -Dsitelib="/usr/local/share/perl5" -DDEBUGGING=-g  -Dcc=gcc -Dmyhostname=localhost -Dperladmin=root@localhost -Duseshrplib -Dusethreads -Duseithreads -Uusedtrace -Duselargefiles -Dd_semctl_semun -Di_db -Ui_ndbm -Di_gdbm -Di_shadow -Di_syslog -Dman3ext=3pm -Duseperlio -Dinstallusrbinperl=n -Ubincompat5005 -Uversiononly -Dd_gethostent_r_proto -Ud_endhostent_r_proto -Ud_sethostent_r_proto -Ud_endprotoent_r_proto -Ud_setprotoent_r_proto -Ud_endservent_r_proto -Ud_setservent_r_proto
 
 BUILD_BZIP2=0
 BZIP2_LIB=%{_libdir}
