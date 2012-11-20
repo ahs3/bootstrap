@@ -1,7 +1,7 @@
 #requires perl
 
         mcd $BUILDDIR/curl
-        $SRC/curl-*/configure $TCONFIGARGS
+        $SRC/curl-*/configure $TCONFIGARGS --disable-ipv6
         make $J
         make $J install
 
