@@ -6,7 +6,7 @@
 	--prefix=/usr --openssldir=/etc/pki/tls \
 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
 	enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ec2m no-ecdh no-ecdsa no-srp \
-	--enginesdir=/usr/lib/openssl/engines \
+	--enginesdir=/usr/lib${SUFFIX}/openssl/engines \
 	shared  linux-generic32 fips
 
 #       ./Configure --prefix=/usr --openssldir=/etc/pki/tls zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ecdh no-ecdsa no-srp fips shared linux-generic32

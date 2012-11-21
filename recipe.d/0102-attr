@@ -3,7 +3,7 @@
 
 mcd $BUILDDIR/attr
 rsync -av $SRC/attr-*/ ./
-./configure $TCONFIGARGS --libexecdir=/usr/lib
+./configure $TCONFIGARGS --libexecdir=/usr/lib${SUFFIX}
 make $J LIBTOOL="libtool --tag=CC"
 make $J install
 make $J install-dev

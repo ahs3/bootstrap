@@ -12,7 +12,7 @@ export PKG_CONFIG_ALLOW_SYSTEM_LIBS
 export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
 
 NSPR_INCLUDE_DIR=/usr/include/nspr
-NSPR_LIB_DIR=/usr/lib
+NSPR_LIB_DIR=/usr/lib${SUFFIX}
 export NSPR_INCLUDE_DIR
 export NSPR_LIB_DIR
 
@@ -37,7 +37,7 @@ cd $SRC/nss-util-3.*
 
 for file in `cd mozilla/dist/*.OBJ/lib; echo *`
 do
-  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib/
+  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
 done
 # Copy the include files we want
 test -d /usr/include/nss3 || mkdir -p /usr/include/nss3

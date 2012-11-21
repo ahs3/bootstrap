@@ -13,7 +13,7 @@ mcd $BUILDDIR/pam
 rsync -av $SRC/Linux-PAM-*/ ./
 	
 ./configure \
-	--libdir=/lib \
+	--libdir=/lib${SUFFIX} \
 	--includedir=/usr/include/security \
 	--disable-prelude \
 	--disable-selinux \
