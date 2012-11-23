@@ -12,13 +12,13 @@
         export PKG_CONFIG_ALLOW_SYSTEM_LIBS
         export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
         NSPR_INCLUDE_DIR=/usr/include/nspr
-        NSPR_LIB_DIR=/usr/lib
+        NSPR_LIB_DIR=/usr/lib${SUFFIX}
         export NSPR_INCLUDE_DIR
         export NSPR_LIB_DIR
         NSS_USE_SYSTEM_SQLITE=1
         export NSS_USE_SYSTEM_SQLITE
 
-	FREEBL_LIB_DIR=/usr/lib
+	FREEBL_LIB_DIR=/usr/lib${SUFFIX}
 	export FREEBL_LIB_DIR
 
         make -C $SRC/nss-3.*/mozilla/security/coreconf
@@ -34,7 +34,7 @@
 	cd $SRC/nss-3.*
 	for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so libnssutil3.so libnssdbm3.chk libfreebl3.chk libfreebl3.so libnssdbm3.so libsoftokn3.chk libsoftokn3.so
 	do
-	  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib/
+	  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
 	done
 	# Copy the include files we want
 	for file in $SRC/nss-*/mozilla/dist/public/nss/*.h

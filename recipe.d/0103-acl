@@ -5,7 +5,7 @@
 mcd $BUILDDIR/acl
 rsync -av $SRC/acl-*/ ./
 touch .census
-./configure $TCONFIGARGS --libexecdir=/usr/lib
+./configure $TCONFIGARGS --libexecdir=/usr/lib${SUFFIX}
 make $J LIBTOOL="libtool --tag=CC"
 make $J install
 make $J install-dev
