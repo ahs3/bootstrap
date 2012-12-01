@@ -631,10 +631,10 @@ fi
 	sudo mknod mmcblk0p2	b 179 2
 	sudo mknod mmcblk0p3	b 179 3
 	sudo mknod mmcblk0p4	b 179 4
-	sudo mknod ttyO0	c 253 0
-	sudo mknod ttyO1	c 253 1
-	sudo mknod ttyO2	c 253 2
-	sudo mknod ttyO3	c 253 3
+	sudo mknod tty00	c 253 0
+	sudo mknod tty01	c 253 1
+	sudo mknod tty02	c 253 2
+	sudo mknod tty03	c 253 3
 
 	sudo mknod tty2 	c 4 2
 	sudo mknod tty3 	c 4 3
@@ -1135,6 +1135,11 @@ EOF
 	    echo distccd --daemon --allow 0.0.0.0/0 --port $DISTCC_PORT '"$@"'
 	) > distccd.script
 	chmod a+x distccd.script
+
+        # add in the handy script to make sure the rootfs is usable
+        # as an NFS root
+        cp init-rootfs.sh $ROOTFS/
+        chmod a+x $ROOTFS/init-rootfs.sh
 
 	echo stage2 ready
 
