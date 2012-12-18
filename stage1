@@ -1137,9 +1137,10 @@ EOF
 	chmod a+x distccd.script
 
         # add in the handy script to make sure the rootfs is usable
-        # as an NFS root
+        # as an NFS root (and then execute it)
         cp init-rootfs.sh $ROOTFS/
         chmod a+x $ROOTFS/init-rootfs.sh
+        ( cd $ROOTFS; sudo ./init-rootfs.sh )
 
 	echo stage2 ready
 
