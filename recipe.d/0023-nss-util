@@ -22,6 +22,12 @@ export FREEBL_NO_DEPEND
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
+if [ "$SUFFIX" = "64" ]
+then
+  USE_64=1
+  export USE_64
+fi
+
 make -C $SRC/nss-util-3.*/mozilla/security/coreconf
 make -C $SRC/nss-util-3.*/mozilla/security/dbm
 make -C $SRC/nss-util-3.*/mozilla/security/nss
