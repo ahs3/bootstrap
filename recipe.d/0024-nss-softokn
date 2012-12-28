@@ -29,6 +29,31 @@ export FREEBL_NO_DEPEND
 NSS_USE_SYSTEM_SQLITE=1
 export NSS_USE_SYSTEM_SQLITE
 
+if [ "$SUFFIX" = "64" ]
+then
+  USE_64=1
+  export USE_64
+fi
+
+# publish some header files from NSS to eliminate a
+# circular dependency -- these will be replaced when
+# the nss package gets built
+[ ! -d /usr/include/nss3 ] && mkdir /usr/include/nss3
+for ii in cryptohi/cryptohi.h cryptohi/cryptoht.h \
+          cryptohi/key.h cryptohi/keyhi.h cryptohi/keythi.h cryptohi/keyt.h \
+          certdb/certt.h certdb/cert.h certdb/certdb.h \
+          freebl/blapit.h freebl/hasht.h \
+          freebl/ecl/ecl-exp.h \
+          pk11wrap/secpkcs5.h pk11wrap/pk11func.h pk11wrap/pk11pub.h \
+          pk11wrap/pk11priv.h \
+          pkcs7/secpkcs7.h pkcs7/pkcs7t.h \
+          softoken/secmodt.h \
+          smime/cmsreclist.h \
+          ssl/sslerr.h ssl/sslt.h ssl/ssl.h ssl/sslproto.h
+do
+  cp $SRC/nss-3.*/mozilla/security/nss/lib/$ii /usr/include/nss3
+done
+
 make -C $SRC/nss-softokn-3.*/mozilla/security/coreconf
 make -C $SRC/nss-softokn-3.*/mozilla/security/dbm
 make -C $SRC/nss-softokn-3.*/mozilla/security/nss
