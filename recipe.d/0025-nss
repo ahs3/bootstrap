@@ -21,6 +21,12 @@
 	FREEBL_LIB_DIR=/usr/lib${SUFFIX}
 	export FREEBL_LIB_DIR
 
+        if [ "$SUFFIX" = "64" ]
+        then
+          USE_64=1
+          export USE_64
+        fi
+
         make -C $SRC/nss-3.*/mozilla/security/coreconf
         make -C $SRC/nss-3.*/mozilla/security/dbm
         make -C $SRC/nss-3.*/mozilla/security/nss
