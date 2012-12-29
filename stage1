@@ -1094,7 +1094,7 @@ EOF
 	    #echo J=-j$newJ
 
 	    #echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
-            echo J=1
+            echo J=-j1
             echo DISTCC_HOSTS=localhost
             # END BOZO
 
