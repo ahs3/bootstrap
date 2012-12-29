@@ -1145,6 +1145,12 @@ EOF
         chmod a+x $ROOTFS/init-rootfs.sh
         ( cd $ROOTFS; sudo ./init-rootfs.sh )
 
+        # make sure ld.so.conf is set up properly
+        (
+            echo /lib$SUFFIX
+            echo /usr/lib$SUFFIX
+        ) > $ROOTFS/etc/ld.so.conf
+
 	echo stage2 ready
 
 	;;
