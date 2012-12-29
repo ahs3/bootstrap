@@ -1096,7 +1096,7 @@ EOF
 	    #echo J=-j$newJ
 
 	    #echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
-            echo J=1
+            echo J=-j1
             echo DISTCC_HOSTS=localhost
             # END BOZO
 
@@ -1147,12 +1147,18 @@ EOF
         chmod a+x $ROOTFS/init-rootfs.sh
         ( cd $ROOTFS; sudo ./init-rootfs.sh )
 
+        # make sure ld.so.conf is set up properly
+        (
+            echo /lib$SUFFIX
+            echo /usr/lib$SUFFIX
+        ) > $ROOTFS/etc/ld.so.conf
+
 	echo stage2 ready
 
 	;;
 
     stage3 )
-	# This assumes stage2 was run and the fies are available
+	# This assumes stage2 was run and the files are available
 
 	test -e $ROOTFS/stage3/local.conf && rm $ROOTFS/stage3/local.conf
 	ln -s ../stage2/local.conf $ROOTFS/stage3/local.conf
