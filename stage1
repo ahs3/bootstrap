@@ -1156,7 +1156,7 @@ EOF
 	;;
 
     stage3 )
-	# This assumes stage2 was run and the fies are available
+	# This assumes stage2 was run and the files are available
 
 	test -e $ROOTFS/stage3/local.conf && rm $ROOTFS/stage3/local.conf
 	ln -s ../stage2/local.conf $ROOTFS/stage3/local.conf
