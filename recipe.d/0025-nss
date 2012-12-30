@@ -37,8 +37,13 @@
         cd $SRC/nss-3.*/mozilla/security/nss
         make install
 	# Copy the binary libraries we want
+        NSSLIBS="libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so libnssutil3.so libfreebl3.so libnssdbm3.so libsoftokn3.so"
+        # BOZO: temporarily disable FIPS140 support
+        #NSSLIBCHKS="libnssdbm3.chk libfreebl3.chk libsoftokn3.chk"
+        NSSLIBCHKS=""
+        # END BOZO
 	cd $SRC/nss-3.*
-	for file in libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so libnssutil3.so libnssdbm3.chk libfreebl3.chk libfreebl3.so libnssdbm3.so libsoftokn3.chk libsoftokn3.so
+	for file in $NSSLIBS $NSSLIBCHKS
 	do
 	  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
 	done
