@@ -1,5 +1,10 @@
 cd $SRC/ustr-*
 make $J CC=gcc
 make $J CC=gcc all-shared
-make $J CC=gcc install
+make $J CC=gcc install \
+   prefix=/usr \
+   bindir=/usr/bin mandir=/usr/share/man \
+   datadir=/usr/share libdir=/usr/lib$SUFFIX \
+   includedir=/usr/include libexecdir=/usr/libexec \
+   LDCONFIG=/bin/true HIDE=
 
