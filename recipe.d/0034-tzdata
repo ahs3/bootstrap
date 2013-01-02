@@ -4,6 +4,10 @@
 #
 cd $SRC/tzdata
 test -d obj && rm -rf obj
+sed -e 's|@objpfx@|/stage2/rpmbuild/BUILD/tzdata/obj/|' \
+    -e 's|@datadir@|/usr/share|' \
+    -e 's|@install_root@|/|' \
+  Makeconfig.in > Makeconfig
 make $J 
 make $J install
 
