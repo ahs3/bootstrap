@@ -6,4 +6,4 @@
 
 	cd $SRC/redhat-rpm-config-*
 	make install
-	cp -p /usr/share/libtool/config/config.{guess,sub} /usr/lib${SUFFIX}/rpm/redhat/
+	cp -p /usr/share/libtool/config/config.{guess,sub} /usr/lib/rpm/redhat/
