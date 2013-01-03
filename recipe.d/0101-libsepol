@@ -1,5 +1,9 @@
 mcd $BUILDDIR/libsepol
 rsync -av $SRC/libsepol-*/ ./
 
-make CC=gcc $J
-make CC=gcc $J install
+# TARGET is exported by local.conf and passed on make cmdline in stage2
+# script. This overrides the definition in the libsepol Makefile, so
+# we need to override again on the make cmdline here.
+
+make TARGET=libsepol.so CC=gcc $J
+make TARGET=libsepol.so CC=gcc $J LIBDIR=/usr/lib${SUFFIX} SHLIBDIR=/lib${SUFFIX} install

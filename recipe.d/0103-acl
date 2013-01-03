@@ -7,6 +7,6 @@ rsync -av $SRC/acl-*/ ./
 touch .census
 ./configure $TCONFIGARGS --libexecdir=/usr/lib${SUFFIX}
 make $J LIBTOOL="libtool --tag=CC"
-make $J install
-make $J install-dev
-make $J install-lib
+make $J install SHELL=/bin/bash
+make $J install-dev SHELL=/bin/bash
+make $J install-lib SHELL=/bin/bash
