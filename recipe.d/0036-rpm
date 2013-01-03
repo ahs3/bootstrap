@@ -20,7 +20,8 @@
 		--host=armv7hl-redhat-linux-gnueabi \
 		--target=armv7hl-redhat-linux-gnueabi \
 		CPPFLAGS="-I/usr/include/nspr -I/usr/include/nss3" \
-		--libdir=/usr/lib \
+                --prefix=/usr \
+		--libdir=/usr/lib64 \
 		--with-external-db \
 		--disable-static \
 		--without-lua \
