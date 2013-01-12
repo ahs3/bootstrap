@@ -5,7 +5,7 @@
 #requires texinfo
 
         mcd $BUILDDIR/gdb
-	OTHERARGS="--disable-gdbserver --disable-multi-ice \
+	OTHERARGS="--disable-multi-ice \
                    --without-expat --without-python --without-tcl \
                    --without-tk --without-x --disable-gtk \
                    --without-rpm --with-system-readline"
