@@ -16,11 +16,11 @@
 
 	mcd $BUILDDIR/rpm
 	$SRC/rpm-*/configure $TCONFIGARGS \
-		--build=armv7hl-redhat-linux-gnueabi \
-		--host=armv7hl-redhat-linux-gnueabi \
-		--target=armv7hl-redhat-linux-gnueabi \
+		--build=${TARGET} \
+		--host=${TARGET} \
+		--target=${TARGET} \
 		CPPFLAGS="-I/usr/include/nspr -I/usr/include/nss3" \
-		--libdir=/usr/lib \
+		--libdir=/usr/lib${SUFFIX} \
 		--with-external-db \
 		--disable-static \
 		--without-lua \
