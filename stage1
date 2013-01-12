@@ -744,7 +744,7 @@ fi
 	srpm cloog
 	mcd $BUILDDIR/t-cloog
 	$SRC/cloog-*/configure $TCONFIGARGS --with-ppl
-	make $J LDADD="-rpath ${ROOTFS}/lib${SUFFIX} -lcloog"
+	make $J
 	make $J install DESTDIR=${ROOTFS}
 	fix_la cloog
 	;;
@@ -788,7 +788,7 @@ fi
 	    RANLIB=${TARGET}-ranlib \
 	    CFLAGS="" \
 	    TLSFLAGS="" \
-	    all LDFLAGS="-Wl,-rpath -Wl,${ROOTFS}/lib${SUFFIX}"
+	    all
         ARGS="DESTDIR=${ROOTFS}"
         if [ "$SUFFIX" = "64" ]
         then
@@ -837,6 +837,7 @@ EOF
 	make $J install DESTDIR=${ROOTFS}
 	test -e ${ROOTFS}/usr/bin/cc && rm ${ROOTFS}/usr/bin/cc
 	ln -s gcc ${ROOTFS}/usr/bin/cc
+	mkdir -p ${ROOTFS}/usr/share/gdb/auto-load/usr/lib64
 	;;
 
      make | tar | gzip | diffutils | gawk | which | grep )
@@ -869,7 +870,7 @@ EOF
 	# built sed binary in order to extract the --help output, but
 	# this fails because the sed binary is a cross-tool.
 	touch doc/sed.1
-	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib${SUFFIX}"
+	make $J V=1
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
@@ -930,7 +931,7 @@ EOF
 	    base=`echo $i | sed 's/\.x//'`
 	    touch man/$base.1
 	done
-	make $J V=1 CFLAGS="-lselinux -Wl,-rpath -Wl,${ROOTFS}/lib${SUFFIX}"
+	make $J V=1
 	make $J install DESTDIR=${ROOTFS}
 	;;
 
