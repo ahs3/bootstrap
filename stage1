@@ -389,8 +389,6 @@ case "$1" in
         go busybox
 	go util-linux
 	go tar
-#	only run this far, for now
-	exit 0
 	go gzip
 	go bzip2
 	go diffutils
