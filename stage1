@@ -838,6 +838,8 @@ EOF
 	test -e ${ROOTFS}/usr/bin/cc && rm ${ROOTFS}/usr/bin/cc
 	ln -s gcc ${ROOTFS}/usr/bin/cc
 	mkdir -p ${ROOTFS}/usr/share/gdb/auto-load/usr/lib64
+	mv -f ${ROOTFS}/usr/lib64/libstdc++*gdb.py* \
+	    ${ROOTFS}/usr/share/gdb/auto-load/usr/lib64
 	;;
 
      make | tar | gzip | diffutils | gawk | which | grep )
