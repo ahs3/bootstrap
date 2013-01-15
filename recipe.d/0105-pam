@@ -17,7 +17,8 @@ rsync -av $SRC/Linux-PAM-*/ ./
 	--includedir=/usr/include/security \
 	--disable-prelude \
 	--disable-selinux \
-	--disable-audit
+	--disable-audit \
+	--disable-nis
 make Makefile
 sed 's/= .*\.8.*/=/' modules/pam_faillock/Makefile > modules/pam_faillock/Makefile.stage2
 mv modules/pam_faillock/Makefile.stage2 modules/pam_faillock/Makefile
