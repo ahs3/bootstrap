@@ -28,6 +28,11 @@ do
         chmod 1777 $ii
 done
 
+for ii in usr/bin/mount usr/bin/umount
+do
+    if [ -e $ii ]; then chown root.root $ii ; chmod 4755 $ii ;  fi
+done
+
 #-- do all the required mknods
 cd dev
 
