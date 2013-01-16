@@ -1162,9 +1162,9 @@ EOF
 	# This assumes stage2 was run and the files are available
 
 	test -e $ROOTFS/stage3/local.conf && rm $ROOTFS/stage3/local.conf
+	mkdirp $ROOTFS/stage3/stage3.d
 	ln -s ../stage2/local.conf $ROOTFS/stage3/local.conf
 
-	mkdirp $ROOTFS/stage3/stage3.d
 	cp $MYDIR/stage3.d/* $ROOTFS/stage3/stage3.d
 	cp $MYDIR/macros.bashrc $ROOTFS/stage3
 	cp $MYDIR/script2makefile $ROOTFS/stage3

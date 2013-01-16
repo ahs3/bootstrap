@@ -38,7 +38,7 @@ HOME=$TOP
 J=-j2
 
 # The cross-compiler target
-TARGET=armv7hl-redhat-linux-gnueabi
+TARGET=aarch64-redhat-linux-gnu
 
 export TARGET BUILDDIR J SRC STAGE2 MYDIR TOP
 
@@ -48,7 +48,7 @@ mkdirp $BUILDDIR
 
 test -d /stage2/done || mkdir /stage2/done
 
-test -d /etc/ld.so.conf || true > /etc/ld.so.conf
+test -e /etc/ld.so.conf || true > /etc/ld.so.conf
 
 scriptmake()
 {
