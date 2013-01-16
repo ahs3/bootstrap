@@ -962,7 +962,7 @@ EOF
         [ -d ${ROOTFS}/etc/init.d ] || mkdir -p ${ROOTFS}/etc/init.d
 	(
 	    echo "#!/bin/sh"
-	    echo "/bin/mount -a"
+	    echo "/bin/mount -n -a"
 	) > $ROOTFS/etc/init.d/rcS
         chmod +x ${ROOTFS}/etc/init.d/rcS
         ;;
