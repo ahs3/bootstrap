@@ -1,0 +1,7 @@
+
+#requires python
+#requires rpm
+
+rpm -i --force --nodeps /RPMS-noarch/python-setuptools-*.noarch.rpm
+
+

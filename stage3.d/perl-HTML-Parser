@@ -1,0 +1,12 @@
+
+#requires perl
+#requires perl-Carp
+#requires perl-HTML-Tagset
+#requires perl-HTTP-Message
+#requires perl-threads
+#requires perl-PathTools
+#requires perl-URI
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma perl-HTML-Parser

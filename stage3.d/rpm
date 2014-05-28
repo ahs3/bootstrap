@@ -1,0 +1,10 @@
+
+#requires python
+#requires lua
+#requires nss
+#requires nss-softokn
+#requires libcap
+
+export RPMBUILD_EXTRA_ARGS="--with python"
+
+rpma rpm rpm-libs rpm-build-libs rpm-devel rpm-build rpm-sign rpm-python rpm-apidocs rpm-cron

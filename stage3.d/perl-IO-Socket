@@ -1,0 +1,4 @@
+
+#requires perl-Net-LibIDN
+
+rpm -i --force --nodeps /RPMS-noarch/perl-IO-Socket-*.noarch.rpm

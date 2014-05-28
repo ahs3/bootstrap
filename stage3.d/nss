@@ -1,0 +1,8 @@
+
+#requires nss-util
+#requires nss-softokn
+#requires zlib
+#requires pkgconfig
+#requires gawk
+
+rpma nss nss-tools nss-sysinit nss-devel nss-pkcs11-devel

@@ -1,0 +1,13 @@
+
+#requires perl
+#requires perl-HTML-Parser
+#requires perl-HTTP-Cookies
+#requires perl-HTTP-Daemon
+#requires perl-HTTP-Date
+#requires perl-HTTP-Negotiate
+#requires perl-LWP-MediaTypes
+#requires perl-Net-HTTP
+#requires perl-URI
+#requires perl-WWW-RobotRules
+
+rpm -i --force --nodeps /RPMS-noarch/perl-libwww-perl-*.noarch.rpm

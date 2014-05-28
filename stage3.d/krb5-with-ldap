@@ -1,0 +1,4 @@
+
+rpmi krb5
+rpmb -bb --without docs krb5
+rpmi krb5-devel krb5-libs

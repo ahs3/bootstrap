@@ -1,0 +1,3 @@
+#requires pkgconfig
+
+rpma ncurses ncurses-libs ncurses-base ncurses-term ncurses-devel ncurses-static

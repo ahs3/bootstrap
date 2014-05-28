@@ -1,0 +1,4 @@
+
+#requires python-setuptools
+
+rpma python-iniparse

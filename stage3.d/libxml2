@@ -1,0 +1,9 @@
+
+#requires python
+#requires zlib
+#requires pkgconfig
+#requires xz
+
+rpma libxml2 libxml2-devel libxml2-static libxml2-python
+
+

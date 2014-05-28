@@ -1,0 +1,6 @@
+
+#requires python
+#requires python-pycurl
+#requires rpm
+
+rpm -i --force --nodeps /RPMS-noarch/python-urlgrabber-*.noarch.rpm

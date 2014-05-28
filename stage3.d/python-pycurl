@@ -1,0 +1,6 @@
+
+#requires curl
+#requires openssl
+#requires python
+
+rpma python-pycurl

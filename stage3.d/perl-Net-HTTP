@@ -1,0 +1,5 @@
+
+#requires perl-IO-Compress
+#requires perl-IO-Socket
+
+rpm -i --force --nodeps /RPMS-noarch/perl-Net-HTTP-*.noarch.rpm

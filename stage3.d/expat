@@ -1,0 +1,6 @@
+#requires check
+#requires autoconf
+#requires automake
+#requires libtool
+
+rpma expat expat-devel expat-static

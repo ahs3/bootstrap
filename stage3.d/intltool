@@ -1,0 +1,4 @@
+
+#requires perl-XML-Parser
+
+rpm -i --force --nodeps /RPMS-noarch/intltool-*.noarch.rpm

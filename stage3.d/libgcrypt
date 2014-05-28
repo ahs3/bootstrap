@@ -1,0 +1,7 @@
+
+#requires fipscheck
+#requires gawk
+#requires libgpg-error
+#requires texinfo
+
+rpma libgcrypt libgcrypt-devel

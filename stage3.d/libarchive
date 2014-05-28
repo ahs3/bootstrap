@@ -1,0 +1,13 @@
+
+#requires sharutils
+#requires zlib
+#requires bzip2
+#requires xz
+#requires lzo
+#requires e2fsprogs
+#requires acl
+#requires openssl
+#requires libxml2
+#requires libunistring
+
+rpma libarchive libarchive-devel

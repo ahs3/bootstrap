@@ -1,0 +1,7 @@
+
+#requires libidn
+#requires perl-Carp
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma perl-Net-LibIDN

@@ -1,0 +1,7 @@
+
+#requires deltarpm
+#requires libxml2
+#requires pyliblzma
+#requires yum
+
+rpm -i --force --nodeps /RPMS-noarch/createrepo-*.noarch.rpm

@@ -1,0 +1,4 @@
+
+rpmi dbus
+rpmb --with bootstrap -bb dbus
+rpminst dbus dbus-libs dbus-devel

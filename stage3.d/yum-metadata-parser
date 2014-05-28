@@ -1,0 +1,6 @@
+
+#requires python
+#requires libxml2
+#requires pkgconfig
+
+rpma yum-metadata-parser

@@ -1,0 +1,6 @@
+
+#requires krb5
+#requires zlib
+#requires sed
+
+rpma openssl openssl-libs openssl-devel openssl-static

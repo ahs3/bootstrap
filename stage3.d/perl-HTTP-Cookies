@@ -1,0 +1,6 @@
+
+#requires perl
+#requires perl-HTTP-Date
+#requires perl-HTTP-Message
+
+rpm -i --force --nodeps /RPMS-noarch/perl-HTTP-Cookies-*.noarch.rpm

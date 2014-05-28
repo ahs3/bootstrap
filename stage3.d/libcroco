@@ -1,0 +1,6 @@
+
+#requires libxml2
+#requires pkgconfig
+
+rpma libcroco libcroco-devel
+

@@ -1,0 +1,5 @@
+
+rpmi swig
+rpmb -bb --without octave --without guile swig
+rpminst swig
+

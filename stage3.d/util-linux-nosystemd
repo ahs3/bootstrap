@@ -1,0 +1,3 @@
+rpmi util-linux
+rpmb -bb --without systemd util-linux
+rpminst util-linux libblkid libblkid-devel libmount libmount-devel libuuid libuuid-devel 

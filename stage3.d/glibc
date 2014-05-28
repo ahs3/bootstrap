@@ -1,0 +1,5 @@
+
+#requires kernel-headers
+
+rpmi glibc
+rpmb -bb glibc

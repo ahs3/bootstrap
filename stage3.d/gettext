@@ -1,0 +1,10 @@
+
+#requires ncurses
+#requires expat
+#requires libunistring
+#requires libxml2
+#requires libcroco
+
+export RPMBUILD_EXTRA_ARGS="--without java --without jar --without git --without emacs"
+
+rpma gettext gettext-common-devel gettext-devel gettext-libs

@@ -1,0 +1,7 @@
+
+#requires perl
+#requires perl-HTTP-Date
+#requires perl-HTTP-Message
+#requires perl-LWP-MediaTypes
+
+rpm -i --force --nodeps /RPMS-noarch/perl-HTTP-Daemon-*.noarch.rpm

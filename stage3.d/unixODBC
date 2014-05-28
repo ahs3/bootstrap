@@ -1,0 +1,6 @@
+
+#requires automake
+#requires autoconf
+#requires libtool
+
+rpma unixODBC unixODBC-devel

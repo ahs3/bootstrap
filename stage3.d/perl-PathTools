@@ -1,0 +1,8 @@
+
+#requires perl-Carp
+#requires perl-ExtUtils-MakeMaker
+#requires perl-ExtUtils-Manifest
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma perl-PathTools

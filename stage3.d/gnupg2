@@ -1,0 +1,15 @@
+
+#requires bzip2
+#requires curl
+#requires libassuan
+#requires libgpg-error
+#requires libksba
+#requires openldap
+#requires pth
+#requires ncurses
+#requires zlib
+#requires libgcrypt
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma gnupg2 gnupg2-smime

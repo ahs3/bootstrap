@@ -1,0 +1,9 @@
+
+#requires python
+#requires words
+#requires zlib
+#requires perl-Data-Dumper
+#requires perl-threads-shared
+#requires gettext
+
+rpma cracklib cracklib-devel cracklib-python cracklib-dicts

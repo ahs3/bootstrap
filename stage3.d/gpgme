@@ -1,0 +1,7 @@
+
+#requires gnupg2
+#requires libgpg-error
+#requires pth
+#requires libassuan
+
+rpma gpgme gpgme-devel

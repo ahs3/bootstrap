@@ -1,0 +1,6 @@
+
+#requires perl
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma perl-threads

@@ -1,0 +1,5 @@
+
+#requires popt
+
+rpmb -bb popt
+rpminst popt popt-devel popt-static

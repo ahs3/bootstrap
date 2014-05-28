@@ -1,0 +1,10 @@
+
+#requires expat
+#requires perl-Carp
+#requires perl-PathTools
+#requires perl-libwww-perl
+#requires perl-URI
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma perl-XML-Parser

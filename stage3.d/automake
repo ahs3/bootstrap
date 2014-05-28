@@ -1,5 +1,4 @@
+
 #requires autoconf
 
-rpmi automake
-rpmb -bb --without check automake
-rpminst automake
+rpm -i --force --nodeps /RPMS-noarch/automake-*.noarch.rpm

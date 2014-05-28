@@ -1,0 +1,4 @@
+
+rpmb -bb m4
+
+# rpminst m4

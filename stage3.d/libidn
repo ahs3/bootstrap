@@ -1,0 +1,6 @@
+
+#requires pkgconfig
+
+export RPMBUILD_EXTRA_ARGS="--without emacs"
+
+rpma libidn libidn-devel

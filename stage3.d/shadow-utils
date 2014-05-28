@@ -1,0 +1,3 @@
+
+rpmi shadow-utils
+rpmb -bb shadow-utils

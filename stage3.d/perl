@@ -1,0 +1,15 @@
+
+#requires libdb
+#requires tcsh
+#requires zlib
+#requires bzip2
+
+export RPMBUILD_EXTRA_ARGS="--without dtrace --with bootstrap"
+
+rpma perl perl-libs perl-devel perl-core perl-Digest-MD5 perl-PathTools \
+     perl-Text-Soundex perl-Time-Piece perl-macros perl-tests \
+     perl-Archive-Extract perl-B-Lint perl-CPAN perl-CPANPLUS \
+     perl-ExtUtils perl-File-Fetch perl-HTTP-Tiny perl-IO-Zlib \
+     perl-IPC-Cmd perl-Locale-Maketext-Simple perl-Log-Message \
+     perl-Module perl-Object-Accessor perl-Package-Constants \
+     perl-Params-Check perl-Pod	perl-Term-UI perl-Test-Harness

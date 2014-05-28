@@ -1,0 +1,11 @@
+
+#requires zlib
+#requires tcp_wrappers
+#requires fipscheck
+#requires openssl
+#requires openldap
+#requires tcp_wrappers
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma openssh openssh-clients openssh-server openssh-server-sysvinit openssh-keycat pam_ssh_agent_auth

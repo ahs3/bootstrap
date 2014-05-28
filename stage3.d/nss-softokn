@@ -1,0 +1,6 @@
+#requires nss-util
+#requires pkgconfig
+#requires gawk
+
+rpma nss-softokn nss-softokn-freebl nss-softokn-freebl-devel nss-softokn-devel 
+

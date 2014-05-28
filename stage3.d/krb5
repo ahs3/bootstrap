@@ -1,0 +1,10 @@
+
+#requires e2fsprogs
+#requires libidn
+#requires keyutils
+#requires tcl
+#requires python-sphinx
+
+rpmi krb5
+rpmb -bb --without docs krb5
+rpminst krb5-devel krb5-libs

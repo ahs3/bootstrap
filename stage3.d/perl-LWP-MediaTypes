@@ -1,0 +1,5 @@
+
+#requires perl
+#requires mailcap
+
+rpm -i --force --nodeps /RPMS-noarch/perl-LWP-MediaTypes-*.noarch.rpm

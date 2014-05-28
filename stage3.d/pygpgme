@@ -1,0 +1,5 @@
+
+#requires gpgme
+#requires python
+
+rpma pygpgme

@@ -1,0 +1,10 @@
+
+#requires stunnel
+#requires libssh2
+#requires libidn
+#requires krb5
+#requires openldap
+#requires zlib
+
+rpma curl libcurl libcurl-devel
+

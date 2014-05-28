@@ -1,0 +1,5 @@
+
+#requires perl
+#requires perl-PathTools
+
+rpm -i --force --nodeps /RPMS-noarch/perl-IO-Compress-*.noarch.rpm

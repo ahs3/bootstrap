@@ -1,0 +1,5 @@
+#requires autoconf
+#requires automake
+#requires texinfo
+
+rpma	libtool libtool-ltdl libtool-ltdl-devel

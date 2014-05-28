@@ -1,0 +1,4 @@
+
+rpmi kernel
+rpmb -bb kernel
+rpmi kernel-headers

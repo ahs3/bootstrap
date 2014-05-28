@@ -1,0 +1,8 @@
+
+#requires perl-Carp
+#requires perl-threads
+#requires perl-ExtUtils-MakeMaker
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma perl-threads-shared

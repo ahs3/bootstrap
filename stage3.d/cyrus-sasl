@@ -1,0 +1,10 @@
+
+#requires krb5
+#requires pkgconfig
+#requires zlib
+#requires libdb
+#requires openssl
+
+rpmi cyrus-sasl
+rpmb -bb --without mysql --without postgresql --without docs cyrus-sasl
+rpminst cyrus-sasl cyrus-sasl-lib cyrus-sasl-devel cyrus-sasl-gssapi cyrus-sasl-ldap

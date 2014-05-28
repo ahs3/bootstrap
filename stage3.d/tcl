@@ -1,0 +1,4 @@
+
+export RPMBUILD_EXTRA_ARGS=--define="sdt 0"
+
+rpma tcl tcl-devel

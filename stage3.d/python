@@ -1,0 +1,6 @@
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpmi python
+rpmb -bb --with bootstrap python
+rpminst python python-libs python-devel python-tools python-test

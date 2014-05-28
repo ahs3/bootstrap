@@ -1,0 +1,7 @@
+
+#requires gawk
+#requires zlib
+#requires nspr
+#requires pkgconfig
+
+rpma nss-util nss-util-devel 

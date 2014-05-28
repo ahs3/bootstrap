@@ -1,0 +1,5 @@
+
+rpm -i --force --nodeps /RPMS-noarch/python-sphinx-*.noarch.rpm \
+                        /RPMS-noarch/python-jinja2-*.noarch.rpm \
+			/RPMS-noarch/python-pygments-*.noarch.rpm \
+			/RPMS-noarch/python-docutils-*.noarch.rpm

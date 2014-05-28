@@ -1,0 +1,10 @@
+
+#requires nss
+#requires tcp_wrappers
+#requires unixODBC
+#requires krb5
+#requires cyrus-sasl
+
+rpmi openldap
+rpmb -bb --without docs openldap
+rpminst openldap openldap-devel

@@ -1,0 +1,3 @@
+
+rpmi systemd
+rpmb --without gtkdocs --without cryptsetup --without kmod --without http --without caps -bb systemd

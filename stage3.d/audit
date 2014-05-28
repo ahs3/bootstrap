@@ -1,0 +1,4 @@
+
+rpmi audit
+rpmb --without prelude --without systemd -bb audit
+rpminst audit-libs audit-libs-devel

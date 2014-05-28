@@ -1,0 +1,5 @@
+
+#requires perl
+#requires tcsh
+
+rpm -i --force --nodeps /RPMS-noarch/setup-*.noarch.rpm

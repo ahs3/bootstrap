@@ -1,0 +1,7 @@
+
+#requires createrepo
+#requires yum
+#requires python-decoratortools
+#requires setup
+
+rpm -i --force --nodeps /RPMS-noarch/mock-*.noarch.rpm

@@ -1,0 +1,9 @@
+
+#requires bzip2
+#requires xz
+#requires zlib
+#requires python
+#requires rpm
+#requires popt
+
+rpma deltarpm drpmsync deltaiso python-deltarpm

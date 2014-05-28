@@ -1,0 +1,3 @@
+
+rpmi bash
+rpmb -bb bash

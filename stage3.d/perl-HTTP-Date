@@ -1,0 +1,4 @@
+
+#require perl-TimeDate
+
+rpm -i --force --nodeps /RPMS-noarch/perl-HTTP-Date-*.noarch.rpm

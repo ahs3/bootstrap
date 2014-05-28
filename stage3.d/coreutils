@@ -1,0 +1,3 @@
+
+rpmi coreutils
+rpmb -bb coreutils

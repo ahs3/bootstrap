@@ -1,0 +1,4 @@
+
+rpmi util-linux
+rpmb -bb util-linux
+rpminst util-linux libblkid libblkid-devel libmount libmount-devel libuuid libuuid-devel 

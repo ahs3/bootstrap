@@ -1,0 +1,5 @@
+
+#requires perl-Carp
+#requires perl-PathTools
+
+rpm -i --force --nodeps /RPMS-noarch/perl-URI-*.noarch.rpm

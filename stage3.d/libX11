@@ -1,0 +1,4 @@
+
+rpmi libX11
+rpmb -bb --without specs libX11
+rpminst libX11 libX11-devel libX11-common

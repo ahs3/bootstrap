@@ -1,0 +1,3 @@
+
+rpmi gcc
+rpmb -bb --without java gcc

@@ -1,0 +1,4 @@
+
+rpmb -bb --with bootstrap libuser
+
+# rpminst libuser libuser-devel libuser-python

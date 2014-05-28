@@ -1,0 +1,7 @@
+
+#requires autoconf
+#requires automake
+#requires gawk
+#requires libtool
+
+rpma libgpg-error libgpg-error-devel

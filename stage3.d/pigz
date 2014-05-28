@@ -1,0 +1,5 @@
+
+#requires ncompress
+#requires zlib
+
+rpma pigz

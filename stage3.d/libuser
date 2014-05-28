@@ -1,0 +1,9 @@
+
+#requires popt
+#requires python
+#requires cyrus-sasl
+#requires openldap
+
+export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+
+rpma libuser libuser-devel libuser-python

@@ -1,0 +1,4 @@
+
+rpmi glib2
+rpmb -bb --without systemtap --without gamin glib2
+rpminst glib2 glib2-devel
