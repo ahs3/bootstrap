@@ -74,7 +74,7 @@ rpminst()
 	done
 	if [ x"$rf" = x"" ]
 	then
-	    echo $1: RPM not found
+	    echo "$1: RPM ($r) not found"
 	    exit 1
 	fi
         # HOME set by higher level script

@@ -1,19 +1,19 @@
 #!/usr/bin/make
 
-SCRIPTDIR := recipe.d
-FRAGDIR := recipe.mk
-RCFILE := ./scripts.rc
+__SCRIPTDIR := recipe.d
+__FRAGDIR := recipe.mk
+__RCFILE := ./scripts.rc
 
-SCRIPTS := $(sort $(wildcard ${SCRIPTDIR}/*[0-9A-Za-z]))
-FRAGS := $(addsuffix .mk,$(addprefix ${FRAGDIR}/,$(notdir $(SCRIPTS))))
+__SCRIPTS := $(sort $(wildcard ${__SCRIPTDIR}/*[0-9A-Za-z]))
+__FRAGS := $(addsuffix .mk,$(addprefix ${__FRAGDIR}/,$(notdir $(__SCRIPTS))))
 
-${FRAGDIR}/%.mk : ${SCRIPTDIR}/%
+${__FRAGDIR}/%.mk : ${__SCRIPTDIR}/%
 	@( \
 	  if grep '^#skip' $< >/dev/null ; then true; else \
 	  deps=`grep '^#requires ' $< | sed 's@#requires @done\/@'` ;\
 	  deps=`echo $$deps` ;\
 	  base=`echo $* | sed 's/^[0-9][0-9][0-9][0-9]-//'` ;\
-	  echo TARGETS += done/$$base ;\
+	  echo __TARGETS += done/$$base ;\
 	  echo ".PHONY: $$base" ;\
 	  echo "$$base : done/$$base" ;\
 	  echo "	@true" ;\
@@ -21,7 +21,7 @@ ${FRAGDIR}/%.mk : ${SCRIPTDIR}/%
 	  echo "	@echo " ;\
 	  echo "	@echo Building $$base" ;\
 	  echo "	@echo " ;\
-	  echo "	@bash --rcfile ${RCFILE} -i -e ${SCRIPTDIR}/$*" ;\
+	  echo "	@bash --rcfile ${__RCFILE} -i -e ${__SCRIPTDIR}/$*" ;\
 	  echo "	@true > done/$$base" ;\
 	  fi \
 	) > $@
@@ -29,10 +29,10 @@ ${FRAGDIR}/%.mk : ${SCRIPTDIR}/%
 all.first : all.targets
 	@true
 
-TARGETS :=
+__TARGETS :=
 
-include ${FRAGS}
+include ${__FRAGS}
 
-all.targets : ${TARGETS}
+all.targets : ${__TARGETS}
 	@echo
 	@echo 'done!'

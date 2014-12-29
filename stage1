@@ -10,6 +10,10 @@
 # $SRPMDIR (below) and that there is exactly one rev of each package's
 # SRPM.  The resulting rootfs will be build in $ROOTFS (below).
 #
+# This script depends on the following packages being available on the host:
+#	automake autoconf libtool make patch gcc gcc-c++ bison flex
+#	gmp-devel mpfr-devel libmpc-devel rsync gettext-devel tcl
+#
 # Note that SRPMDIR_LOCAL is for local SRPMs that override the
 # official ones, for example, board-specific kernel RPMs.
 #
@@ -26,7 +30,97 @@
 # Note that the "dev" step requires sudo, as it installs special files
 # in $ROOTFS/dev/
 #
+# Overall instructions for building stages 1-3 are:
+#	# Build stage1.
+#	Run "./stage1" in the build host.
+#
+#	# Copy $ROOTFS to the box that will run the chroot in stage2.
+#
+#	# In the box that will run the chroot do:
+#	$ chroot /path/to/chroot /bin/bash
+#
+#	Note: If inside the chroot, you cannot do "ps", you will
+#	need to go outside of the chroot and:
+#		mount -o bind /proc /path/to/chroot/proc
+#		mount -o bind /sys /path/to/chroot/sys
+#	FIXME: ^^^^^ This could be determined programatically from within
+#		the chroot, and at least dump out an error if ps doesn't
+#		work.
+#	FIXME: Check the sanity of the chroot programatically
+#		(presence of /proc, /sys, SRPMS, noarch RPMS, etc
+#
+#	# Build stage2 within the chroot.
+#       $ cd /stage2
+#	# Update -j1 to whatever is appropriate in local.conf.
+#	$ ./stage2
+#
+#	# Prepare environment for building stage3.
+#	Run "./stage1 stage3" in the build host.
+#	Copy host:$ROOTFS/stage3 to chroot:/
+#	Copy host:SRPMs to chroot:/SRPMS
+#	Copy [noarch-RPMS] to chroot:/RPMS-noarch/
+
+#	# Build stage3 in the chroot.
+#	$ cd /stage3
+#	# Update -j1 to whatever is appropriate in local.conf.
+#	$ ./stage3"
+#
 # ------------------------------------------------------------
+
+### Architecture dependent configury
+
+# TARGET: The cross-compiler target.
+#TARGET=ppc64le-redhat-linux-gnu
+TARGET=aarch64-redhat-linux-gnu
+
+# KARCH: Used by the kernel and glibc.
+
+# KERNEL_RPMTARGET: Due to naming politics, the kernel may have a
+# different target than $TARGET.
+
+# RPMTARGET: RPMBUILD target for prepping sources.
+
+# SUFFIX: Default library path.
+
+# EGLIBC_ARCH: ARCH variable for eglibc.
+
+# CONFIG_EXTRA: Additional parameters to pass to ./configure.
+
+# GCC_CONFIG_EXTRA: Additional parameters to pass to GCC's ./configure.
+
+# BUSYBOX_DEFCONFIG: config file to use for busybox
+
+case $TARGET in
+    aarch64-*)
+	KCONFIG=kernel-3.*-arm64.config
+	KARCH=arm64
+	KERNEL_RPMTARGET=arm64-redhat-linux-gnu
+	RPMTARGET=$TARGET
+	SUFFIX=64
+	CONFIG_EXTRA="--with-arch=armv8
+                      --with-fpu=neon-fp-armv8"
+	GCC_CONFIG_EXTRA="--with-arch=armv8-a"
+	EGLIBC_ARCH=arm
+	BUSYBOX_DEFCONFIG=TEST_aarch64_f17_defconfig
+	;;
+    ppc64le-*)
+	KCONFIG=kernel-3.*-ppc64le.config
+	KARCH=powerpc
+	RPMTARGET=$TARGET
+	KERNEL_RPMTARGET=$TARGET
+	SUFFIX=64
+	CONFIG_EXTRA=""
+	GCC_CONFIG_EXTRA="--disable-multilib"
+	EGLIBC_ARCH=ppc
+	BUSYBOX_DEFCONFIG=ppc64le_defconfig
+	;;
+    *)
+	echo "Unsupported TARGET=$TARGET".
+	exit 1
+	;;
+esac
+
+### Directory and miscelaneous configury
 
 TOP=$PWD
 MYDIR=${0%/*}
@@ -35,42 +129,23 @@ STAGE3=$MYDIR/stage3
 
 SRPMDIR=$TOP/SRPMs
 SRPMDIR_LOCAL=$TOP/SRPMlocal
-J=-j12
+if [ -x /usr/bin/nproc ]; then
+    J=-j$(nproc)
+else
+    J=-j1
+fi
 # default port for native builds is 3632, don't use that
 DISTCC_PORT=3639
 
 BUILDDIR=$TOP/builds
 PREFIX=$TOP/install
 KCONFIGDIR=$BUILDDIR/kernel
-KCONFIG=kernel-3.*-arm64.config
-# used by kernel and glibc
-KARCH=arm64
 KIMAGE=uImage
 NEED_XLOADER=no
 NEED_UBOOT=no
 
-# The cross-compiler target
-TARGET=aarch64-redhat-linux-gnu
-# the RPMBUILD target for prepping sources
-RPMTARGET=aarch64-redhat-linux-gnu
-# due to naming politics, the kernel may or may not have a different target
-KERNEL_RPMTARGET=arm64-redhat-linux-gnu
-
-# Default library path
-case $TARGET in
-    aarch64-*) SUFFIX=64 ;;
-    *) SUFFIX= ;;
-esac
-
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
-
-CONFIG_EXTRA="--with-arch=armv8
-	      --with-fpu=neon-fp-armv8
-"
-
-GCC_CONFIG_EXTRA="--with-arch=armv8-a
-"
 
 if [ -f $MYDIR/local.conf ]
 then
@@ -156,7 +231,7 @@ srpm()
     echo SRPM is $SRPM
     SPEC=${SRPM%-*}
     SPEC=${SPEC%-*}
-    if [ -f $STOP/rpmbuild/SPECS/$SPEC.spec ]
+    if [ -f $STOP/rpmbuild/SPECS/$SPEC.spec ];
     then true; else
 	test -f $SDIR/$SRPM || exit 1
 	HOME=$STOP rpm -i $SDIR/$SRPM
@@ -235,18 +310,16 @@ KERNELARGS="ARCH=${KARCH} CROSS_COMPILE=${TARGET}-"
 prefill_gcc_cache()
 {
     echo 'lt_cv_shlibpath_overrides_runpath=no' > config.cache
-    echo 'gcc_cv_libc_provides_ssp=yes' > config.cache
+    echo 'gcc_cv_libc_provides_ssp=yes' >> config.cache
 }
 
 setup_glibc()
 {
     # This path MUST be relative, not absolute
-    GLIBCPORTSSRC=../$(cd $SRC; echo glibc-ports*)
-    #GLIBCPORTSSRC=ports
-
+    GLIBCPORTSSRC=../$(cd $SRC/glibc-*; echo glibc-ports*)
+    test -d $SRC/glibc-*/$GLIBCPORTSSRC || GLIBCPORTSSRC=ports
     GV=$(cd $SRC; echo glibc-2*)
-    GLIBCARGS0="--prefix=/usr
-        --libdir=/usr/lib${SUFFIX}
+    GLIBCARGS="--prefix=/usr
 	--with-headers=$ROOTFS/usr/include
 	--enable-kernel=2.6.32
 	--enable-bind-now
@@ -256,18 +329,12 @@ setup_glibc()
 	--cache-file=config.cache
 	--without-cvs
 	--with-elf
-	--without-gd"
-    GLIBCARGS1="$GLIBCARGS0
+	--without-gd
 	--enable-add-ons=$GLIBCPORTSSRC,nptl
 	--disable-sanity-checks
 	--with-tls
 	--with-__thread
-	"
-    GLIBCARGS2="$GLIBCARGS0
-	--enable-add-ons=$GLIBCPORTSSRC,nptl
-	--disable-sanity-checks
-	--with-tls
-	--with-__thread
+	--enable-obsolete-rpc
 	"
 }
 
@@ -277,7 +344,6 @@ prefill_glibc_cache()
     echo libc_cv_c_cleanup=yes >> config.cache
     echo libc_cv_ctors_header=yes >> config.cache
     echo ac_cv_header_cpuid_h=yes >> config.cache
-    echo libc_cv_ssp=no >> config.cache
     echo libc_cv_gcc_builtin_expect=yes >> config.cache
 }
 
@@ -374,39 +440,42 @@ case "$1" in
 	go gmp
 	go mpfr
 	go mpc
-	go ppl
-	go cloog
+
 	go libsepol
-	go libselinux
 	go zlib
 
 	go t-binutils
 	go t-gcc
-	go bash
 	go make
 	go sed
 	go coreutils
-        go busybox
+	go busybox
+	# Bash must come after busybox so the `sh' symbolic link is bash,
+	# not busybox.
+	go bash
 	go util-linux
 	go tar
 	go gzip
 	go bzip2
 	go diffutils
+	go xz
+	go pcre
+	go libselinux
 	go findutils
 	go gawk
 	go patch
 	go unzip
 	go which
-	go xz
 	go grep
-	go distcc
-	go ccache
+#	go distcc
+#	go ccache
 
+	# After the stage2 environment is built here...
 	go stage2
-#	only run this far, for now
+	# ...we're done.  The rest of stage2 must be built in a
+	# chroot.  When stage2 packages are built in said chroot, the
+	# stage3 environment can be generated.
 	exit 0
-	go stage3
-
 	;;
 
     "clean" )
@@ -439,7 +508,13 @@ case "$1" in
 	srpm kernel $TOP $KERNEL_RPMTARGET
 	mcd $BUILDDIR/kernel
 	cd $SRC/kernel-*/linux-*
-	make $KERNELARGS INSTALL_HDR_PATH=$ROOTFS/usr headers_install
+	if [ ! -x $TARGET-gcc ]; then
+	    # The first time around, we won't have a cross compiler.
+	    C=gcc
+	else
+	    C=$TARGET-gcc
+	fi
+	make CC=$C $KERNELARGS INSTALL_HDR_PATH=$ROOTFS/usr headers_install
 	;;
 
     "binutils" )
@@ -457,8 +532,11 @@ case "$1" in
 	prefill_gcc_cache
 	$SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
 	notparallel
-	make $J all-host
-	make $J install-host
+
+	# Pass gcc_cv_libc_provides_ssp down, because the config.cache
+	# version is not passed down to the gcc subdir.
+	make $J all-host gcc_cv_libc_provides_ssp=yes
+	make $J install-host gcc_cv_libc_provides_ssp=yes
 
 
 if false; then
@@ -480,7 +558,7 @@ fi
 	setup_glibc
 	mcd $BUILDDIR/glibc-stage1
 	prefill_glibc_cache 
-	$SRC/$GV/configure $GLIBCARGS1
+	$SRC/$GV/configure $GLIBCARGS
 	notparallel
 	make $J ARCH=${KARCH} cross-compiling=yes install-headers install_root=$ROOTFS
 	touch $ROOTFS/usr/include/gnu/stubs.h
@@ -513,7 +591,7 @@ fi
 	prefill_eglibc_cache 
 	$SRC/$GV/configure $EGLIBCARGS1
 	notparallel
-	make $J ARCH=arm cross-compiling=yes install-headers install_root=$ROOTFS install-bootstrap-headers=yes
+	make $J ARCH=$EGLIBC_ARCH cross-compiling=yes install-headers install_root=$ROOTFS install-bootstrap-headers=yes
 	touch $ROOTFS/usr/include/gnu/stubs.h
 	touch $ROOTFS/usr/include/bits/stdio_lim.h
 	cp $SRC/$GV/nptl/sysdeps/pthread/pthread.h $ROOTFS/usr/include
@@ -527,7 +605,7 @@ fi
 	# We also build just enough files to link libgcc.so.  The fake
 	# libc.so will never actually get used.
 	mkdirp $ROOTFS/usr/lib${SUFFIX}
-	make $J ARCH=arm cross-compiling=yes csu/subdir_lib
+	make $J ARCH=$EGLIBC_ARCH cross-compiling=yes csu/subdir_lib
 	cp csu/crt*.o $ROOTFS/usr/lib${SUFFIX}
 	cp csu/elf-init*.o $ROOTFS/usr/lib${SUFFIX}
 	cp csu/libc-start*.o $ROOTFS/usr/lib${SUFFIX}
@@ -540,8 +618,10 @@ fi
 	prefill_gcc_cache
 	$SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
 	notparallel
-	make $J all-target-libgcc all-target-libssp
-	make $J install-target-libgcc install-target-libssp
+	# Pass gcc_cv_libc_provides_ssp down, because the config.cache
+	# version is not passed down to the gcc subdir.
+	make $J all-target-libgcc all-target-libssp gcc_cv_libc_provides_ssp=yes
+	make $J install-target-libgcc install-target-libssp gcc_cv_libc_provides_ssp=yes
 	;;
 
     "glibc" )
@@ -549,7 +629,7 @@ fi
 	setup_glibc
 	mcd $BUILDDIR/glibc
 	prefill_glibc_cache 
-	$SRC/$GV/configure $GLIBCARGS2
+	$SRC/$GV/configure $GLIBCARGS
 	notparallel
 	make $J ARCH=${KARCH} cross-compiling=yes
 	make $J ARCH=${KARCH} cross-compiling=yes install install_root=$ROOTFS
@@ -568,8 +648,8 @@ fi
 	prefill_eglibc_cache 
 	$SRC/$GV/configure $EGLIBCARGS2
 	notparallel
-	make $J ARCH=arm cross-compiling=yes
-	make $J ARCH=arm cross-compiling=yes install install_root=$ROOTFS
+	make $J ARCH=$EGLIBC_ARCH cross-compiling=yes
+	make $J ARCH=$EGLIBC_ARCH cross-compiling=yes install install_root=$ROOTFS
 
 	( cd $ROOTFS/usr/include/bits
          sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
@@ -617,6 +697,7 @@ fi
 	mcd $ROOTFS/dev
 	sudo mknod null		c   1 3
 	sudo mknod zero		c   1 5
+	sudo mknod urandom	c   1 9
 	sudo mknod tty		c   5 0
 	sudo mknod console	c   5 1
 	sudo mknod sda		b   8 0
@@ -702,7 +783,32 @@ fi
 #--------------------------------------------------
 # target-side libraries
 
-    gmp | mpfr | ppl )
+    gmp )
+	L=$1
+	srpm $L
+	mcd $BUILDDIR/t-$L
+	$SRC/${L}-*/configure $TCONFIGARGS
+	make $J
+
+	# The contents of libdir (which in this case is
+	# /usr/lib${SUFFIX}), will get passed to -L in one of the
+	# (re)link stages while installing, thus getting libgcc_so.*
+	# from the host.
+	#
+	# ?? I don't understand why --libdir=/usr/lib64 is being
+	#    passed in $TCONFIGARGS instead of
+	#    --libdir=${ROOTFS}/usr/lib64, but assuming that's the way
+	#    it's supposed to to be, then fix libdir here right before
+	#    installing the binaries. ??--aldyh
+	for i in *.la; do
+	    sed -i~ -e "s;libdir='/usr/lib;libdir='$ROOTFS/usr/lib;" $i
+	done
+	make $J install DESTDIR=${ROOTFS}
+
+	fix_la $L
+	;;
+
+    mpfr | ppl )
 	L=$1
 	srpm $L
 	mcd $BUILDDIR/t-$L
@@ -716,7 +822,17 @@ fi
 	L=$1
 	srpm libmpc
 	mcd $BUILDDIR/t-$L
-	$SRC/${L}-*/configure $TCONFIGARGS
+
+	# The MPC_GMP_CC_CFLAGS macro used in the configure.ac below
+	# determines what CC/CFLAGS were used to build libgmp*.
+	# Unfortunately, it calls the system's GCC (to compile
+	# <gmp.h>) in order to determine this.  This will pick up the
+	# system's gmp.h, which will consequently return the system
+	# compiler.
+	#
+	# Set CC here to avoid this nonsense.
+	CC=$TARGET-gcc $SRC/${L}-*/configure $TCONFIGARGS
+
 	make
 	make $J install DESTDIR=${ROOTFS}
 	fix_la $L
@@ -768,6 +884,15 @@ fi
 	make $J $ARGS install
 	;;
 
+    pcre )
+	srpm pcre
+	mcd $BUILDDIR/t-pcre
+	$SRC/pcre-*/configure $TCONFIGARGS
+	make $J V=1
+	make $J install DESTDIR=${ROOTFS}
+	fix_la pcre
+	;;
+
     # TLSFLAGS are set in order to avoid a bogus check in
     # libselinux/src/Makefile.
     libselinux )
@@ -814,7 +939,7 @@ EOF
 	$SRC/bash-*/configure --prefix=/ --cache-file=config.cache --build=$BUILD --host=$TARGET
 	make $J
 	make $J install DESTDIR=${ROOTFS}
-	(cd $ROOTFS/bin; ln -s bash sh)
+	(cd $ROOTFS/bin; ln -sf bash sh)
 	;;
 
     "t-binutils" )
@@ -853,7 +978,9 @@ EOF
      findutils )
 	srpm $1
 	mcd $BUILDDIR/$1
+	sed -i~ -e "s,locate/Makefile locate/testsuite/Makefile ,," $SRC/${1}-*/configure
 	FINDLIBS="-lselinux -ldl" $SRC/${1}-*/configure $TCONFIGARGS
+	sed -i~ -e "s/ locate / /" Makefile
 	notparallel
 	test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
 	make $J V=1
@@ -926,13 +1053,8 @@ EOF
 	mcd $BUILDDIR/$1
 	$SRC/${1}-*/configure $TCONFIGARGS --disable-pam
 	notparallel
-	for i in $(cd $SRC/${1}-*/man; echo *.x)
-	do
-	    base=`echo $i | sed 's/\.x//'`
-	    touch man/$base.1
-	done
-	make $J V=1
-	make $J install DESTDIR=${ROOTFS}
+	make $J man1_MANS= V=1
+	make $J man1_MANS= install DESTDIR=${ROOTFS}
 	;;
 
      busybox )
@@ -940,14 +1062,15 @@ EOF
         mcd $BUILDDIR/$1
         rsync -av $SRC/busybox-*/ ./
         notparallel
-        make TEST_aarch64_f17_defconfig CROSS_COMPILE=${TARGET}-
+        test -z $BUSYBOX_DEFCONFIG || make $BUSYBOX_DEFCONFIG CROSS_COMPILE=${TARGET}-
         make busybox CROSS_COMPILE=${TARGET}-
-        make install CONFIG_PREFIX=${ROOTFS}
+        make install CROSS_COMPILE=${TARGET}- CONFIG_PREFIX=${ROOTFS}
 
-        # add in an password file for cleaniness (even if it has no passwd)
+        # add a password file for cleaniness (even if it has no passwd)
         (
             echo "root::0:0:root:/:/bin/bash"
         ) > $ROOTFS/etc/passwd
+	echo "root:x:0:" > $ROOTFS/etc/group
 
         # add in some basic mount points
         [ -d ${ROOTFS}/proc ] || mkdir ${ROOTFS}/proc
@@ -972,7 +1095,7 @@ EOF
 	mcd $BUILDDIR/$1
 	cat <<EOF > config.cache
 ax_cv_have_tls=yes
-scanf_cv_alloc_modifier=yes
+scanf_cv_alloc_modifier=ms
 EOF
 	$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses \
            --prefix=/usr --libexecdir=/usr/lib${SUFFIX} --libdir=/usr/lib${SUFFIX} \
@@ -1083,6 +1206,11 @@ EOF
 	    esac
 	done
 
+# Replace all source config.{guess,sub} with more recent versions.
+	for i in $(find $ROOTFS/stage2 -name config.guess -o -name config.sub); do
+	    [ -f  $TOP/$(basename $i) ] && rm -f $i && cp -fv $TOP/$(basename $i) $i
+	done
+
 	(
 	    cd $ROOTFS/stage2/rpmbuild/BUILD/sqlite-*
 	    test -f sqlite3.h.stage1 \
@@ -1114,6 +1242,7 @@ EOF
 		| sed 's/--target=[^ ]*//' \
 		| sed 's/--with-sysroot=[^ ]*//' \
 		| sed 's/--with-build-sysroot=[^ ]*//' \
+		| sed 's/--disable-multilib//' \
 		| sed 's/--with-arch=armv8//' \
 		| sed 's/--with-fpu=neon-fp-armv8//'
             echo SUFFIX=$SUFFIX
@@ -1163,7 +1292,7 @@ EOF
 
 	test -e $ROOTFS/stage3/local.conf && rm $ROOTFS/stage3/local.conf
 	mkdirp $ROOTFS/stage3/stage3.d
-	ln -s ../stage2/local.conf $ROOTFS/stage3/local.conf
+	cp $ROOTFS/stage2/local.conf $ROOTFS/stage3/local.conf
 
 	cp $MYDIR/stage3.d/* $ROOTFS/stage3/stage3.d
 	cp $MYDIR/macros.bashrc $ROOTFS/stage3

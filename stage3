@@ -59,9 +59,9 @@ scriptmake()
 	BUILDDIR="$BUILDDIR" \
 	TARGET="$TARGET" \
 	make -f $MYDIR/script2makefile \
-	RCFILE=$TOP/macros.bashrc \
-	SCRIPTDIR=$TOP/stage3.d \
-	FRAGDIR=$TOP/stage3.mk \
+	__RCFILE=$TOP/macros.bashrc \
+	__SCRIPTDIR=$TOP/stage3.d \
+	__FRAGDIR=$TOP/stage3.mk \
 	$1
 }
 

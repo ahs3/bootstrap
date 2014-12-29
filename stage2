@@ -76,6 +76,7 @@ then
     mkdir /dev
     mknod /dev/null		c   1 3
     mknod /dev/zero		c   1 5
+    mknod /dev/urandom		c   1 9
     mknod /dev/tty		c   5 0
     mknod /dev/console		c   5 1
     mknod /dev/sda		b   8 0
@@ -120,9 +121,9 @@ scriptmake()
 {
     test -d $TOP/recipe.mk || mkdir -p $TOP/recipe.mk
     make -f $MYDIR/script2makefile \
-	SCRIPTDIR=$TOP/recipe.d \
-	FRAGDIR=$TOP/recipe.mk \
-	RCFILE=$TOP/macros.bashrc \
+	__SCRIPTDIR=$TOP/recipe.d \
+	__FRAGDIR=$TOP/recipe.mk \
+	__RCFILE=$TOP/macros.bashrc \
 	SRC="$SRC" \
 	J="$J" \
 	BUILDDIR="$BUILDDIR" \

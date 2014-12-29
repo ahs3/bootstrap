@@ -38,6 +38,7 @@ cd dev
 
 [ ! -c null ] && mknod null c   1 3
 [ ! -c zero ] && mknod zero c   1 5
+[ ! -c urandom ] && mknod urandom c   1 9
 [ ! -c tty ] && mknod tty c   5 0
 [ ! -c console ] && mknod console c   5 1
 [ ! -b sda ] && mknod sda b   8 0
