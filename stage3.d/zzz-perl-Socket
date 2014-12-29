@@ -1,0 +1,11 @@
+#requires zzz-perl-ExtUtils-CBuilder
+#requires zzz-perl-OSType
+#requires zzz-perl-IPC-Cmd
+#requires zzz-perl-Params-Check
+#requires zzz-perl-Module-Load-Conditional
+#requires zzz-perl-Module-Load
+#requires zzz-perl-version
+#requires zzz-perl-Module-Metadata
+
+rpmi perl-Socket
+rpmb -bb perl-Socket

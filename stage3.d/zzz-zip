@@ -1,0 +1,2 @@
+rpmi zip
+rpmb -bb zip

@@ -2,3 +2,18 @@
 #requires cracklib
 #requires pkgconfig
 #requires gettext
+
+rpmi pam
+
+
+sed -i "s|disable-prelude|disable-prelude\n> modules/pam_faillock/pam_faillock.8\n> modules/pam_faillock/faillock.8\n> modules/pam_pwhistory/pwhistory_helper.8|" $HOME/rpmbuild/SPECS/pam.spec
+
+grep -v 'doc/sag' < $HOME/rpmbuild/SPECS/pam.spec > $HOME/rpmbuild/SPECS/pam.spec2
+grep -v 'doc/mwg' < $HOME/rpmbuild/SPECS/pam.spec2 > $HOME/rpmbuild/SPECS/pam.spec
+grep -v 'doc/adg' < $HOME/rpmbuild/SPECS/pam.spec > $HOME/rpmbuild/SPECS/pam.spec2
+mv  $HOME/rpmbuild/SPECS/pam.spec2  $HOME/rpmbuild/SPECS/pam.spec
+
+
+rpmb -bb pam
+
+rpminst pam

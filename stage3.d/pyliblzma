@@ -1,5 +1,12 @@
 
 #requires python
 #requires xz
+#requires python-setuptools
 
-rpma pyliblzma
+rpmi pyliblzma
+
+sed -i "s| %check| %%check|" $HOME/rpmbuild/SPECS/pyliblzma.spec
+
+rpmb -bb pyliblzma
+
+rpminst pyliblzma

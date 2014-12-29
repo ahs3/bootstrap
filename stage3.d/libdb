@@ -3,6 +3,16 @@
 #requires tcl
 
 rpmi libdb
-rpmb -bb --without jave libdb
+
+# Disable java
+sed -i -e "
+s/\(^mv.*jar.*java$\)/#\1/
+s|\(^%{_libdir}/libdb_java\)|#\1|
+/%files java$/,/^$/d
+/%files java-devel$/,/^$/d
+s|\(^.*java/..jar$\)|#\1|
+s/--enable-java/--disable-java/" $HOME/rpmbuild/SPECS/libdb.spec
+
+rpmb -bb libdb
 rpminst libdb libdb-utils libdb-devel libdb-devel-static libdb-tcl libdb-tcl-devel libdb-cxx libdb-cxx-devel
 

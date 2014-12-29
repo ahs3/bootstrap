@@ -1,2 +1,9 @@
 
-rpma procps-ng procps-ng-devel
+rpmi procps-ng
+
+grep -v 'with-systemd' < $HOME/rpmbuild/SPECS/procps-ng.spec > $HOME/rpmbuild/SPECS/procps-ng.spec2
+mv $HOME/rpmbuild/SPECS/procps-ng.spec2 $HOME/rpmbuild/SPECS/procps-ng.spec
+
+rpmb -bb procps-ng
+
+rpminst procps-ng procps-ng-devel

@@ -1,0 +1,2 @@
+rpmi perl-Scalar-List-Utils
+rpmb -bb perl-Scalar-List-Utils

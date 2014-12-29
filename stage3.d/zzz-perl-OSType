@@ -1,0 +1,1 @@
+rpm -i --force --nodeps /RPMS-noarch/perl-Perl-OSType-*.noarch.rpm

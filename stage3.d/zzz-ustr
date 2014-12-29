@@ -1,0 +1,2 @@
+rpmi ustr
+rpmb -bb ustr

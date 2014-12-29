@@ -1,0 +1,22 @@
+#requires ncurses
+#requires expat
+
+rpmi python
+
+sed -i -e "
+s/with_systemtap 1/with_systemtap 0/
+s/with_debug_build 1/with_debug_build 0/" $HOME/rpmbuild/SPECS/python.spec
+
+# Do not build _tkinter because it needs <tk/tk.h>
+if [ ! -f /usr/include/tk/tk.h ]; then
+  sed -i -e "s/^+_tkinter/+#_tkinter/" \
+      	     $HOME/rpmbuild/SOURCES/python-*-config.patch
+  sed -i -e "
+             s/^\(.*dynload.*tkinter.so\)/#\1/
+	     s/^\(.*dynload.*tkinter_d.so\)/#\1/
+	     s,^\(/usr/bin/chmod 755.*_d.so.1\),#\1," \
+	     $HOME/rpmbuild/SPECS/python.spec
+fi
+
+rpmb -bb python
+rpminst python  python-libs python-devel python-tools python-test

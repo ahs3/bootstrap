@@ -8,4 +8,13 @@
 
 export RPMBUILD_EXTRA_ARGS="--with bootstrap"
 
-rpma openssh openssh-clients openssh-server openssh-server-sysvinit openssh-keycat pam_ssh_agent_auth
+rpmi openssh
+
+( echo "%global skip_gnome_askpass 1" ; cat $HOME/rpmbuild/SPECS/openssh.spec ) > $HOME/rpmbuild/SPECS/openssh.spec2
+mv $HOME/rpmbuild/SPECS/openssh.spec2 $HOME/rpmbuild/SPECS/openssh.spec
+
+sed -i -e "s|%{_unitdir}|/usr/lib/systemd/system|g" $HOME/rpmbuild/SPECS/openssh.spec
+
+rpmb -bb openssh
+
+rpminst openssh openssh-clients openssh-server openssh-server-sysvinit openssh-keycat pam_ssh_agent_auth

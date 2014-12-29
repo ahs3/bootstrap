@@ -1,0 +1,2 @@
+rpmi shared-mime-info
+rpmb -bb shared-mime-info

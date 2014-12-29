@@ -1,0 +1,2 @@
+rpmi libpwquality
+rpmb -bb libpwquality

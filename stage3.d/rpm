@@ -4,7 +4,11 @@
 #requires nss
 #requires nss-softokn
 #requires libcap
+#requires libsemanage
 
 export RPMBUILD_EXTRA_ARGS="--with python"
 
-rpma rpm rpm-libs rpm-build-libs rpm-devel rpm-build rpm-sign rpm-python rpm-apidocs rpm-cron
+rpmi rpm
+sed -i -e "s|Requires: /usr/bin/gdb-add-index|#&|" $HOME/rpmbuild/SPECS/rpm.spec
+rpmb -bb rpm
+rpminst rpm rpm-libs rpm-build-libs rpm-devel rpm-build rpm-sign rpm-python rpm-apidocs rpm-cron

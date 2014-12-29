@@ -1,2 +1,5 @@
 
+#requires freetype
+#requires fontpackages
+
 rpma fontconfig fontconfig-devel

@@ -1,0 +1,2 @@
+
+rpm -i --force --nodeps /RPMS-noarch/perl-Text-Unidecode-*.noarch.rpm

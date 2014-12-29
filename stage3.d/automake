@@ -1,4 +1,16 @@
-
 #requires autoconf
 
-rpm -i --force --nodeps /RPMS-noarch/automake-*.noarch.rpm
+#rpm -i --force --nodeps /RPMS-noarch/automake-*.noarch.rpm
+
+rpmi automake
+
+# autoreconf needs aclocal which is in automake itself.
+# Hack around it by disabling the patch that tweaks the `.mk' file,
+# which causes the autoreconf.  The .mk file touched is purely for tests,
+# and since we're going to run rpmbuild --without check, it won't matter.
+S=$HOME/rpmbuild/SPECS
+sed -i 's,^autoreconf -iv,#autoreconf,' $S/automake.spec
+sed -i 's,\(^%patch.*disable_tests$\),#\1,' $S/automake.spec
+
+rpmb -bb --without check automake
+rpminst automake

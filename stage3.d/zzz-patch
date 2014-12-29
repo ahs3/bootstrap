@@ -1,0 +1,2 @@
+rpmi patch
+rpmb -bb patch

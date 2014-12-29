@@ -1,0 +1,45 @@
+# perl is requiring perl(NDBM_File) which we didn't build because
+# we didn't have gdm at perl build time.
+# We know we don't need perl(NDBM_File) to run perl, because we've been
+# doing using it all throughout stage3.  Hack around it!
+
+cat > $HOME/rpmbuild/SPECS/perl-NDBM_File-hack.spec <<EOF
+%define	name	perl-NDBM_File-hack
+%define version	1.0
+%define release	1
+
+Summary: blah blah blah
+Name: %{name}
+Version: %{version}
+Release: %{release}
+License: GPL
+Group: Amusements/Graphics
+BuildArch: noarch
+BuildRoot: %{_builddir}/%{name}-root
+URL: http://www.redhat.com
+Distribution: whatever
+Vendor: redhat
+Packager: aldy@quesejoda.com
+
+Provides: perl(NDBM_File)
+
+%description
+blah blah
+
+%prep
+exit 0
+
+%build
+exit 0
+
+%install
+exit 0
+
+%clean
+exit 0
+
+%files
+
+EOF
+
+rpmb -bb perl-NDBM_File-hack

@@ -1,5 +1,12 @@
-
+#requires systemd
 #requires kernel-headers
 
 rpmi glibc
+
+sed -i -e '1i%define _enable_debug_packages 0' -e '
+s/run_glibc_tests 1/run_glibc_tests 0/
+s/{xtrace,memusage}/xtrace/
+/%{_prefix}.bin.memusage/d
+' $HOME/rpmbuild/SPECS/glibc.spec
+
 rpmb -bb glibc

@@ -1,0 +1,14 @@
+
+#requires python
+
+rpmi libtalloc
+
+grep -v 'doxygen' < $HOME/rpmbuild/SPECS/libtalloc.spec > $HOME/rpmbuild/SPECS/libtalloc.spec2
+grep -v 'doc/man' < $HOME/rpmbuild/SPECS/libtalloc.spec2 > $HOME/rpmbuild/SPECS/libtalloc.spec
+grep -v 'man3' < $HOME/rpmbuild/SPECS/libtalloc.spec > $HOME/rpmbuild/SPECS/libtalloc.spec2
+mv $HOME/rpmbuild/SPECS/libtalloc.spec2 $HOME/rpmbuild/SPECS/libtalloc.spec
+
+
+rpmb -bb libtalloc
+
+rpminst libtalloc libtalloc-devel pytalloc pytalloc-devel

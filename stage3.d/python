@@ -1,6 +1,8 @@
-
-export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+#requires python_notk
+#requires tk
+#requires tix
 
 rpmi python
-rpmb -bb --with bootstrap python
+sed -i -e "s/with_systemtap 1/with_systemtap 0/" $HOME/rpmbuild/SPECS/python.spec
+rpmb -bb python
 rpminst python python-libs python-devel python-tools python-test

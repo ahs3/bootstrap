@@ -1,0 +1,10 @@
+#requires zzz-slang
+
+rpmi newt
+
+sed -i -e "
+s/^docbook2txt /#&/
+" $HOME/rpmbuild/SPECS/newt.spec
+
+rpmb -bb newt
+rpminst newt newt-devel

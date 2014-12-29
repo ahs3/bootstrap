@@ -1,15 +1,28 @@
-
 #requires libdb
 #requires tcsh
 #requires zlib
 #requires bzip2
+#requires groff
 
-export RPMBUILD_EXTRA_ARGS="--without dtrace --with bootstrap"
+rpmi perl
 
-rpma perl perl-libs perl-devel perl-core perl-Digest-MD5 perl-PathTools \
-     perl-Text-Soundex perl-Time-Piece perl-macros perl-tests \
-     perl-Archive-Extract perl-B-Lint perl-CPAN perl-CPANPLUS \
-     perl-ExtUtils perl-File-Fetch perl-HTTP-Tiny perl-IO-Zlib \
-     perl-IPC-Cmd perl-Locale-Maketext-Simple perl-Log-Message \
-     perl-Module perl-Object-Accessor perl-Package-Constants \
-     perl-Params-Check perl-Pod	perl-Term-UI perl-Test-Harness
+sed -i -e "s|-Dusedtrace='/usr/bin/dtrace'|-Uusedtrace|" \
+    $HOME/rpmbuild/SPECS/perl.spec
+
+rpmb --without test -bb perl
+
+# The following perl modules were being installed originally, but
+# are not longer in the core perl distribution.
+# perl-Digest-MD5 perl-PathTools perl-Text-Soundex perl-Archive-Extract
+# perl-B-Lint  perl-CPANPLUS perl-ExtUtils perl-File-Fetch perl-HTTP-Tiny
+# perl-IPC-Cmd perl-Log-Message perl-Params-Check perl-Term-UI
+# perl-Test-Harness
+
+rpminst perl perl-libs perl-devel perl-core  \
+     perl-Time-Piece perl-macros perl-tests \
+     perl-CPAN \
+     perl-ExtUtils-Install \
+     perl-IO-Zlib \
+     perl-Locale-Maketext-Simple perl-Package-Constants \
+     perl-Module-CoreList perl-Module-Loaded perl-Object-Accessor \
+     perl-Pod-Escapes

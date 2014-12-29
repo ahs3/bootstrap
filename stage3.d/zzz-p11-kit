@@ -1,0 +1,9 @@
+#requires zzz-libtasn1
+
+rpmi p11-kit
+sed -i -e "
+s/--enable-doc/--disable-doc/
+/p11-kit.8.gz/d
+/pkcs11.conf.5.gz/d
+" $HOME/rpmbuild/SPECS/p11-kit.spec
+rpmb -bb p11-kit

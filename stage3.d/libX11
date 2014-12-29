@@ -1,3 +1,8 @@
+#requires automake
+#requires xorg-x11-util-macros
+#requires xorg-x11-xtrans-devel
+#requires xorg-x11-proto-devel
+#requires libxcb
 
 rpmi libX11
 rpmb -bb --without specs libX11

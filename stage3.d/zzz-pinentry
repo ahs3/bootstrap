@@ -1,0 +1,10 @@
+rpmi pinentry
+sed -i -e "
+/\%define _enable_pinentry_qt4/d
+s/--enable-pinentry-qt$/--disable-pinentry-qt/
+/\%if.*enable_pinentry_qt4/,/\%endif/d
+/etc.profile.d.qt.sh/d
+/%{_bindir}.pinentry-gtk-2/d
+/%{_bindir}.pinentry-qt/d
+" $HOME/rpmbuild/SPECS/pinentry.spec
+rpmb -bb pinentry

@@ -1,0 +1,5 @@
+
+#requires python
+#requires rpm
+
+rpm -i --force --nodeps /RPMS-noarch/python-decorator-*.noarch.rpm

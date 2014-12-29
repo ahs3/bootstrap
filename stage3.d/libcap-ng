@@ -1,2 +1,3 @@
+#requires swig
 
 rpma libcap-ng libcap-ng-devel libcap-ng-python libcap-ng-utils

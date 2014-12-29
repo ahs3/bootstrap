@@ -1,4 +1,7 @@
 
 #requires perl
+#requires perl-Carp
+#requires perl-File-Path
+#requires perl-ExtUtils-Manifest
 
 rpm -i --force --nodeps /RPMS-noarch/perl-ExtUtils-MakeMaker-*.noarch.rpm

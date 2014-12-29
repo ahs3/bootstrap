@@ -1,3 +1,4 @@
+#requires python-markupsafe
 
 rpm -i --force --nodeps /RPMS-noarch/python-sphinx-*.noarch.rpm \
                         /RPMS-noarch/python-jinja2-*.noarch.rpm \

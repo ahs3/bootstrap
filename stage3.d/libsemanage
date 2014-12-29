@@ -1,0 +1,3 @@
+#requires audit
+
+rpma libsemanage libsemanage-devel

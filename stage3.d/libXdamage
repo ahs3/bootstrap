@@ -1,2 +1,5 @@
+#requires libXfixes
+#requires libXext
+#requires libXrender
 
 rpma libXdamage libXdamage-devel

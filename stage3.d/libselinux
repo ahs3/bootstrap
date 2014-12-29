@@ -1,2 +1,10 @@
 
-rpma libselinux libselinux-devel libselinux-static libselinux-python libselinux-utils
+rpmi libselinux
+sed -i "s|install\-rubywrap||" $HOME/rpmbuild/SPECS/libselinux.spec
+grep -v 'rubywrap' < $HOME/rpmbuild/SPECS/libselinux.spec > $HOME/rpmbuild/SPECS/libselinux.spec2
+grep -v '/selinux.so' < $HOME/rpmbuild/SPECS/libselinux.spec2 > $HOME/rpmbuild/SPECS/libselinux.spec
+rm $HOME/rpmbuild/SPECS/libselinux.spec2
+
+rpmb -bb libselinux
+
+rpminst libselinux libselinux-devel libselinux-static libselinux-python libselinux-utils

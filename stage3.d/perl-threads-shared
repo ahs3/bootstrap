@@ -5,4 +5,7 @@
 
 export RPMBUILD_EXTRA_ARGS="--with bootstrap"
 
-rpma perl-threads-shared
+rpmi perl-threads-shared
+sed -i -e "s|%{_mandir}/man3|#&|" $HOME/rpmbuild/SPECS/perl-threads-shared.spec
+rpmb -bb perl-threads-shared
+rpminst perl-threads-shared

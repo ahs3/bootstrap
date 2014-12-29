@@ -6,5 +6,23 @@
 #requires cyrus-sasl
 
 rpmi openldap
+
+(cd $HOME/rpmbuild/SPECS ; echo "--- openldap.spec.orig	2014-05-29 13:20:33.520055698 +0000
++++ openldap.spec	2014-05-29 13:21:33.640056065 +0000
+@@ -184,6 +184,8 @@
+ 
+ popd
+ 
++sed -i 's|<EXTERN|</usr/lib64/perl5/CORE/EXTERN|' openldap-2.4.39/servers/slapd/back-perl/perl_back.h
++sed -i 's|<perl|</usr/lib64/perl5/CORE/perl|' openldap-2.4.39/servers/slapd/back-perl/perl_back.h
+ %build
+ 
+ %ifarch s390 s390x
+" | patch)
+
+sed -i -e "s|%{_unitdir}|/usr/lib/systemd/system|g" $HOME/rpmbuild/SPECS/openldap.spec
+sed -i -e "s|%{_tmpfilesdir}|/usr/lib/tmpfiles.d|g" $HOME/rpmbuild/SPECS/openldap.spec
+
+
 rpmb -bb --without docs openldap
 rpminst openldap openldap-devel

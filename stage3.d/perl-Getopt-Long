@@ -1,0 +1,5 @@
+
+#requires perl
+#requires perl-constant
+
+rpm -i --force --nodeps /RPMS-noarch/perl-Getopt-Long-*.noarch.rpm

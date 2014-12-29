@@ -1,0 +1,8 @@
+#requires git
+
+rpmi groff
+sed -i -e "
+s|^%post$|(cd %{buildroot} \&\& rm -f usr/share/groff/*/tmac/*X.tmac usr/share/groff/*/tmac/Xps.tmac)\n&|
+" $HOME/rpmbuild/SPECS/groff.spec
+rpmb -bb --define "with_x 0" groff
+rpminst groff groff-base

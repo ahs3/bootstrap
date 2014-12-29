@@ -1,3 +1,17 @@
+#requires rpm
+#requires redhat-rpm-config
+#requires redhat-release-server
+#requires perl
+#requires perl-libintl
+#requires perl-Carp
+#requires perl-Exporter
+#requires perl-Data-Dumper
+#requires perl-Text-ParseWords
+#requires perl-podlators
+#requires perl-Text-Unidecode
 
 rpmi bash
 rpmb -bb bash
+
+# Just build the rpm, do not install it, thus overriding the currently
+# running bash, and possibly bricking things.

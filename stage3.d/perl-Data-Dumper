@@ -1,6 +1,15 @@
 
 #requires perl-Carp
+#requires perl-ExtUtils-MakeMaker
+#requires perl-ExtUtils-Manifest
+#requires perl-ExtUtils-ParseXS
+#requires perl-Getopt-Long
+#requires perl-constant
+#requires perl-Test-Simple
 
-export RPMBUILD_EXTRA_ARGS="--with bootstrap"
+rpmi perl-Data-Dumper
 
-rpma perl-Data-Dumper
+sed -i -e "s|%{_mandir}/man3/|#&|" $HOME/rpmbuild/SPECS/perl-Data-Dumper.spec
+
+rpmb --define "perl_bootstrap 1" -bb perl-Data-Dumper
+rpminst perl-Data-Dumper

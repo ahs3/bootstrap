@@ -7,4 +7,12 @@
 
 export RPMBUILD_EXTRA_ARGS="--without java --without jar --without git --without emacs"
 
-rpma gettext gettext-common-devel gettext-devel gettext-libs
+rpmi gettext
+
+sed -i -e "
+/%files -n emacs-%{name}$/,/^$/d
+/%files -n emacs-%{name}-el$/,/^$/d
+s|^.*start-po.el|#&|" $HOME/rpmbuild/SPECS/gettext.spec
+
+rpmb -bb gettext
+rpminst gettext gettext-common-devel gettext-devel gettext-libs

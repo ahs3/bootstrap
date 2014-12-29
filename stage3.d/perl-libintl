@@ -1,0 +1,7 @@
+#requires perl-ExtUtils-MakeMaker
+#requires perl-ExtUtils-ParseXS
+
+rpmi perl-libintl
+sed -i -e "s|%{_mandir}/man|#&|" $HOME/rpmbuild/SPECS/perl-libintl.spec
+rpmb -bb perl-libintl
+rpminst perl-libintl

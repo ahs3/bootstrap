@@ -3,4 +3,13 @@
 
 export RPMBUILD_EXTRA_ARGS="--without emacs"
 
-rpma libidn libidn-devel
+rpmi libidn
+
+sed -i -e "
+s/\(^%{_emacs_bytecompile}\)/echo \1/
+/^%files -n emacs/,/^$/d" \
+    $HOME/rpmbuild/SPECS/libidn.spec
+
+rpmb -bb libidn
+
+rpminst libidn libidn-devel

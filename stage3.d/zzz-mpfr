@@ -1,0 +1,2 @@
+rpmi mpfr
+rpmb -bb mpfr

@@ -1,5 +1,6 @@
+#requires dos2unix
 
 rpmi swig
-rpmb -bb --without octave --without guile swig
+rpmb -bb --without testsuite --define "octave 0" swig
 rpminst swig
 

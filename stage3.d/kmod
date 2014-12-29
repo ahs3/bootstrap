@@ -1,0 +1,8 @@
+rpmi kmod
+
+sed -i -e "
+s/^make %{?_smp_mflags}/& ACLOCAL=true AUTOMAKE=true/
+" $HOME/rpmbuild/SPECS/kmod.spec
+
+rpmb -bb kmod
+rpminst kmod kmod-libs

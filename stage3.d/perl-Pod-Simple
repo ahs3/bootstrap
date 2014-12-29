@@ -1,0 +1,1 @@
+rpm -i --force --nodeps /RPMS-noarch/perl-Pod-Simple-*.noarch.rpm

@@ -1,4 +1,6 @@
-
 #requires libtool
 
 rpma redhat-rpm-config
+if [ -f /etc/rpm/macros.orig ]; then
+   rm /etc/rpm/macros.orig
+fi

@@ -1,4 +1,15 @@
 
 rpmi glib2
+
+start=`grep -n 'systemtap/tapset' < $HOME/rpmbuild/SPECS/glib2.spec | cut -f1 -d':' | awk 'NR == 1'`
+end=$(($start+3))
+awk "NR < $start || NR > $end" < $HOME/rpmbuild/SPECS/glib2.spec > $HOME/rpmbuild/SPECS/glib2.spec2
+grep -v 'systemtap' < $HOME/rpmbuild/SPECS/glib2.spec2 > $HOME/rpmbuild/SPECS/glib2.spec
+grep -v 'libgiofam' < $HOME/rpmbuild/SPECS/glib2.spec > $HOME/rpmbuild/SPECS/glib2.spec2
+mv $HOME/rpmbuild/SPECS/glib2.spec2 $HOME/rpmbuild/SPECS/glib2.spec
+
+sed -i -e "/%doc %{_mandir}.man1/d" $HOME/rpmbuild/SPECS/glib2.spec
+
+
 rpmb -bb --without systemtap --without gamin glib2
 rpminst glib2 glib2-devel

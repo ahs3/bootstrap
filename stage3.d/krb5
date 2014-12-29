@@ -4,7 +4,40 @@
 #requires keyutils
 #requires tcl
 #requires python-sphinx
+#requires python-setuptools
+#requires libverto
 
 rpmi krb5
-rpmb -bb --without docs krb5
+
+# krb5 and openldap have a circular dependency
+sed -i -e "s/--with-ldap/--without-ldap/" $HOME/rpmbuild/SPECS/krb5.spec
+sed -i -e "s|%{_unitdir}|/usr/lib/systemd/system|g" $HOME/rpmbuild/SPECS/krb5.spec
+sed -i -e "s|%{_tmpfilesdir}|/usr/lib/tmpfiles.d|g" $HOME/rpmbuild/SPECS/krb5.spec
+
+# remove test wrappers
+(cd $HOME/rpmbuild/SPECS/ && echo "--- krb5.spec.orig	2014-05-29 11:26:12.000000000 +0000
++++ krb5.spec	2014-05-29 11:27:31.200056856 +0000
+@@ -572,12 +572,6 @@
+ 	test -s build-pdf/$pdf.pdf || make -C build-pdf
+ done
+ 
+-# Build the test wrapper.
+-pushd nss_wrapper/build
+-cmake ..
+-make
+-popd
+-
+ # We need to cut off any access to locally-running nameservers, too.
+ %{__cc} -fPIC -shared -o noport.so -Wall -Wextra $RPM_SOURCE_DIR/noport.c
+ 
+" | patch)
+
+grep -v 'kldap.so' < $HOME/rpmbuild/SPECS/krb5.spec > $HOME/rpmbuild/SPECS/krb5.spec2
+grep -v 'libkdb_ldap.so' < $HOME/rpmbuild/SPECS/krb5.spec2 > $HOME/rpmbuild/SPECS/krb5.spec
+grep -v 'kdb5_ldap_util$' < $HOME/rpmbuild/SPECS/krb5.spec > $HOME/rpmbuild/SPECS/krb5.spec2
+mv $HOME/rpmbuild/SPECS/krb5.spec2 $HOME/rpmbuild/SPECS/krb5.spec
+
+rpmb -bb --without docs --without check krb5
+
 rpminst krb5-devel krb5-libs
+

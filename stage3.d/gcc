@@ -1,3 +1,12 @@
+#requires perl-podlators
+#requires perl-Pod-Simple
+#requires perl-Pod-Usage
 
 rpmi gcc
-rpmb -bb --without java gcc
+
+sed -i -e "
+ s/build_java 1/build_java 0/
+ s/build_libstdcxx_docs 1/build_libstdcxx_docs 0/
+" $HOME/rpmbuild/SPECS/gcc.spec
+
+rpmb -bb gcc

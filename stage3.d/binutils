@@ -1,5 +1,4 @@
-
-export RPMBUILD_EXTRA_ARGS="--without testsuite"
-
-rpma binutils binutils-devel
+rpmi binutils
+rpmb --without testsuite -bb binutils
+rpminst binutils binutils-devel
 

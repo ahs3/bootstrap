@@ -1,0 +1,2 @@
+rpmi perl-Encode
+rpmb -bb perl-Encode

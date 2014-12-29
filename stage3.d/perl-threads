@@ -3,4 +3,7 @@
 
 export RPMBUILD_EXTRA_ARGS="--with bootstrap"
 
-rpma perl-threads
+rpmi perl-threads
+sed -i -e "s|%{_mandir}/man3/|#&|" $HOME/rpmbuild/SPECS/perl-threads.spec
+rpmb -bb perl-threads
+rpminst perl-threads

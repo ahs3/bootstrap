@@ -1,0 +1,27 @@
+
+rpmi git
+
+sed -i -e "
+s|^%build|rm -rf contrib/emacs\n%build|
+s|^\(make -C contrib/emacs\)|echo \1|
+s|^\(make -C contrib/credential/gnome-keyring/\)|echo \1|
+s|^\(install -pm 755 contrib/credential/gnome-\)|echo \1|
+s|^\(make -C contrib/credential/gnome-keyrin\)|echo \1|
+s|\(install.*contrib/emacs\)|echo \1|
+s|%{buildroot}%{_emacs_sitestartdir}/git-init.el|/tmp|
+/%files -n emacs-git/,/git-init.el/d
+/%files -n emacs-git-el/,/elispdir/d
+/%doc contrib.emacs.README/d
+s|\(cp -a prebuilt_docs\)|echo \1|
+/%files -n gitweb/,/^$/d
+s|\(make -C contrib/subtree install\)|echo \1|
+s|^%clean$|(cd %{buildroot} ; rm -rf etc/gitweb.conf etc/httpd/conf.d/git.conf   usr/lib/systemd/system/git.* usr/libexec/git-core/git-daemon var/www/git/gitweb.cgi var/www/git/static/git-favicon.png var/www/git/static/git-logo.png var/www/git/static/gitweb.css var/www/git/static/gitweb.css var/www/git/static/gitweb.js usr/lib64/perl5/Error.pm usr/lib64/perl5/Git*)\n%clean|
+s|desktop-file-install|echo desktop-file-install|
+s|\(%{_datadir}/applications/.git-gui.desktop\)|#\1|
+/%files -n perl-Git-SVN/,/^$/d
+/%files -n perl-Git -f perl-git-files/,/^$/d
+/%files -n gitweb/,/^$/d
+" $HOME/rpmbuild/SPECS/git.spec
+
+rpmb -bb --define "_without_docs 1" git
+rpminst git

@@ -1,4 +1,21 @@
+#requires bc
+#requires kmod
 
 rpmi kernel
+
+(
+  echo "%define _without_tools 1"
+  echo "%define _without_default 1"
+  echo "%define _without_debug 1"
+  echo "%define _without_doc 1"
+  echo "%define _without_perf 1"
+  echo "%define _without_debuginfo 1"
+  echo "%define _without_kdump 1"
+  echo "%define _without_bootwrapper 1"
+  cat $HOME/rpmbuild/SPECS/kernel.spec
+) > $HOME/rpmbuild/SPECS/kernel.spec2
+
+mv $HOME/rpmbuild/SPECS/kernel.spec2 $HOME/rpmbuild/SPECS/kernel.spec
+
 rpmb -bb kernel
-rpmi kernel-headers
+rpminst kernel-headers

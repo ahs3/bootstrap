@@ -1,4 +1,10 @@
 
 rpmi dbus
+
+sed -i -e '
+s|--enable-doxygen-docs||
+s|--enable-xml-docs||
+' $HOME/rpmbuild/SPECS/dbus.spec
+
 rpmb --with bootstrap -bb dbus
 rpminst dbus dbus-libs dbus-devel

@@ -1,4 +1,19 @@
+#requires python
+#requires tcp_wrappers
+#requires libcap-ng
 
 rpmi audit
-rpmb --without prelude --without systemd -bb audit
+
+# There is a circular dependency with libsemanage via the openldap
+# requirement.  Break this dependency by removing the zos-remote
+# plugin that needs openladp.
+sed -i -e "
+s/WITH_SYSTEMD 1/WITH_SYSTEMD 0/
+s|^%build$|sed -i -e s,zos-remote,, audisp/plugins/Makefile.in\n%build|
+s|^\(.*audispd-zos-remote.conf\)|#\1|
+s|^\(.*audisp/zos-remote.conf\)|#\1|
+s|^\(.*sbin/audispd-zos-remote\)|#\1|" \
+$HOME/rpmbuild/SPECS/audit.spec
+
+rpmb -bb audit
 rpminst audit-libs audit-libs-devel

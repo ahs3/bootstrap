@@ -1,0 +1,14 @@
+rpmi libdb4
+
+sed -i -e "
+s/^mv db.jar/#&/
+s|mv \${RPM_BUILD_ROOT}%{_libdir}/..jar|#&|
+s|%{_libdir}.*libdb_java|#&|
+s|%{_datadir}/java/..jar|#&|
+/%files java$/,/^$/d
+/%files java-devel$/,/^$/d
+s/--enable-java/--disable-java/
+s|^. remove RPATHs$|rm -f \$\{RPM_BUILD_ROOT\}/usr/lib64/libdb4/libdb_java.so\n&|
+" $HOME/rpmbuild/SPECS/libdb4.spec
+
+rpmb -bb libdb4

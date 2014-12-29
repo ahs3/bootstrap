@@ -1,0 +1,13 @@
+
+rpmi libevent
+
+
+sed -i 's|make doxygen||' $HOME/rpmbuild/SPECS/libevent.spec
+sed -i 's|doxygen||' $HOME/rpmbuild/SPECS/libevent.spec
+
+grep -v '/html' < $HOME/rpmbuild/SPECS/libevent.spec > $HOME/rpmbuild/SPECS/libevent.spec.2
+mv $HOME/rpmbuild/SPECS/libevent.spec.2 $HOME/rpmbuild/SPECS/libevent.spec
+
+rpmb -bb libevent
+
+rpminst libevent libevent-devel

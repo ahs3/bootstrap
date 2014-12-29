@@ -1,0 +1,2 @@
+rpmi grep
+rpmb -bb grep

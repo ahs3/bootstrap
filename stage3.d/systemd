@@ -1,3 +1,28 @@
 
+#requires gperf
+#requires intltool
+
 rpmi systemd
+
+sed -i 's|enable-gtk-doc|disable-gtk-doc|' $HOME/rpmbuild/SPECS/systemd.spec
+sed -i 's|^make|make XSLTPROC=/usr/bin/true|' $HOME/rpmbuild/SPECS/systemd.spec
+sed -i "s|%build|%build\n>man/sd_is_special.3|" $HOME/rpmbuild/SPECS/systemd.spec
+sed -i "s|%build|%build\n>man/sd_seat_can_graphical.3|" $HOME/rpmbuild/SPECS/systemd.spec
+sed -i "s|%build|%build\n>man/sd_seat_can_tty.3|" $HOME/rpmbuild/SPECS/systemd.spec
+sed -i 's|%{_udevrulesdir}|/usr/lib/udev/rules.d|g' $HOME/rpmbuild/SPECS/systemd.spec
+
+grep -v '/systemd-journal-gatewayd' < $HOME/rpmbuild/SPECS/systemd.spec > $HOME/rpmbuild/SPECS/systemd.spec2
+grep -v 'systemd-cryptsetup-generator' < $HOME/rpmbuild/SPECS/systemd.spec2 > $HOME/rpmbuild/SPECS/systemd.spec
+grep -v 'gtk-doc/html/libudev' < $HOME/rpmbuild/SPECS/systemd.spec > $HOME/rpmbuild/SPECS/systemd.spec2
+grep -v 'GUdev-1.0.typelib' < $HOME/rpmbuild/SPECS/systemd.spec2 > $HOME/rpmbuild/SPECS/systemd.spec
+grep -v 'GUdev-1.0.gir' < $HOME/rpmbuild/SPECS/systemd.spec > $HOME/rpmbuild/SPECS/systemd.spec2
+grep -v 'gtk-doc/html/gudev' < $HOME/rpmbuild/SPECS/systemd.spec2 > $HOME/rpmbuild/SPECS/systemd.spec
+grep -v 'systemd/gatewayd' < $HOME/rpmbuild/SPECS/systemd.spec > $HOME/rpmbuild/SPECS/systemd.spec2
+mv $HOME/rpmbuild/SPECS/systemd.spec2 $HOME/rpmbuild/SPECS/systemd.spec
+#rm $HOME/rpmbuild/SPECS/systemd.spec2
+
+
 rpmb --without gtkdocs --without cryptsetup --without kmod --without http --without caps -bb systemd
+
+
+rpm -i --force --nodeps /stage3/rpmbuild/RPMS/ppc64le/systemd-*

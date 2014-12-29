@@ -1,0 +1,5 @@
+
+#requires ncurses
+
+rpma libedit libedit-devel
+

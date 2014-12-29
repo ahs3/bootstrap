@@ -5,4 +5,22 @@
 #requires pkgconfig
 #requires gawk
 
-rpma nss nss-tools nss-sysinit nss-devel nss-pkcs11-devel
+rpmi nss
+
+# Even with xmlto, the xmlto call fails to validate because of:
+# I/O error: Attempt to load network entity http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl
+# Hack around it by creating an empty .1 man page.
+# Also, kludge around doc requirements, since the make system tries to call
+# xmlto as well.
+
+sed -i -e "
+s/xmlto man \${m}/touch \`echo \${m} | sed s,xml,1,\`/
+s/^\(.*make.*clean_docs build_docs$\)/echo \1/
+s,cp ./nss/doc/nroff/\${m}.1 \.,touch \${m}.1,
+s/\(install .*man5\)/echo \1/
+s/\(%attr.*man5\)/#\1/
+" \
+       $HOME/rpmbuild/SPECS/nss.spec
+
+rpmb -bb nss
+rpminst nss nss-tools nss-sysinit nss-devel nss-pkcs11-devel

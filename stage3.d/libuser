@@ -6,4 +6,14 @@
 
 export RPMBUILD_EXTRA_ARGS="--with bootstrap"
 
-rpma libuser libuser-devel libuser-python
+rpmi libuser
+
+echo '#!/bin/sh' > /bin/sgml2txt && /bin/chmod u+x /bin/sgml2txt
+echo '#!/bin/sh' > /bin/sgml2html && /bin/chmod u+x /bin/sgml2html
+
+rpmb -bb libuser
+
+rm /bin/sgml2txt
+rm /bin/sgml2html
+
+rpminst libuser libuser-devel libuser-python

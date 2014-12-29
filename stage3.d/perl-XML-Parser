@@ -4,6 +4,7 @@
 #requires perl-PathTools
 #requires perl-libwww-perl
 #requires perl-URI
+#requires perl-File-Temp
 
 export RPMBUILD_EXTRA_ARGS="--with bootstrap"
 

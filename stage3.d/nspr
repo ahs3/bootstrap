@@ -1,2 +1,10 @@
+rpmi nspr
 
-rpma nspr nspr-devel
+# Even with xmlto, the xmlto call fails to validate because of:
+# I/O error: Attempt to load network entity http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl
+# Hack around it by creating an empty .1 man page.
+sed -i "s/xmlto man \${m}/touch \`echo \${m} | sed s,xml,1,\`/" \
+       $HOME/rpmbuild/SPECS/nspr.spec
+
+rpmb -bb nspr
+rpminst nspr

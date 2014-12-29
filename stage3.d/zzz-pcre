@@ -1,0 +1,2 @@
+rpmi pcre
+rpmb -bb pcre

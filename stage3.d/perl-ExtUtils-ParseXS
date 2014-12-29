@@ -1,0 +1,5 @@
+
+#requires perl
+#requires perl-Getopt-Long
+
+rpm -i --force --nodeps /RPMS-noarch/perl-ExtUtils-ParseXS-*.noarch.rpm

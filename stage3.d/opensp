@@ -1,2 +1,16 @@
+#requires xmlto
 
-rpma opensp opensp-devel
+rpmi opensp
+
+sed -i 's|make |make XMLTO=/usr/bin/true |' $HOME/rpmbuild/SPECS/opensp.spec
+
+grep -v ' man1/' < $HOME/rpmbuild/SPECS/opensp.spec > $HOME/rpmbuild/SPECS/opensp.spec2
+grep -v 'sx,sgml2xml' < $HOME/rpmbuild/SPECS/opensp.spec2 > $HOME/rpmbuild/SPECS/opensp.spec
+rm $HOME/rpmbuild/SPECS/opensp.spec2
+
+sed -i "s|%install|%install\n> docsrc/onsgmls.1\n> docsrc/osgmlnorm.1\n> docsrc/ospent.1\n> docsrc/ospam.1\n> docsrc/osx.1\n> docsrc/ospcat.1\n> docsrc/releasenotes.html|" $HOME/rpmbuild/SPECS/opensp.spec
+
+
+rpmb -bb opensp
+
+rpminst opensp opensp-devel

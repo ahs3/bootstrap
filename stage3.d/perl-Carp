@@ -1,4 +1,5 @@
 
 #requires perl
+#requires perl-Exporter
 
 rpm -i --force --nodeps /RPMS-noarch/perl-Carp-*.noarch.rpm

@@ -1,0 +1,2 @@
+#requires symlinks
+rpm -i --force --nodeps /RPMS-noarch/asciidoc-*.noarch.rpm

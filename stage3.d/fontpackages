@@ -1,0 +1,7 @@
+
+rpmi fontpackages
+
+rpmb -bb fontpackages
+
+
+rpminst fontpackages-filesystem fontpackages-devel fontpackages-tools

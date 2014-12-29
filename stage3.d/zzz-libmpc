@@ -1,0 +1,2 @@
+rpmi libmpc
+rpmb -bb libmpc

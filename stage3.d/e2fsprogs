@@ -1,5 +1,6 @@
-
 #requires libsepol
 #requires pkgconfig
 
-rpma e2fsprogs e2fsprogs-libs e2fsprogs-static e2fsprogs-devel libcom_err libcom_err-devel libss libss-devel
+rpmi e2fsprogs
+rpmb -bb e2fsprogs
+rpminst e2fsprogs e2fsprogs-libs e2fsprogs-static e2fsprogs-devel libcom_err libcom_err-devel libss libss-devel

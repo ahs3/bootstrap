@@ -6,5 +6,18 @@
 #requires openssl
 
 rpmi cyrus-sasl
+
+sed -i 's|--with-mysql=yes|--with-mysql=no|' $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+sed -i 's|--with-pgsql=yes|--with-pgsql=no|' $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+sed -i 's|--enable-ldapdb||' $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+sed -i -e "s|%{_unitdir}|/usr/lib/systemd/system|g" $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+
+grep -v 'mysql_config' < $HOME/rpmbuild/SPECS/cyrus-sasl.spec > $HOME/rpmbuild/SPECS/cyrus-sasl.spec2
+grep -v 'pg_config' < $HOME/rpmbuild/SPECS/cyrus-sasl.spec2 > $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+grep -v '*ldapdb*' < $HOME/rpmbuild/SPECS/cyrus-sasl.spec > $HOME/rpmbuild/SPECS/cyrus-sasl.spec2
+grep -v 'getent' < $HOME/rpmbuild/SPECS/cyrus-sasl.spec2 > $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+#mv $HOME/rpmbuild/SPECS/cyrus-sasl.spec2 $HOME/rpmbuild/SPECS/cyrus-sasl.spec
+rm $HOME/rpmbuild/SPECS/cyrus-sasl.spec2
+
 rpmb -bb --without mysql --without postgresql --without docs cyrus-sasl
 rpminst cyrus-sasl cyrus-sasl-lib cyrus-sasl-devel cyrus-sasl-gssapi cyrus-sasl-ldap
