@@ -27,14 +27,18 @@
           export USE_64
         fi
 
-        make -C $SRC/nss-3.*/mozilla/security/coreconf
-        make -C $SRC/nss-3.*/mozilla/security/dbm
-        make -C $SRC/nss-3.*/mozilla/security/nss
-        cd $SRC/nss-3.*/mozilla/security/coreconf
+	# aldyh: I have no idea why SECMOD_ECC_FLAG is being used, even if
+	# NSS_ENABLE_ECC is unset at build time.  Remove it's only use.
+	sed -i 's;^[ \t]*{ "ECC", SECMOD;//  { "ECC", SECMOD;' $SRC/nss-3.*/nss/lib/pk11wrap/pk11slot.c
+
+        make -C $SRC/nss-3.*/nss/coreconf
+        make -C $SRC/nss-3.*/nss/lib/dbm
+        make -C $SRC/nss-3.*/nss
+        cd $SRC/nss-3.*/nss/coreconf
         make install
-        cd $SRC/nss-3.*/mozilla/security/dbm
+        cd $SRC/nss-3.*/nss/lib/dbm
         make install
-        cd $SRC/nss-3.*/mozilla/security/nss
+        cd $SRC/nss-3.*/nss
         make install
 	# Copy the binary libraries we want
         NSSLIBS="libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so libnssutil3.so libfreebl3.so libnssdbm3.so libsoftokn3.so"
@@ -45,10 +49,10 @@
 	cd $SRC/nss-3.*
 	for file in $NSSLIBS $NSSLIBCHKS
 	do
-	  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
+	  install -p -m 755 dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
 	done
 	# Copy the include files we want
-	for file in $SRC/nss-*/mozilla/dist/public/nss/*.h
+	for file in $SRC/nss-*/dist/public/nss/*.h
 	do
 	  install -p -m 644 $file /usr/include/nss3/
 	done

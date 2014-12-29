@@ -8,12 +8,6 @@
         # glib2 expects --enable-threads=yes to enable threads,
         #  anything else disables threads
 
-#-- this sed no longer works; i've patched Makefile.in directly instead
-#       GIO=`cd $SRC/glib-*/gio; pwd`
-#       sed 's@gdbus-2.0/codegen@@g' $GIO/Makefile.in | sed 's/ tests$//' > $GIO/Makefile.stage2
-#       mv $GIO/Makefile.stage2 $GIO/Makefile.in
-
-        $SRC/glib-*/configure `echo $TCONFIGARGS | sed 's/posix/yes/'` --enable-static
+        $SRC/glib-*/configure `echo $TCONFIGARGS | sed 's/posix/yes/'` --enable-static --disable-modular-tests
         make $J
-        make $J install
-
+        make $J install codegen_PYTHON=

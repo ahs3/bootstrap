@@ -7,8 +7,6 @@
 #requires pkgconfig
 #requires cracklib
 
-# FIXME: this possibly has a problem with pam_faillock.8
-# not sure if configure would re-generate that warning at this point
 mcd $BUILDDIR/pam
 rsync -av $SRC/Linux-PAM-*/ ./
 	
@@ -20,7 +18,9 @@ rsync -av $SRC/Linux-PAM-*/ ./
 	--disable-audit \
 	--disable-nis
 make Makefile
-sed 's/= .*\.8.*/=/' modules/pam_faillock/Makefile > modules/pam_faillock/Makefile.stage2
-mv modules/pam_faillock/Makefile.stage2 modules/pam_faillock/Makefile
+
+# Why is PWHISTORY_HELPER not being set in Makefile.in and passed down?
+sed -i 's,PWHISTORY_HELPER,"/usr/sbin/pwhistory_helper",' modules/pam_pwhistory/pam_pwhistory.c
+
 make $J
 make $J install

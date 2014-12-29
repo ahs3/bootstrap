@@ -11,7 +11,3 @@
         notparallel
         make $J
         make $J install
-
-echo "INPUT(-lncurses)" > /usr/lib$SUFFIX/libcurses.so
-echo "INPUT(-lncursesw)" > /usr/lib$SUFFIX/libcursesw.so
-echo "INPUT(-ltinfo)" > /usr/lib$SUFFIX/libtermcap.so

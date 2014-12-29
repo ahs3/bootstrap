@@ -1,15 +1,19 @@
 #requires perl
 
+        case $TARGET in
+            ppc64le*) sslarch="linux-ppc64le" ;;
+    	    *) sslarch="linux-generic32" ;;
+	esac
+
         mcd $BUILDDIR/openssl
         cd $SRC/openssl-*
+
 ./Configure \
 	--prefix=/usr --libdir=lib${SUFFIX} --openssldir=/etc/pki/tls \
 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
-	enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ec2m no-ecdh no-ecdsa no-srp \
+	enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec2m no-srp \
 	--enginesdir=/usr/lib${SUFFIX}/openssl/engines \
-	shared  linux-generic32 fips
-
-#       ./Configure --prefix=/usr --openssldir=/etc/pki/tls --libdir=/usr/lib${SUFFIX} zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 enable-cms enable-md2 no-idea no-mdc2 no-rc5 no-ec no-ecdh no-ecdsa no-srp fips shared linux-generic32
+	shared $sslarch fips
 
         make depend
         make all

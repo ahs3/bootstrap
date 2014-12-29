@@ -28,26 +28,24 @@ then
   export USE_64
 fi
 
-make -C $SRC/nss-util-3.*/mozilla/security/coreconf
-make -C $SRC/nss-util-3.*/mozilla/security/dbm
-make -C $SRC/nss-util-3.*/mozilla/security/nss
+make -C $SRC/nss-util-3.*/nss/coreconf
+make -C $SRC/nss-util-3.*/nss
 
-cd $SRC/nss-util-3.*/mozilla/security/coreconf
+cd $SRC/nss-util-3.*/nss/coreconf
 make install
-cd $SRC/nss-util-3.*/mozilla/security/dbm
+cd $SRC/nss-util-3.*/nss
 make install
-cd $SRC/nss-util-3.*/mozilla/security/nss
-make install
+
 # Copy the binary libraries we want
 cd $SRC/nss-util-3.*
 
-for file in `cd mozilla/dist/*.OBJ/lib; echo *`
+for file in `cd dist/*.OBJ/lib; echo *`
 do
-  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
+  install -p -m 755 dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
 done
 # Copy the include files we want
 test -d /usr/include/nss3 || mkdir -p /usr/include/nss3
-for file in $SRC/nss-*/mozilla/dist/public/nss/*.h
+for file in $SRC/nss-*/dist/public/nss/*.h
 do
   install -p -m 644 $file /usr/include/nss3/
 done

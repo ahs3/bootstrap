@@ -1,10 +1,11 @@
 case "$TARGET" in
      *armv[567]* ) FLAGS2="--enable-thumb2" ;;
+     ppc64le*) FLAGS2="--enable-64bit" ;;
      * ) FLAGS2="" ;;
 esac
 
 mcd $BUILDDIR/nspr
-$SRC/nspr-*/mozilla/nsprpub/configure $TCONFIGARGS $FLAGS2
+$SRC/nspr-*/nspr/configure $TCONFIGARGS $FLAGS2
 make $J
 make $J install
 

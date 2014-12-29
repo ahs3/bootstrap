@@ -3,6 +3,11 @@
 #requires ustr
 #requires libsepol
 
+# FIXME: libsemanage includes <libaudit.h>.
+# audit is not being built because of various dependencies (see XXXX-audit).
+# Disable libsemanage for now.  Hopefully only shadow-utils is affected. ??
+exit 0
+
 mcd $BUILDDIR/libsemanage
 rsync -av $SRC/libsemanage-*/ ./
 

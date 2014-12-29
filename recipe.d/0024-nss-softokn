@@ -35,6 +35,12 @@ then
   export USE_64
 fi
 
+# uncomment if the iquote patch is activated
+export IN_TREE_FREEBL_HEADERS_FIRST=1
+
+# Use only the basicutil subset for sectools.a
+export NSS_BUILD_SOFTOKEN_ONLY=1
+
 # publish some header files from NSS to eliminate a
 # circular dependency -- these will be replaced when
 # the nss package gets built
@@ -42,38 +48,41 @@ fi
 for ii in cryptohi/cryptohi.h cryptohi/cryptoht.h \
           cryptohi/key.h cryptohi/keyhi.h cryptohi/keythi.h cryptohi/keyt.h \
           certdb/certt.h certdb/cert.h certdb/certdb.h \
-          freebl/blapit.h freebl/hasht.h \
+          freebl/blapit.h util/hasht.h \
           freebl/ecl/ecl-exp.h \
           pk11wrap/secpkcs5.h pk11wrap/pk11func.h pk11wrap/pk11pub.h \
           pk11wrap/pk11priv.h \
           pkcs7/secpkcs7.h pkcs7/pkcs7t.h \
-          softoken/secmodt.h \
+          pk11wrap/secmodt.h \
           smime/cmsreclist.h \
-          ssl/sslerr.h ssl/sslt.h ssl/ssl.h ssl/sslproto.h
+          ssl/sslerr.h ssl/sslt.h ssl/ssl.h ssl/sslproto.h \
+	  freebl/blapi.h freebl/alghmac.h freebl/secrng.h \
+	  softoken/softoken.h softoken/lowkeyti.h \
+	  softoken/softoknt.h
 do
-  cp $SRC/nss-3.*/mozilla/security/nss/lib/$ii /usr/include/nss3
+  cp $SRC/nss-3.*/nss/lib/$ii /usr/include/nss3
 done
 
-make -C $SRC/nss-softokn-3.*/mozilla/security/coreconf
-make -C $SRC/nss-softokn-3.*/mozilla/security/dbm
-make -C $SRC/nss-softokn-3.*/mozilla/security/nss
+make -C $SRC/nss-softokn-3.*/nss/coreconf
+make -C $SRC/nss-softokn-3.*/nss/lib/dbm
+make -C $SRC/nss-softokn-3.*/nss
 
-cd $SRC/nss-softokn-3.*/mozilla/security/coreconf
+cd $SRC/nss-softokn-3.*/nss/coreconf
 make install
-cd $SRC/nss-softokn-3.*/mozilla/security/dbm
+cd $SRC/nss-softokn-3.*/nss/lib/dbm
 make install
-cd $SRC/nss-softokn-3.*/mozilla/security/nss
+cd $SRC/nss-softokn-3.*/nss
 make install
 # Copy the binary libraries we want
 cd $SRC/nss-softokn-3.*
 
-for file in `cd mozilla/dist/*.OBJ/lib; echo *`
+for file in `cd dist/*.OBJ/lib; echo *`
 do
-  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
+  install -p -m 755 dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
 done
 # Copy the include files we want
 test -d /usr/include/nss3 || mkdir -p /usr/include/nss3
-for file in $SRC/nss-*/mozilla/dist/public/nss/*.h
+for file in $SRC/nss-*/dist/public/nss/*.h
 do
   install -p -m 644 $file /usr/include/nss3/
 done

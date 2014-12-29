@@ -7,3 +7,7 @@
 	cd $SRC/redhat-rpm-config-*
 	make install
 	cp -p /usr/share/libtool/config/config.{guess,sub} /usr/lib/rpm/redhat/
+
+	# RPM was built without lua.  Avoid using it in %_performance_cflags.
+	sed -i -e 's,^%_performance_cflags\(.*{lua:\),%_performance_cflags "" \
+%_UNUSED_performance_cflags\1,' /usr/lib/rpm/redhat/macros
