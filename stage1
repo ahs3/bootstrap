@@ -328,8 +328,6 @@ prefill_gcc_cache()
 setup_glibc()
 {
     # This path MUST be relative, not absolute
-    GLIBCPORTSSRC=../$(cd $SRC/glibc-*; echo glibc-ports*)
-    test -d $SRC/glibc-*/$GLIBCPORTSSRC || GLIBCPORTSSRC=ports
     GV=$(cd $SRC; echo glibc-2*)
     GLIBCARGS="--prefix=/usr
 	--with-headers=$ROOTFS/usr/include
@@ -342,7 +340,6 @@ setup_glibc()
 	--without-cvs
 	--with-elf
 	--without-gd
-	--enable-add-ons=$GLIBCPORTSSRC,nptl
 	--disable-sanity-checks
 	--with-tls
 	--with-__thread
@@ -579,7 +576,6 @@ fi
 	make $J ARCH=${KARCH} cross-compiling=yes install-headers install_root=$ROOTFS
 	touch $ROOTFS/usr/include/gnu/stubs.h
 	touch $ROOTFS/usr/include/bits/stdio_lim.h
-	cp $SRC/$GV/nptl/sysdeps/pthread/pthread.h $ROOTFS/usr/include
 
 	( cd $ROOTFS/usr/include/bits
 	  sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
