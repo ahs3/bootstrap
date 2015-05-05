@@ -1064,6 +1064,7 @@ EOF
      coreutils )
 	srpm coreutils
 	mcd $BUILDDIR/$1
+	(cd $SRC/${1}-*/ ; autoreconf -vif)
 	$SRC/${1}-*/configure $TCONFIGARGS --disable-pam
 	notparallel
 	make $J man1_MANS= V=1
