@@ -93,7 +93,7 @@ case $TARGET in
     aarch64-*)
 	KCONFIG=kernel-3.*-arm64.config
 	KARCH=arm64
-	KERNEL_RPMTARGET=arm64-redhat-linux-gnu
+	KERNEL_RPMTARGET=$TARGET
 	RPMTARGET=$TARGET
 	SUFFIX=64
 	CONFIG_EXTRA="--with-arch=armv8
