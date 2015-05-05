@@ -100,7 +100,7 @@ case $TARGET in
                       --with-fpu=neon-fp-armv8"
 	GCC_CONFIG_EXTRA="--with-arch=armv8-a"
 	EGLIBC_ARCH=arm
-	BUSYBOX_DEFCONFIG=TEST_aarch64_f17_defconfig
+	BUSYBOX_DEFCONFIG=defconfig
 	;;
     ppc64le-*)
 	KCONFIG=kernel-3.*-ppc64le.config
@@ -111,7 +111,7 @@ case $TARGET in
 	CONFIG_EXTRA=""
 	GCC_CONFIG_EXTRA="--disable-multilib"
 	EGLIBC_ARCH=ppc
-	BUSYBOX_DEFCONFIG=ppc64le_defconfig
+	BUSYBOX_DEFCONFIG=defconfig
 	;;
     *)
 	echo "Unsupported TARGET=$TARGET".
