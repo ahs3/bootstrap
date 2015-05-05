@@ -285,6 +285,7 @@ TCONFIGARGS="--prefix=/usr
 	     ${CONFIG_EXTRA}
 	     --enable-languages=c,c++
 	     --enable-threads=posix
+	     --without-guile
 "
 
 # These are for gcc cross-tools (politics sometime result in slightly
