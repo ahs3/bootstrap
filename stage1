@@ -236,11 +236,6 @@ srpm()
 	HOME=$STOP rpm -i $SDIR/$SRPM
 	cd $STOP/rpmbuild/SPECS
 
-	if [ $1 = kernel ]; then
-		sed -i -e 's/ ppc64$/ ppc64 ppc64le/
-			   s/ ppc64 / ppc64 ppc64le /' kernel.spec
-	fi
-
 	HOME=$STOP rpmbuild --target=$STARGET --nodeps -bp $SPEC.spec
 
 	# Fix libtool.m4 and associated configure files if appropriate.
