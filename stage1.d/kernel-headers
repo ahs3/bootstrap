@@ -1,0 +1,11 @@
+srpm kernel $TOP $KERNEL_RPMTARGET
+mcd $BUILDDIR/kernel
+cd $SRC/kernel-*/linux-*
+if [ ! -x $TARGET-gcc ]; then
+    # The first time around, we won't have a cross compiler.
+    # I hope this is ok ;-).
+    C=gcc
+else
+    C=$TARGET-gcc
+fi
+make CC=$C $KERNELARGS INSTALL_HDR_PATH=$ROOTFS/usr headers_install

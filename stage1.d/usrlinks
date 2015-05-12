@@ -1,0 +1,13 @@
+test -d $ROOTFS || mkdir -p $ROOTFS
+mkdir $ROOTFS/usr
+for i in bin sbin lib${SUFFIX} libexec
+do
+    ln -s usr/$i $ROOTFS/$i
+    mkdir $ROOTFS/usr/$i
+done
+ln -s usr/lib${SUFFIX} $ROOTFS/lib
+for i in etc proc sys
+do
+    mkdir $ROOTFS/$i
+done
+

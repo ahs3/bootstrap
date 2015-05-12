@@ -1,0 +1,6 @@
+srpm binutils
+mcd $BUILDDIR/binutils
+$SRC/binutils-*/configure $CONFIGARGS
+notparallel
+make $J
+make $J install

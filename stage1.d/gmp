@@ -1,0 +1,23 @@
+L=$1
+srpm $L
+mcd $BUILDDIR/t-$L
+$SRC/${L}-*/configure $TCONFIGARGS
+make $J
+
+# The contents of libdir (which in this case is
+# /usr/lib${SUFFIX}), will get passed to -L in one of the
+# (re)link stages while installing, thus getting libgcc_so.*
+# from the host.
+#
+# ?? I don't understand why --libdir=/usr/lib64 is being
+#    passed in $TCONFIGARGS instead of
+#    --libdir=${ROOTFS}/usr/lib64, but assuming that's the way
+#    it's supposed to to be, then fix libdir here right before
+#    installing the binaries. ??--aldyh
+for i in *.la; do
+    sed -i~ -e "s;libdir='/usr/lib;libdir='$ROOTFS/usr/lib;" $i
+done
+make $J install DESTDIR=${ROOTFS}
+
+fix_la $L
+

@@ -1,0 +1,25 @@
+# TLSFLAGS are set in order to avoid a bogus check in
+# libselinux/src/Makefile.
+srpm libselinux
+mcd $BUILDDIR/t-libselinux
+rsync -av $SRC/libselinux*/ ./
+# libselinux uses $prefix/include for both -I and *.pc, which
+# prevents cross compiling.
+sed 's@-I$(INCLUDEDIR)@@' < src/Makefile > src/Makefile.stage1
+mv src/Makefile.stage1 src/Makefile
+make $J \
+    CC=${TARGET}-gcc \
+    AS=${TARGET}-as \
+    AR=${TARGET}-ar \
+    STRIP=${TARGET}-strip \
+    RANLIB=${TARGET}-ranlib \
+    CFLAGS="" \
+    TLSFLAGS="" \
+    all
+ARGS="DESTDIR=${ROOTFS}"
+if [ "$SUFFIX" = "64" ]
+then
+    ARGS="$ARGS LIBDIR=${ROOTFS}/usr/lib64 SHLIBDIR=${ROOTFS}/usr/lib64"
+fi
+make $J $ARGS install
+

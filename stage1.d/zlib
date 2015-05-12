@@ -1,0 +1,13 @@
+srpm zlib
+mcd $BUILDDIR/t-zlib
+rsync -av $SRC/zlib-*/ ./
+if [ "$SUFFIX" = "64" ]
+then
+    ARGS="--libdir=/usr/lib64"
+fi
+CHOST=${TARGET} \
+    prefix=/usr \
+    ./configure $ARGS
+make
+make $J install DESTDIR=${ROOTFS}
+fix_la zlib

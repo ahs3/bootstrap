@@ -1,0 +1,14 @@
+srpm distcc
+mcd $BUILDDIR/distcc
+$SRC/${1}-*/configure $TCONFIGARGS --disable-Werror --without-avahi
+notparallel
+make $J V=1
+make $J install DESTDIR=${ROOTFS}
+
+mcd $ROOTFS/stage2/distcc-bin
+for p in gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
+do
+    test -e $p && rm $p
+    ln -s /usr/bin/distcc $p
+done
+

@@ -1,0 +1,116 @@
+# install source trees in rootfs, so stage2 will have them for
+# its builds.
+
+case "$TARGET" in
+    *i686* )
+	if [ ! -f $ROOTFS/usr/bin/uname-bin ]
+	then
+	    mv $ROOTFS/usr/bin/uname $ROOTFS/usr/bin/uname-bin
+	    echo "#!/bin/sh" > $ROOTFS/usr/bin/uname
+	    echo '/usr/bin/uname-bin "$@" | sed s/x86_64/i686/g' >> $ROOTFS/usr/bin/uname
+	    chmod a+x $ROOTFS/usr/bin/uname
+	fi
+	;;
+esac
+
+mkdirp $ROOTFS/stage2/recipe.d
+
+# FIXME: the recipe files need to be copied into the rootfs
+# before they can be used.
+
+cp $MYDIR/recipe.d/* $ROOTFS/stage2/recipe.d
+cp $MYDIR/macros.bashrc $ROOTFS/stage2
+cp $MYDIR/script2makefile $ROOTFS/stage2
+
+for PKG in $ROOTFS/stage2/recipe.d/*
+do
+    case "$PKG" in
+	*~ ) ;;
+	*# ) ;;
+	*/XXXX-* ) ;;
+	*)
+	PKG=$(echo $PKG | sed "s/.*\\///; s/^[0-9][0-9][0-9][0-9]-//")
+	echo "Installing SRPM for $PKG"
+	rsrpm $PKG
+	;;
+    esac
+done
+
+# Replace all source config.{guess,sub} with more recent versions.
+for i in $(find $ROOTFS/stage2 -name config.guess -o -name config.sub); do
+    [ -f  $TOP/$(basename $i) ] && rm -f $i && cp -fv $TOP/$(basename $i) $i
+done
+
+(
+    cd $ROOTFS/stage2/rpmbuild/BUILD/sqlite-*
+    test -f sqlite3.h.stage1 \
+    || tclsh tool/mksqlite3h.tcl . > sqlite3.h.stage1
+)
+
+cp $STAGE2 $ROOTFS/stage2/stage2
+
+(
+    # BOZO: temporary fix for network issues in models
+    #newJ=$(echo $J | sed 's/-j//')
+    #echo J=-j$newJ
+
+    #echo DISTCC_HOSTS=$(host $(hostname) | sed 's/.* //'):${DISTCC_PORT}/999
+    echo J=-j1
+    echo DISTCC_HOSTS=localhost
+    # END BOZO
+
+    echo DISTCC_BACKOFF_PERIOD=0
+    echo PATH=/stage2/distcc-bin:\$PATH
+
+    echo PATH=/stage2/ccache-bin:\$PATH
+
+    echo TARGET=$TARGET
+    echo RPMTARGET=$RPMTARGET
+    echo TCONFIGARGS=\"$TCONFIGARGS\" \
+	| sed 's/--build=[^ ]*//' \
+	| sed 's/--host=[^ ]*//' \
+	| sed 's/--target=[^ ]*//' \
+	| sed 's/--with-sysroot=[^ ]*//' \
+	| sed 's/--with-build-sysroot=[^ ]*//' \
+	| sed 's/--disable-multilib//' \
+	| sed 's/--with-arch=armv8//' \
+	| sed 's/--with-fpu=neon-fp-armv8//'
+    echo SUFFIX=$SUFFIX
+
+    echo export J DISTCC_HOSTS DISTCC_BACKOFF_PERIOD PATH
+    echo export TARGET RPMTARGET TCONFIGARGS SUFFIX
+) > $ROOTFS/stage2/local.conf
+
+mcd $PREFIX/distccd-bin
+rm -f gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
+ln -s $PREFIX/bin/${TARGET}-gcc gcc
+ln -s $PREFIX/bin/${TARGET}-gcc cc
+ln -s $PREFIX/bin/${TARGET}-gcc ${TARGET}-gcc
+ln -s $PREFIX/bin/${TARGET}-g++ ${TARGET}-g++
+ln -s $PREFIX/bin/${TARGET}-g++ g++
+ln -s $PREFIX/bin/${TARGET}-g++ c++
+ln -s $PREFIX/bin/${TARGET}-as as
+ln -s $PREFIX/bin/${TARGET}-as ${TARGET}-as
+cd $TOP
+(
+    echo #!/bin/sh
+    echo export PATH=$PREFIX/distccd-bin:\$PATH
+    # The allow means "anyone" since we don't know which host the target is.
+    # add --wizard to shut off background mode and logs info to stdout
+    echo distccd --daemon --allow 0.0.0.0/0 --port $DISTCC_PORT '"$@"'
+) > distccd.script
+chmod a+x distccd.script
+
+# add in the handy script to make sure the rootfs is usable
+# as an NFS root (and then execute it)
+cp init-rootfs.sh $ROOTFS/
+chmod a+x $ROOTFS/init-rootfs.sh
+( cd $ROOTFS; sudo ./init-rootfs.sh )
+
+# make sure ld.so.conf is set up properly
+(
+    echo /lib$SUFFIX
+    echo /usr/lib$SUFFIX
+) > $ROOTFS/etc/ld.so.conf
+
+echo stage2 ready

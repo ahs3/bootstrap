@@ -1,0 +1,6 @@
+srpm pcre
+mcd $BUILDDIR/t-pcre
+$SRC/pcre-*/configure $TCONFIGARGS
+make $J V=1
+make $J install DESTDIR=${ROOTFS}
+fix_la pcre

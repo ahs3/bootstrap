@@ -1,0 +1,11 @@
+srpm $1
+mcd $BUILDDIR/$1
+$SRC/${1}-*/configure $TCONFIGARGS
+notparallel
+# Touch sed.1 so that it will not be built.
+# The makefile in the sed/doc directory attempts to run the
+# built sed binary in order to extract the --help output, but
+# this fails because the sed binary is a cross-tool.
+touch doc/sed.1
+make $J V=1
+make $J install DESTDIR=${ROOTFS}

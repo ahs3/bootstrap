@@ -1,0 +1,12 @@
+srpm gcc
+mcd $BUILDDIR/t-gcc
+$SRC/gcc-*/configure $GCC_TCONFIGARGS --enable-linker-build-id
+notparallel
+make $J
+make $J install DESTDIR=${ROOTFS}
+test -e ${ROOTFS}/usr/bin/cc && rm ${ROOTFS}/usr/bin/cc
+ln -s gcc ${ROOTFS}/usr/bin/cc
+mkdir -p ${ROOTFS}/usr/share/gdb/auto-load/usr/lib64
+mv -f ${ROOTFS}/usr/lib64/libstdc++*gdb.py* \
+    ${ROOTFS}/usr/share/gdb/auto-load/usr/lib64
+

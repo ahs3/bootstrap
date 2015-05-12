@@ -1,0 +1,9 @@
+srpm patch
+mcd $BUILDDIR/$1
+cat <<EOF > config.cache
+ac_cv_func_strnlen_working=yes
+EOF
+$SRC/${1}-*/configure $TCONFIGARGS --cache-file=config.cache
+notparallel
+make $J V=1
+make $J install DESTDIR=${ROOTFS}

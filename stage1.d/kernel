@@ -1,0 +1,14 @@
+srpm kernel $TOP $KERNEL_RPMTARGET
+mcd $BUILDDIR/kernel
+echo copying kernel sources to build area...
+rsync -a --delete $SRC/kernel-*/linux-*/ ./
+cp $KCONFIGDIR/$KCONFIG .config
+make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- silentoldconfig
+#make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- $KIMAGE
+make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- 
+make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- modules
+make $J ARCH=$KARCH CROSS_COMPILE=${TARGET}- INSTALL_MOD_PATH=$ROOTFS modules_install
+
+mkdirp $ROOTFS/boot
+mkdirp $ROOTFS/lib/firmware
+cp arch/$KARCH/boot/$KIMAGE $ROOTFS/boot

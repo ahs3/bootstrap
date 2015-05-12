@@ -1,0 +1,27 @@
+srpm bzip2
+mcd $BUILDDIR/bzip2
+rsync -av $SRC/bzip2-*/ ./
+make $J \
+    CC=${TARGET}-gcc \
+    AR=${TARGET}-ar \
+    RANLIB=${TARGET}-ranlib \
+    PREFIX=/usr \
+    CFLAGS="$CFLAGS -fpic -fPIC" \
+    libbz2.a bzip2 bzip2recover
+if [ "$SUFFIX" = "64" ]
+then
+    ARGS="BITS=64"
+fi
+make $J $ARGS \
+    CC=${TARGET}-gcc \
+    AR=${TARGET}-ar \
+    RANLIB=${TARGET}-ranlib \
+    PREFIX=${ROOTFS}/usr \
+    install
+# the installation makes symbols links with our host's paths
+# in them, we need to redo those.
+cd $ROOTFS/usr/bin
+rm bzless;  ln -s bzmore bzless
+rm bzfgrep; ln -s bzgrep bzfgrep
+rm bzcmp;   ln -s bzdiff bzcmp
+rm bzegrep; ln -s bzgrep bzegrep

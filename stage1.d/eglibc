@@ -1,0 +1,54 @@
+srpm eglibc
+
+# setup eglibc
+# This path MUST be relative, not absolute
+GLIBCPORTSSRC=../$(cd $SRC/eglibc-*; echo ports*)
+#GLIBCPORTSSRC=ports
+GV=$(cd $SRC; echo eglibc-*/libc)
+EGLIBCARGS0="--prefix=/usr
+	--libdir=/usr/lib${SUFFIX}
+	--includedir=/usr/include
+	--with-headers=$ROOTFS/usr/include
+	--enable-kernel=2.6.32
+	--enable-bind-now
+	--build $BUILD
+	--host $TARGET
+	--disable-profile
+	--cache-file=config.cache
+	--without-cvs
+	--with-elf
+	--without-gd
+	"
+EGLIBCARGS1="$EGLIBCARGS0
+	--enable-add-ons=$GLIBCPORTSSRC,nptl
+	--disable-sanity-checks
+	--with-tls
+	--with-__thread
+	"
+EGLIBCARGS2="$EGLIBCARGS0
+	--enable-add-ons=$GLIBCPORTSSRC,nptl
+	--disable-sanity-checks
+	--with-tls
+	--with-__thread
+	"
+
+
+mcd $BUILDDIR/eglibc
+
+# prefill eglibc cache
+echo libc_cv_forced_unwind=yes > config.cache
+echo libc_cv_c_cleanup=yes >> config.cache
+echo libc_cv_ctors_header=yes >> config.cache
+echo libc_cv_ssp=yes >> config.cache
+echo libc_cv_gcc_builtin_expect=yes >> config.cache
+
+$SRC/$GV/configure $EGLIBCARGS2
+notparallel
+make $J ARCH=$EGLIBC_ARCH cross-compiling=yes
+make $J ARCH=$EGLIBC_ARCH cross-compiling=yes install install_root=$ROOTFS
+
+( cd $ROOTFS/usr/include/bits
+     sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
+     mv mathdef.h.new mathdef.h
+)
+

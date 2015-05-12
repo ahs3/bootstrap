@@ -1,0 +1,16 @@
+# This assumes stage2 was run and the files are available
+
+mkdirp $ROOTFS/stage3/stage3.d
+
+test -e $ROOTFS/stage3/local.conf && rm $ROOTFS/stage3/local.conf
+cp $ROOTFS/stage2/local.conf $ROOTFS/stage3/local.conf
+
+cp $MYDIR/stage3.d/* $ROOTFS/stage3/stage3.d
+cp $MYDIR/macros.bashrc $ROOTFS/stage3
+cp $MYDIR/script2makefile $ROOTFS/stage3
+
+cp $STAGE3 $ROOTFS/stage3/stage3
+
+test -d $ROOTFS/stage3/done || mkdir $ROOTFS/stage3/done
+
+echo stage3 ready

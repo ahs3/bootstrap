@@ -1,0 +1,14 @@
+if [ ! -f $BUILDDIR/x-loader/README ]
+then
+    cd $BUILDDIR
+    git clone git://gitorious.org/x-loader/x-loader.git
+fi
+cd $BUILDDIR/x-loader
+sed s/-Werror// cpu/omap4/config.mk > cpu/omap4/config.mk.new
+mv cpu/omap4/config.mk.new cpu/omap4/config.mk
+make $J distclean
+make $J CROSS_COMPILE=${TARGET}- omap4430panda_config
+make $J CROSS_COMPILE=${TARGET}-
+mkdirp $ROOTFS/boot
+cp MLO $ROOTFS/boot
+

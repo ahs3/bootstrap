@@ -1,0 +1,30 @@
+srpm busybox
+mcd $BUILDDIR/$1
+rsync -av $SRC/busybox-*/ ./
+notparallel
+test -z $BUSYBOX_DEFCONFIG || make $BUSYBOX_DEFCONFIG CROSS_COMPILE=${TARGET}-
+make busybox CROSS_COMPILE=${TARGET}-
+make install CROSS_COMPILE=${TARGET}- CONFIG_PREFIX=${ROOTFS}
+
+# add a password file for cleaniness (even if it has no passwd)
+(
+    echo "root::0:0:root:/:/bin/bash"
+) > $ROOTFS/etc/passwd
+echo "root:x:0:" > $ROOTFS/etc/group
+
+# add in some basic mount points
+[ -d ${ROOTFS}/proc ] || mkdir ${ROOTFS}/proc
+[ -d ${ROOTFS}/sys ] || mkdir ${ROOTFS}/sys
+(
+    echo "proc   /proc   proc     defaults        0       0"
+    echo "sysfs  /sys    sysfs    defaults        0       0"
+) > $ROOTFS/etc/fstab
+touch $ROOTFS/etc/mtab
+
+# and a place holder for other useful initializations
+[ -d ${ROOTFS}/etc/init.d ] || mkdir -p ${ROOTFS}/etc/init.d
+(
+    echo "#!/bin/sh"
+    echo "/bin/mount -a"
+) > $ROOTFS/etc/init.d/rcS
+chmod +x ${ROOTFS}/etc/init.d/rcS

@@ -1,0 +1,17 @@
+srpm bash
+mcd $BUILDDIR/bash
+cat <<EOF > config.cache
+bash_cv_func_ctype_nonascii=yes
+bash_cv_opendir_not_robust=no
+bash_cv_ulimit_maxfds=yes
+bash_cv_func_sigsetjmp=present
+bash_cv_printf_a_format=yes
+bash_cv_job_control_missing=present
+bash_cv_sys_named_pipes=present
+bash_cv_unusable_rtsigs=no
+EOF
+$SRC/bash-*/configure --prefix=/ --cache-file=config.cache --build=$BUILD --host=$TARGET
+make $J
+make $J install DESTDIR=${ROOTFS}
+(cd $ROOTFS/bin; ln -sf bash sh)
+

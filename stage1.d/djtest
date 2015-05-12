@@ -1,0 +1,3 @@
+cd $TOP/djtest
+make $J
+make $J install ROOTFS=${ROOTFS}

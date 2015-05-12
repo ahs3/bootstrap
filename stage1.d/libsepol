@@ -1,0 +1,18 @@
+srpm libsepol
+mcd $BUILDDIR/t-libsepol
+rsync -av $SRC/libsepol*/ ./
+make $J \
+    CC=${TARGET}-gcc \
+    AS=${TARGET}-as \
+    AR=${TARGET}-ar \
+    STRIP=${TARGET}-strip \
+    RANLIB=${TARGET}-ranlib \
+    CFLAGS="" \
+    TLSFLAGS="" \
+    all
+ARGS="DESTDIR=${ROOTFS}"
+if [ "$SUFFIX" = "64" ]
+then
+    ARGS="$ARGS LIBDIR=${ROOTFS}/usr/lib64 SHLIBDIR=${ROOTFS}/usr/lib64"
+fi
+make $J $ARGS install

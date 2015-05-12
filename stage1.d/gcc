@@ -1,0 +1,14 @@
+srpm gcc
+mcd $BUILDDIR/gcc
+
+# prefill gcc cache
+echo 'lt_cv_shlibpath_overrides_runpath=no' > config.cache
+echo 'gcc_cv_libc_provides_ssp=yes' >> config.cache
+
+$SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
+notparallel
+make $J
+make $J install
+mcd $ROOTFS/lib${SUFFIX}/gcc
+rsync -av $PREFIX/lib${SUFFIX}/gcc/ $ROOTFS/lib${SUFFIX}/gcc/
+rsync -av $PREFIX/$TARGET/lib/ $ROOTFS/lib${SUFFIX}/

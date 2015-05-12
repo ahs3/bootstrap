@@ -1,0 +1,13 @@
+srpm ccache
+mcd $BUILDDIR/ccache
+$SRC/${1}-*/configure $TCONFIGARGS
+notparallel
+make $J V=1
+make $J install DESTDIR=${ROOTFS}
+
+mcd $ROOTFS/stage2/ccache-bin
+for p in gcc cc g++ c++ as ${TARGET}-gcc ${TARGET}-g++ ${TARGET}-as
+do
+    test -e $p && rm $p
+    ln -s /usr/bin/ccache $p
+done

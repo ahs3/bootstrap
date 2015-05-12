@@ -1,0 +1,13 @@
+# git git://git.denx.de/u-boot.git
+if [ ! -f $BUILDDIR/u-boot/README ]
+then
+    cd $BUILDDIR
+    git clone git://git.denx.de/u-boot.git
+fi
+cd $BUILDDIR/u-boot
+make $J distclean
+make $J CROSS_COMPILE=${TARGET}- omap4_panda_config
+make $J CROSS_COMPILE=${TARGET}- u-boot.img
+mkdirp $ROOTFS/boot
+cp u-boot.img $ROOTFS/boot/u-boot.img
+

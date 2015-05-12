@@ -1,0 +1,53 @@
+set -vx
+srpm glibc
+
+# setup glibc
+# This path MUST be relative, not absolute
+GV=$(cd $SRC; echo glibc-2*)
+GLIBCARGS="--prefix=/usr
+	--with-headers=$ROOTFS/usr/include
+	--enable-kernel=2.6.32
+	--enable-bind-now
+	--build $BUILD
+	--host $TARGET
+	--disable-profile
+	--cache-file=config.cache
+	--without-cvs
+	--with-elf
+	--without-gd
+	--disable-sanity-checks
+	--with-tls
+	--with-__thread
+	--enable-obsolete-rpc
+	"
+
+mcd $BUILDDIR/glibc-stage1
+
+# prefill glibc cache
+echo libc_cv_forced_unwind=yes > config.cache
+echo libc_cv_c_cleanup=yes >> config.cache
+echo libc_cv_ctors_header=yes >> config.cache
+echo ac_cv_header_cpuid_h=yes >> config.cache
+echo libc_cv_gcc_builtin_expect=yes >> config.cache
+
+$SRC/$GV/configure $GLIBCARGS
+notparallel
+make $J ARCH=${KARCH} cross-compiling=yes install-headers install_root=$ROOTFS
+touch $ROOTFS/usr/include/gnu/stubs.h
+touch $ROOTFS/usr/include/bits/stdio_lim.h
+
+( cd $ROOTFS/usr/include/bits
+  sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
+  mv mathdef.h.new mathdef.h
+)
+
+
+# We also build just enough files to link libgcc.so.  The fake
+# libc.so will never actually get used.
+mkdirp $ROOTFS/usr/lib${SUFFIX}
+make $J ARCH=${KARCH} cross-compiling=yes csu/subdir_lib
+#cp csu/crt*.o $ROOTFS/usr/lib${SUFFIX}
+for C in `cd csu; echo crt*.o`; do
+    echo "" | $TARGET-as -o $ROOTFS/usr/lib${SUFFIX}/$C
+ done
+$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib${SUFFIX}/libc.so

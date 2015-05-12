@@ -1,0 +1,18 @@
+L=$1
+srpm libmpc
+mcd $BUILDDIR/t-$L
+
+# The MPC_GMP_CC_CFLAGS macro used in the configure.ac below
+# determines what CC/CFLAGS were used to build libgmp*.
+# Unfortunately, it calls the system's GCC (to compile
+# <gmp.h>) in order to determine this.  This will pick up the
+# system's gmp.h, which will consequently return the system
+# compiler.
+#
+# Set CC here to avoid this nonsense.
+CC=$TARGET-gcc $SRC/${L}-*/configure $TCONFIGARGS
+
+make
+make $J install DESTDIR=${ROOTFS}
+fix_la $L
+
