@@ -90,6 +90,17 @@ TARGET=aarch64-redhat-linux-gnu
 # BUSYBOX_DEFCONFIG: config file to use for busybox
 
 case $TARGET in
+    x86_64-*)
+	KCONFIG=kernel-3.*-x86_64.config
+	KARCH=x86_64
+	KERNEL_RPMTARGET=$TARGET
+	RPMTARGET=$TARGET
+	SUFFIX=64
+	CONFIG_EXTRA=""
+	GCC_CONFIG_EXTRA=""
+	EGLIBC_ARCH=x86
+	BUSYBOX_DEFCONFIG=defconfig
+	;;
     aarch64-*)
 	KCONFIG=kernel-3.*-arm64.config
 	KARCH=arm64
