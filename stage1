@@ -113,8 +113,32 @@ case $TARGET in
 	EGLIBC_ARCH=arm
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
+    armv7hl-*)
+	KCONFIG=kernel-3.*-arm.config
+	KARCH=arm
+	KERNEL_RPMTARGET=$TARGET
+	RPMTARGET=$TARGET
+	SUFFIX=''
+	CONFIG_EXTRA="--with-arch=armv7
+                      --with-fpu=vfpv3-d16
+                      --with-float-abi=hard"
+	GCC_CONFIG_EXTRA="--with-arch=armv7-a"
+	EGLIBC_ARCH=arm
+	BUSYBOX_DEFCONFIG=defconfig
+	;;
     ppc64le-*)
 	KCONFIG=kernel-3.*-ppc64le.config
+	KARCH=powerpc
+	RPMTARGET=$TARGET
+	KERNEL_RPMTARGET=$TARGET
+	SUFFIX=64
+	CONFIG_EXTRA=""
+	GCC_CONFIG_EXTRA="--disable-multilib"
+	EGLIBC_ARCH=ppc
+	BUSYBOX_DEFCONFIG=defconfig
+	;;
+    ppc64-*)
+	KCONFIG=kernel-3.*-ppc64.config
 	KARCH=powerpc
 	RPMTARGET=$TARGET
 	KERNEL_RPMTARGET=$TARGET
