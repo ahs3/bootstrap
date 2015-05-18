@@ -6,7 +6,7 @@ scanf_cv_alloc_modifier=ms
 EOF
 $SRC/${1}-*/configure $TCONFIGARGS --without-ncurses \
    --prefix=/usr --libexecdir=/usr/lib${SUFFIX} --libdir=/usr/lib${SUFFIX} \
-   --disable-wall --cache-file=config.cache --without-python
+   --disable-wall --cache-file=config.cache --without-python --without-systemd
 notparallel
 make $J V=1
 make $J install DESTDIR=${ROOTFS}
