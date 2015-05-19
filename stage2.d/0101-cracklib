@@ -1,0 +1,7 @@
+#requires libtool
+#requires gettext
+
+	mcd $BUILDDIR/cracklib
+	$SRC/cracklib-*/configure $TCONFIGARGS
+	make $J
+	make $J install

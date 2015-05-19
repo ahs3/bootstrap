@@ -1,0 +1,12 @@
+#requires libtool
+#requires gettext
+#requires attr
+
+mcd $BUILDDIR/acl
+rsync -av $SRC/acl-*/ ./
+touch .census
+./configure $TCONFIGARGS --libexecdir=/usr/lib${SUFFIX}
+make $J LIBTOOL="libtool --tag=CC"
+make $J install SHELL=/bin/bash
+make $J install-dev SHELL=/bin/bash
+make $J install-lib SHELL=/bin/bash

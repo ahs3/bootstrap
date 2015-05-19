@@ -1,0 +1,14 @@
+#requires flex
+#requires bison
+#requires ustr
+#requires libsepol
+
+mcd $BUILDDIR/libsemanage
+rsync -av $SRC/libsemanage-*/ ./
+
+# TARGET is exported by local.conf and passed on make cmdline in stage2
+# script. This overrides the definition in the libsemanage Makefile, so
+# we need to override again on the make cmdline here.
+
+make TARGET=libsemanage.so CC=gcc $J
+make TARGET=libsemanage.so CC=gcc $J LIBDIR=/usr/lib${SUFFIX} SHLIBDIR=/lib${SUFFIX} install

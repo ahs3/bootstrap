@@ -1,0 +1,6 @@
+#requires libusb1
+
+cd $SRC/libusb-compat-*
+./configure $TCONFIGARGS
+make $J
+make install

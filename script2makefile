@@ -1,6 +1,6 @@
 #!/usr/bin/make
 
-SCRIPTDIR := recipe.d
+SCRIPTDIR := stage2.d
 FRAGDIR := recipe.mk
 RCFILE := ./scripts.rc
 

@@ -1,0 +1,17 @@
+        mcd $BUILDDIR/ncurses
+        $SRC/ncurses-*/configure $TCONFIGARGS \
+            --with-shared --without-ada --with-ospeed=unsigned \
+            --with-terminfo-dirs=/etc/terminfo:/usr/share/terminfo \
+            --enable-hard-tabs --enable-xmc-glitch --enable-colorfgbg \
+            --enable-overwrite \
+            --enable-pc-files \
+            --with-termlib=tinfo \
+            --with-chtype=long \
+            --with-ticlib
+        notparallel
+        make $J
+        make $J install
+
+echo "INPUT(-lncurses)" > /usr/lib$SUFFIX/libcurses.so
+echo "INPUT(-lncursesw)" > /usr/lib$SUFFIX/libcursesw.so
+echo "INPUT(-ltinfo)" > /usr/lib$SUFFIX/libtermcap.so

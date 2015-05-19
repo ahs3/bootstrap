@@ -1,0 +1,8 @@
+#requires popt
+
+        mcd $BUILDDIR/chkconfig
+        cp -rp $SRC/chkconfig-*/* .
+        sed '/install.*ntsysv/d; /all/s/ntsysv//' Makefile > Makefile.stage2
+        make -f Makefile.stage2 $J CC=gcc
+        make -f Makefile.stage2 $J -k install || true
+

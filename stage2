@@ -121,7 +121,7 @@ scriptmake()
 {
     test -d $TOP/recipe.mk || mkdir -p $TOP/recipe.mk
     make -f $MYDIR/script2makefile \
-	SCRIPTDIR=$TOP/recipe.d \
+	SCRIPTDIR=$TOP/stage2.d \
 	FRAGDIR=$TOP/recipe.mk \
 	RCFILE=$TOP/macros.bashrc \
 	SRC="$SRC" \

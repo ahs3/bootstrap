@@ -1,0 +1,54 @@
+#requires nspr
+#requires perl
+#requires nss-util
+#requires nss-softokn
+
+        mcd $BUILDDIR/nss
+        BUILD_OPT=1
+        export BUILD_OPT
+        PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+        PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+
+        export PKG_CONFIG_ALLOW_SYSTEM_LIBS
+        export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS
+        NSPR_INCLUDE_DIR=/usr/include/nspr
+        NSPR_LIB_DIR=/usr/lib${SUFFIX}
+        export NSPR_INCLUDE_DIR
+        export NSPR_LIB_DIR
+        NSS_USE_SYSTEM_SQLITE=1
+        export NSS_USE_SYSTEM_SQLITE
+
+	FREEBL_LIB_DIR=/usr/lib${SUFFIX}
+	export FREEBL_LIB_DIR
+
+        if [ "$SUFFIX" = "64" ]
+        then
+          USE_64=1
+          export USE_64
+        fi
+
+        make -C $SRC/nss-3.*/mozilla/security/coreconf
+        make -C $SRC/nss-3.*/mozilla/security/dbm
+        make -C $SRC/nss-3.*/mozilla/security/nss
+        cd $SRC/nss-3.*/mozilla/security/coreconf
+        make install
+        cd $SRC/nss-3.*/mozilla/security/dbm
+        make install
+        cd $SRC/nss-3.*/mozilla/security/nss
+        make install
+	# Copy the binary libraries we want
+        NSSLIBS="libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so libnssutil3.so libfreebl3.so libnssdbm3.so libsoftokn3.so"
+        # BOZO: temporarily disable FIPS140 support
+        #NSSLIBCHKS="libnssdbm3.chk libfreebl3.chk libsoftokn3.chk"
+        NSSLIBCHKS=""
+        # END BOZO
+	cd $SRC/nss-3.*
+	for file in $NSSLIBS $NSSLIBCHKS
+	do
+	  install -p -m 755 mozilla/dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
+	done
+	# Copy the include files we want
+	for file in $SRC/nss-*/mozilla/dist/public/nss/*.h
+	do
+	  install -p -m 644 $file /usr/include/nss3/
+	done

@@ -1,0 +1,9 @@
+#requires libtool
+#requires attr
+#requires acl
+#requires libsemanage
+
+	mcd $BUILDDIR/shadow
+	$SRC/shadow-*/configure $TCONFIGARGS
+	make $J
+	make $J install

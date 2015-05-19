@@ -1,0 +1,8 @@
+#requires m4
+#requires bison
+
+        mcd $BUILDDIR/flex
+        $SRC/flex-*/configure $TCONFIGARGS --disable-dependency-tracking
+        make $J -k
+        make $J -k install
+

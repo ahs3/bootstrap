@@ -1,0 +1,11 @@
+#requires ncurses
+
+        mcd $BUILDDIR/texinfo
+        $SRC/texinfo-*/configure $TCONFIGARGS
+        # texi2dvi has been touched so the builder
+        # will try to rebuild the man page from texi2dvi but that
+        # spits out only a warning that no tex system is installed
+        touch doc/texi2dvi.1
+        make $J -k
+        make $J -k install
+

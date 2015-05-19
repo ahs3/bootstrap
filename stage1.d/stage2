@@ -13,16 +13,16 @@ case "$TARGET" in
 	;;
 esac
 
-mkdirp $ROOTFS/stage2/recipe.d
+mkdirp $ROOTFS/stage2/stage2.d
 
 # FIXME: the recipe files need to be copied into the rootfs
 # before they can be used.
 
-cp $MYDIR/recipe.d/* $ROOTFS/stage2/recipe.d
+cp $MYDIR/stage2.d/* $ROOTFS/stage2/stage2.d
 cp $MYDIR/macros.bashrc $ROOTFS/stage2
 cp $MYDIR/script2makefile $ROOTFS/stage2
 
-for PKG in $ROOTFS/stage2/recipe.d/*
+for PKG in $ROOTFS/stage2/stage2.d/*
 do
     case "$PKG" in
 	*~ ) ;;

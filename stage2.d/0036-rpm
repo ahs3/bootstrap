@@ -1,0 +1,33 @@
+#requires cpio
+#requires ncurses
+#requires readline
+#requires gdb
+#requires curl
+#requires sqlite
+#requires gettext
+#requires popt
+#requires pkgconfig
+#requires nss-softokn
+#requires nss
+#requires elfutils
+#requires fakechroot
+#requires file
+#requires redhat-rpm-config
+
+	mcd $BUILDDIR/rpm
+	$SRC/rpm-*/configure $TCONFIGARGS \
+		--build=${TARGET} \
+		--host=${TARGET} \
+		--target=${TARGET} \
+		CPPFLAGS="-I/usr/include/nspr -I/usr/include/nss3" \
+		--libdir=/usr/lib${SUFFIX} \
+		--with-external-db \
+		--disable-static \
+		--without-lua \
+		--localstatedir=/var
+	make $J
+	make $J install
+	mkdir -p /etc/rpm
+	mkdir -p /var/lib/rpm
+
+rpm --initdb

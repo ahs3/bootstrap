@@ -1,0 +1,7 @@
+#requires gettext
+
+mcd $BUILDDIR/iso-codes
+$SRC/iso-codes-*/configure $TCONFIGARGS
+notparallel
+make $J
+make $J install

@@ -1,0 +1,8 @@
+#requires libtool
+
+        mcd $BUILDDIR/gdbm
+	echo "Current in: $PWD"
+        $SRC/gdbm-*/configure $TCONFIGARGS
+        make $J
+        make $J install
+
