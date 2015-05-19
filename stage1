@@ -125,6 +125,7 @@ case $TARGET in
 	GCC_CONFIG_EXTRA="--with-arch=armv7-a"
 	EGLIBC_ARCH=arm
 	BUSYBOX_DEFCONFIG=defconfig
+	TARGET=armv7l-linux-gnueabihf
 	;;
     ppc64le-*)
 	KCONFIG=kernel-3.*-ppc64le.config
