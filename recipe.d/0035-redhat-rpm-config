@@ -1,9 +1,0 @@
-#requires libtool
-#requires nss
-#requires elfutils
-#requires fakechroot
-#requires file
-
-	cd $SRC/redhat-rpm-config-*
-	make install
-	cp -p /usr/share/libtool/config/config.{guess,sub} /usr/lib/rpm/redhat/

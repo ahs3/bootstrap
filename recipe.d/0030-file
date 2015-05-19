@@ -1,4 +1,0 @@
-cd $SRC/file-*
-./configure $TCONFIGARGS
-make $J
-make install

@@ -1,7 +1,0 @@
-#skip
-        mcd $BUILDDIR/rpm
-        $SRC/rpm-*/configure $TCONFIGARGS
-        notparallel
-        make $J
-        make $J install
-    

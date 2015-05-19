@@ -1,6 +1,0 @@
-        mcd $BUILDDIR/cpio
-        $SRC/cpio-*/configure $TCONFIGARGS
-        notparallel
-        make $J
-        make $J install
-

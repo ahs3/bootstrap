@@ -1,7 +1,0 @@
-#requires gettext
-
-        mcd $BUILDDIR/popt
-        $SRC/popt-*/configure $TCONFIGARGS
-        make $J
-        make $J install
-
