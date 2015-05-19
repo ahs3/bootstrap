@@ -242,6 +242,7 @@ mkdirp $ROOTFS
 mkdirp $PREFIX
 mkdirp $BUILDDIR
 mkdirp $TOP/done
+mkdirp $TOP/logs
 
 export PATH=$PREFIX/bin:$PATH
 
@@ -474,7 +475,7 @@ case "$1" in
     * ) # search for stage1 recipe
 	if [ -f $TOP/stage1.d/$1 ]; then
 	    echo "*** Sourcing recipe for $1 ***"
-	    . $TOP/stage1.d/$1
+	    . $TOP/stage1.d/$1 &> $TOP/logs/$1.log
 	else
 	    echo "ERROR: Recipe for $1 not found!"
 	    exit 1
