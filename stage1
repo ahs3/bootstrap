@@ -382,6 +382,8 @@ go()
     if "$0" "$@"
     then
 	date > $TOP/done/$1
+	echo
+	echo Module "$@" ready
     else
 	echo
 	echo Module "$@" failed
