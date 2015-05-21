@@ -149,6 +149,17 @@ case $TARGET in
 	EGLIBC_ARCH=ppc
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
+    s390x-*)
+	KCONFIG=kernel-3.*-s390x.config
+	KARCH=s390
+	RPMTARGET=$TARGET
+	KERNEL_RPMTARGET=$TARGET
+	SUFFIX=64
+	CONFIG_EXTRA=""
+	GCC_CONFIG_EXTRA="--disable-multilib"
+	EGLIBC_ARCH=s390
+	BUSYBOX_DEFCONFIG=defconfig
+	;;
     *)
 	echo "ERROR: Unsupported TARGET=$TARGET".
 	exit 1
