@@ -69,8 +69,11 @@
 
 ### Architecture dependent configury
 
+# The result of this stage will run on ...
+TARGET_ARCH=aarch64
+
+
 # TARGET: The cross-compiler target.
-TARGET=aarch64-redhat-linux-gnu
 
 # KARCH: Used by the kernel and glibc.
 
@@ -89,23 +92,23 @@ TARGET=aarch64-redhat-linux-gnu
 
 # BUSYBOX_DEFCONFIG: config file to use for busybox
 
-case $TARGET in
-    x86_64-*)
+TARGET=$TARGET_ARCH-linux-gnu
+KERNEL_RPMTARGET=$TARGET
+RPMTARGET=$TARGET
+
+case $TARGET_ARCH in
+    x86_64)
 	KCONFIG=kernel-3.*-x86_64.config
 	KARCH=x86_64
-	KERNEL_RPMTARGET=$TARGET
-	RPMTARGET=$TARGET
 	SUFFIX=64
 	CONFIG_EXTRA=""
 	GCC_CONFIG_EXTRA=""
 	EGLIBC_ARCH=x86
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
-    aarch64-*)
+    aarch64)
 	KCONFIG=kernel-3.*-arm64.config
 	KARCH=arm64
-	KERNEL_RPMTARGET=$TARGET
-	RPMTARGET=$TARGET
 	SUFFIX=64
 	CONFIG_EXTRA="--with-arch=armv8
                       --with-fpu=neon-fp-armv8"
@@ -113,11 +116,9 @@ case $TARGET in
 	EGLIBC_ARCH=arm
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
-    armv7hl-*)
+    armv7hl)
 	KCONFIG=kernel-3.*-arm.config
 	KARCH=arm
-	KERNEL_RPMTARGET=$TARGET
-	RPMTARGET=$TARGET
 	SUFFIX=''
 	CONFIG_EXTRA="--with-arch=armv7
                       --with-fpu=vfpv3-d16
@@ -125,35 +126,28 @@ case $TARGET in
 	GCC_CONFIG_EXTRA="--with-arch=armv7-a"
 	EGLIBC_ARCH=arm
 	BUSYBOX_DEFCONFIG=defconfig
-	TARGET=armv7l-linux-gnueabihf
 	;;
-    ppc64le-*)
+    ppc64le)
 	KCONFIG=kernel-3.*-ppc64le.config
 	KARCH=powerpc
-	RPMTARGET=$TARGET
-	KERNEL_RPMTARGET=$TARGET
 	SUFFIX=64
 	CONFIG_EXTRA=""
 	GCC_CONFIG_EXTRA="--disable-multilib"
 	EGLIBC_ARCH=ppc
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
-    ppc64-*)
+    ppc64)
 	KCONFIG=kernel-3.*-ppc64.config
 	KARCH=powerpc
-	RPMTARGET=$TARGET
-	KERNEL_RPMTARGET=$TARGET
 	SUFFIX=64
 	CONFIG_EXTRA=""
 	GCC_CONFIG_EXTRA="--disable-multilib"
 	EGLIBC_ARCH=ppc
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
-    s390x-*)
+    s390x)
 	KCONFIG=kernel-3.*-s390x.config
 	KARCH=s390
-	RPMTARGET=$TARGET
-	KERNEL_RPMTARGET=$TARGET
 	SUFFIX=64
 	CONFIG_EXTRA=""
 	GCC_CONFIG_EXTRA="--disable-multilib"
@@ -161,7 +155,7 @@ case $TARGET in
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
     *)
-	echo "ERROR: Unsupported TARGET=$TARGET".
+	echo "ERROR: Unsupported TARGET_ARCH=$TARGET_ARCH".
 	exit 1
 	;;
 esac
@@ -193,10 +187,14 @@ NEED_UBOOT=no
 # this is where the new rootfs will be built
 ROOTFS=$TOP/rootfs
 
+[ -f $TOP/i_am ] && BUILDER_ARCH=`cat $TOP/i_am`
+
 if [ -f $MYDIR/local.conf ]
 then
     . $MYDIR/local.conf
 fi
+
+
 
 # ------------------------------------------------------------
 # Sanity checks
@@ -456,9 +454,8 @@ case "$1" in
 	# ...we're done.  The rest of stage2 must be built in a
 	# chroot.  When stage2 packages are built in said chroot, the
 	# stage3 environment can be generated.
-	exit 0
 
-	go stage3
+	#go stage3
 
 	;;
 
