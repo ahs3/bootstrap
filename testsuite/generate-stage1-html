@@ -1,0 +1,75 @@
+#!/bin/sh
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+LOGDIR=${TOPDIR}/logs
+TESTSUITE_DIR=${TOPDIR}/testsuite
+
+builders=`cat ${LOGDIR}/stage1/results-stage1.txt | cut -f1 -d' ' | sort | uniq`
+targets=`cat ${LOGDIR}/stage1/results-stage1.txt | cut -f2 -d' ' | sort | uniq`
+output='${LOGDIR}/stage1/index.html'
+
+echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>
+      Fedora Bootstrap - Results
+    </title>
+  </head>
+  <body>
+    <h3><u>STAGE1 Results</u></h3>
+    <table>
+      <tr>
+	<th>B\T</th>' > $output
+for t in $targets; do
+  echo "	<th>$t</th>" >> $output
+done
+echo "      </tr>" >> $output
+for b in $builders; do
+  echo "      <tr>" >> $output
+  echo "	<th><a href='${b}/' style='text-decoration: none'><img src='url.png' alt=''><font color='000000'>&nbsp;$b</font></a></th>" >> $output
+  for t in $targets; do
+    result=`cat logs/stage1/results-stage1.txt | grep "^$b $t " | cut -f3 -d' '`
+    cat logs/stage1/results-stage1.txt | grep "^$b $t " &> /dev/null
+    missing=$?
+    if [ $missing = 0 ]; then
+      if [ "$result" == "*OK*" ]; then
+        echo '	<td bgcolor="#30DF30"></td>' >> $output
+      elif [ "$result" == "*MISSING*" ]; then
+        echo '	<td bgcolor="#7070FF"></td>' >> $output
+      else
+        echo "	<td bgcolor=\"#FF4040\"><a href='${b}/${t}/${result}.log' style='text-decoration: none'><font color='000000'>${result}</font></a></td>" >> $output
+      fi
+    else
+      echo '	<td bgcolor="#7070FF"></td>' >> $output
+    fi
+  done
+  echo "      </tr>" >> $output
+done
+echo '    </table>
+    <br>
+    <u>Table legend:</u>
+    <table>
+      <tr>
+	<td>B</td><td>&nbsp;&nbsp; BUILD (--build=)</td>
+      </tr>
+      <tr>
+	<td>T</td><td>&nbsp;&nbsp; TARGET (--host=,--target=)</td>
+      </tr>
+      <tr>
+	<td bgcolor="#30DF30"></td><td>&nbsp;&nbsp; working combination of BUILD & TARGET</td>
+      </tr>
+      <tr>
+	<td bgcolor="#FF4040">failing recipe</td><td>&nbsp;&nbsp; failing combination of BUILD & TARGET</td>
+      </tr>
+      <tr>
+	<td bgcolor="#7070FF"></td><td>&nbsp;&nbsp; result missing</td>
+      </tr>
+    </table>
+    <br>
+  </body>
+</html>' >> $output
+
+# copy URL icon
+cp ${TESTSUITE_DIR}/url.png ${LOGDIR}/stage1/

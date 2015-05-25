@@ -1,0 +1,36 @@
+#!/bin/sh
+downloader="yumdownloader --releasever=21 --source --enablerepo=updates-testing-source "
+
+$downloader kernel \
+	    binutils \
+	    gcc \
+	    glibc \
+	    gmp \
+	    mpfr \
+	    libmpc \
+	    ppl \
+	    isl \
+	    cloog \
+	    libsepol \
+	    xz \
+	    pcre \
+	    libselinux \
+	    zlib \
+	    bash \
+	    make \
+	    sed \
+	    coreutils \
+	    busybox \
+	    util-linux \
+	    tar \
+	    gzip \
+	    bzip2 \
+	    diffutils \
+	    findutils \
+	    gawk \
+	    patch \
+	    unzip \
+	    which \
+	    grep \
+	    distcc \
+	    ccache \

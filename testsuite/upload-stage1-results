@@ -1,0 +1,14 @@
+#!/bin/sh
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+LOGDIR=${TOPDIR}/logs
+TESTSUITE_DIR=${TOPDIR}/testsuite
+
+source ${TESTSUITE_DIR}/upload_config
+
+(cd ${LOGDIR} && tar czf stage1.tgz stage1)
+
+scp ${LOGDIR}/stage1.tgz ${dest}:${dest_path}
+
+ssh -x ${dest} "cd ${dest_path} && rm -rf stage1 && tar xf stage1.tgz && rm -f stage1.tgz"

@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# Prerequisites:
+# - builders running fedora
+# - ssh-key transferred to the builders (root account)
+# - the following packages installed on the builders
+#     byacc screen yum-utils rpm-build automake autoconf libtool make patch gcc gcc-c++ bison flex gmp-devel mpfr-devel libmpc-devel rsync gettext-devel tcl texinfo
+# - the following packages NOT installed on the builders
+#     ncurses-devel
+
+STAGE1_BUILD_ARCH_LIST="x86_64 aarch64 armv7hl ppc64le ppc64 s390x"
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+LOGDIR=${TOPDIR}/logs
+TESTSUITE_DIR=${TOPDIR}/testsuite
+BUILDERS_DIR=${TESTSUITE_DIR}/builders
+TMPDIR=/var/tmp
+
+echo ""
+echo "==== FEDORA BOOTSTRAP ===="
+export LC_ALL=C
+
+# make a tarball
+echo "* Generating fedora-bootstrap tarball ..."
+rm -f fedora-bootstrap.tar.xz && \
+mkdir -p ${LOGDIR} && \
+rm -rf ${LOGDIR}/* && \
+rm -rf ${TMPDIR}/fedora-bootstrap && \
+mkdir ${TMPDIR}/fedora-bootstrap && \
+cp -a * ${TMPDIR}/fedora-bootstrap/ && \
+(cd ${TMPDIR} ; tar cJf fedora-bootstrap.tar.xz fedora-bootstrap) && \
+cp ${TMPDIR}/fedora-bootstrap.tar.xz .
+
+
+# ****** STAGE1 ******
+
+echo ""
+echo "==== Entering STAGE1 ===="
+
+# transfer the fedora-bootstrap tarball to the builders
+echo "* Transferring fedora-bootstrap tarball to builders ..."
+for arch in $STAGE1_BUILD_ARCH_LIST ; do
+  builder=`cat ${BUILDERS_DIR}/${arch}`
+  echo "-> $arch: $builder"
+  scp fedora-bootstrap.tar.xz root@${builder}:/home/
+done
+
+echo "* Starting stage1 on the builders ..."
+# run the stage1 remotely on all builders
+for arch in $STAGE1_BUILD_ARCH_LIST ; do
+  builder=`cat ${BUILDERS_DIR}/${arch}`
+  echo "-> $arch: $builder"
+  ssh -x root@${builder} "cd /home && rm -rf /home/fedora-bootstrap && tar xf fedora-bootstrap.tar.xz && cd fedora-bootstrap && echo \"${arch}\" > i_am && ./testsuite/run-stage1 --screen"
+done
+
+echo "* Waiting for builders to finish stage1 ..."
+mkdir -p ${LOGDIR}/stage1
+while : ; do
+  stage1_done=1
+  for arch in $STAGE1_BUILD_ARCH_LIST ; do
+    if [ ! -d ${LOGDIR}/stage1/$arch ]; then
+      builder=`cat ${BUILDERS_DIR}/${arch}`
+      scp root@${builder}:/home/fedora-bootstrap/logs-stage1.tgz ${LOGDIR}/stage1/ &> /dev/null
+      if [ $? = 0 ]; then
+	mkdir -p ${LOGDIR}/stage1/$arch
+	mv ${LOGDIR}/stage1/logs-stage1.tgz ${LOGDIR}/stage1/$arch/
+	(cd ${LOGDIR}/stage1/$arch && tar xf logs-stage1.tgz && rm -f logs-stage1.tgz)
+	echo "$arch finished"
+      else
+	stage1_done=0
+      fi
+    fi
+  done
+  [ $stage1_done = 1 ] && break;
+  sleep 60
+done
+
+echo "* Processing stage1 results ..."
+for arch in $STAGE1_BUILD_ARCH_LIST ; do
+  line_nr=0
+  line_cnt=`cat ${LOGDIR}/stage1/${arch}/screenlog-stage1.txt | grep -e 'Building stage1' -e "^Module .* failed" -e '^Module stage2 ready' | wc -l`
+  cat ${LOGDIR}/stage1/${arch}/screenlog-stage1.txt | grep -e 'Building stage1' -e "^Module .* failed" -e '^Module stage2 ready' | while read line ; do
+    first=`echo $line | cut -f1 -d' '`
+    if [ "$first" == "====" ]; then
+      [ $line_nr -gt 0 ] && echo "$arch $log_arch $log_failed"
+      log_arch=`echo $line | cut -f5 -d' '`
+      log_failed='*MISSING*'
+    elif [ "$first" == "Module" ]; then
+      log_mod_status=`echo $line | cut -f3 -d' ' | sed "s|\r||"`
+      if [ "$log_mod_status" == "ready" ]; then
+	log_failed='*OK*'
+      elif [ "$log_mod_status" == "failed" ]; then
+	log_failed=`echo $line | cut -f2 -d' '`
+      else
+	echo "ERROR: Unexpected module status \"${log_mod_status}\""
+	exit 1
+      fi
+    else
+      echo "ERROR: Unexpected token \"${first}\""
+      exit 1
+    fi
+    line_nr=$((line_nr+1))
+    [ $line_nr = $line_cnt ] && echo "$arch $log_arch $log_failed"
+  done
+done > ${LOGDIR}/stage1/results-stage1.txt
+
+${TESTSUITE_DIR}/generate-stage1-html
+
+echo "* stage1 done"
+
+
+# ****** STAGE2 ******
+
+echo ""
+echo "==== Entering STAGE2 ===="

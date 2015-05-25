@@ -1,0 +1,2 @@
+dest="username@upload-host.domain.local"
+dest_path="public_html/fedora-bootstrap/results/"
