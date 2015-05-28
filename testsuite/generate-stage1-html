@@ -7,8 +7,29 @@ TESTSUITE_DIR=${TOPDIR}/testsuite
 
 builders=`cat ${LOGDIR}/stage1/results-stage1.txt | cut -f1 -d' ' | sort | uniq`
 targets=`cat ${LOGDIR}/stage1/results-stage1.txt | cut -f2 -d' ' | sort | uniq`
-output='${LOGDIR}/stage1/index.html'
+output="${LOGDIR}/stage1/index.html"
 
+# create target -> build symlinks
+for t in ${targets}; do
+  mkdir -p ${LOGDIR}/stage1/per-target/${t}
+  for b in ${builders}; do
+    [ ! -L ${LOGDIR}/stage1/per-target/${t}/${b} ] && ln -s ../../${b}/${t} ${LOGDIR}/stage1/per-target/${t}/${b}
+  done
+done
+
+# generate redirect from per-target to results
+echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <title>Deli redirect</title>
+    <META HTTP-EQUIV="Refresh" CONTENT="0; URL=../">
+  </head>
+  <body>
+  </body>
+</html>
+' > ${LOGDIR}/stage1/per-target/index.html
+
+# generate page with stage1 results
 echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
   <head>
@@ -16,36 +37,56 @@ echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
     <title>
       Fedora Bootstrap - Results
     </title>
+    <style type="text/css">
+      <!--
+	table a {
+	  text-decoration: none;
+	  display: block;
+	  text-align: center;
+	  width: 100%;
+	  color: black;
+	}
+	td.ok {
+	  background-color: #30DF30;
+	}
+	td.missing {
+	  background-color: #7070FF;
+	}
+	td.failed {
+	  background-color: #FF4040;
+	}
+      -->
+    </style>
   </head>
   <body>
     <h3><u>STAGE1 Results</u></h3>
     <table>
       <tr>
-	<th>B\T</th>' > $output
-for t in $targets; do
-  echo "	<th>$t</th>" >> $output
+	<th>B\T</th>' > ${output}
+for t in ${targets}; do
+  echo "	<th><a href='per-target/${t}/'>&nbsp;${t}</a></th>" >> ${output}
 done
-echo "      </tr>" >> $output
-for b in $builders; do
-  echo "      <tr>" >> $output
-  echo "	<th><a href='${b}/' style='text-decoration: none'><img src='url.png' alt=''><font color='000000'>&nbsp;$b</font></a></th>" >> $output
-  for t in $targets; do
-    result=`cat logs/stage1/results-stage1.txt | grep "^$b $t " | cut -f3 -d' '`
-    cat logs/stage1/results-stage1.txt | grep "^$b $t " &> /dev/null
+echo "      </tr>" >> ${output}
+for b in ${builders}; do
+  echo "      <tr>" >> ${output}
+  echo "	<th><a href='${b}/'>&nbsp;${b}</a></th>" >> ${output}
+  for t in ${targets}; do
+    result=`cat ${LOGDIR}/stage1/results-stage1.txt | grep "^${b} ${t} " | cut -f3 -d' '`
+    cat ${LOGDIR}/stage1/results-stage1.txt | grep "^${b} ${t} " &> /dev/null
     missing=$?
-    if [ $missing = 0 ]; then
-      if [ "$result" == "*OK*" ]; then
-        echo '	<td bgcolor="#30DF30"></td>' >> $output
-      elif [ "$result" == "*MISSING*" ]; then
-        echo '	<td bgcolor="#7070FF"></td>' >> $output
+    if [ ${missing} = 0 ]; then
+      if [ "${result}" == "*OK*" ]; then
+        echo "	<td class='ok'><a href='${b}/${t}/'>&nbsp;</a></td>" >> ${output}
+      elif [ "${result}" == "*MISSING*" ]; then
+        echo "	<td class='missing'></td>" >> ${output}
       else
-        echo "	<td bgcolor=\"#FF4040\"><a href='${b}/${t}/${result}.log' style='text-decoration: none'><font color='000000'>${result}</font></a></td>" >> $output
+        echo "	<td class='failed'><a href='${b}/${t}/${result}.log'>${result}</a></td>" >> ${output}
       fi
     else
-      echo '	<td bgcolor="#7070FF"></td>' >> $output
+      echo "	<td class='missing'></td>" >> ${output}
     fi
   done
-  echo "      </tr>" >> $output
+  echo "      </tr>" >> ${output}
 done
 echo '    </table>
     <br>
@@ -58,18 +99,18 @@ echo '    </table>
 	<td>T</td><td>&nbsp;&nbsp; TARGET (--host=,--target=)</td>
       </tr>
       <tr>
-	<td bgcolor="#30DF30"></td><td>&nbsp;&nbsp; working combination of BUILD & TARGET</td>
+	<td class="ok"></td><td>&nbsp;&nbsp; working combination of BUILD & TARGET</td>
       </tr>
       <tr>
-	<td bgcolor="#FF4040">failing recipe</td><td>&nbsp;&nbsp; failing combination of BUILD & TARGET</td>
+	<td class="failed">failing recipe</td><td>&nbsp;&nbsp; failing combination of BUILD & TARGET</td>
       </tr>
       <tr>
-	<td bgcolor="#7070FF"></td><td>&nbsp;&nbsp; result missing</td>
+	<td class="missing"></td><td>&nbsp;&nbsp; result missing</td>
       </tr>
     </table>
     <br>
   </body>
-</html>' >> $output
+</html>' >> ${output}
 
 # copy URL icon
-cp ${TESTSUITE_DIR}/url.png ${LOGDIR}/stage1/
+#cp ${TESTSUITE_DIR}/url.png ${LOGDIR}/stage1/
