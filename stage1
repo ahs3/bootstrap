@@ -106,6 +106,15 @@ case $TARGET_ARCH in
 	EGLIBC_ARCH=x86
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
+    i686)
+	KCONFIG=kernel-3.*-i686.config
+	KARCH=i686
+	SUFFIX=''
+	CONFIG_EXTRA=""
+	GCC_CONFIG_EXTRA=""
+	EGLIBC_ARCH=x86
+	BUSYBOX_DEFCONFIG=defconfig
+	;;
     aarch64)
 	KCONFIG=kernel-3.*-arm64.config
 	KARCH=arm64
