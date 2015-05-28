@@ -108,7 +108,7 @@ case $TARGET_ARCH in
 	;;
     i686)
 	KCONFIG=kernel-3.*-i686.config
-	KARCH=i686
+	KARCH=i386
 	SUFFIX=''
 	CONFIG_EXTRA=""
 	GCC_CONFIG_EXTRA=""
