@@ -14,4 +14,3 @@ $SRC/bash-*/configure --prefix=/ --cache-file=config.cache --build=$BUILD --host
 make $J
 make $J install DESTDIR=${ROOTFS}
 (cd $ROOTFS/bin; ln -sf bash sh)
-

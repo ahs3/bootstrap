@@ -10,4 +10,3 @@ make $J CROSS_COMPILE=${TARGET}- omap4_panda_config
 make $J CROSS_COMPILE=${TARGET}- u-boot.img
 mkdirp $ROOTFS/boot
 cp u-boot.img $ROOTFS/boot/u-boot.img
-

@@ -15,4 +15,3 @@ CC=$TARGET-gcc $SRC/${L}-*/configure $TCONFIGARGS
 make
 make $J install DESTDIR=${ROOTFS}
 fix_la $L
-

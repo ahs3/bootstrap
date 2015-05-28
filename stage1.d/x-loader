@@ -11,4 +11,3 @@ make $J CROSS_COMPILE=${TARGET}- omap4430panda_config
 make $J CROSS_COMPILE=${TARGET}-
 mkdirp $ROOTFS/boot
 cp MLO $ROOTFS/boot
-

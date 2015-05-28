@@ -11,4 +11,3 @@ do
     test -e $p && rm $p
     ln -s /usr/bin/distcc $p
 done
-

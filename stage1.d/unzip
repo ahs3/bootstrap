@@ -16,4 +16,4 @@ make $J -f unix/Makefile \
     STRIP=${TARGET}-strip \
     RANLIB=${TARGET}-ranlib \
     prefix=${ROOTFS}/usr \
-    install 
+    install

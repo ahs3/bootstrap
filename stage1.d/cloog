@@ -4,4 +4,3 @@ $SRC/cloog-*/configure $TCONFIGARGS --with-ppl
 make $J
 make $J install DESTDIR=${ROOTFS}
 fix_la cloog
-

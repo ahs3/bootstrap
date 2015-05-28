@@ -5,4 +5,3 @@ notparallel
 test -d tools/gnulib/lib && make $J V=1 -C tools/gnulib/lib
 make $J V=1
 make $J install DESTDIR=${ROOTFS}
-

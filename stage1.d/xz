@@ -4,7 +4,6 @@ $SRC/${1}-*/configure \
     --prefix=/usr \
         --libdir=/usr/lib64 \
     --build=$BUILD \
-    --host=$TARGET \
-notparallel
+    --host=$TARGET
 make $J V=1
 make $J install DESTDIR=${ROOTFS}

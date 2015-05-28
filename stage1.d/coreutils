@@ -5,4 +5,3 @@ $SRC/${1}-*/configure $TCONFIGARGS --disable-pam
 notparallel
 make $J man1_MANS= V=1
 make $J man1_MANS= install DESTDIR=${ROOTFS}
-

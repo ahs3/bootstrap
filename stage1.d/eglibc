@@ -51,4 +51,3 @@ make $J ARCH=$EGLIBC_ARCH cross-compiling=yes install install_root=$ROOTFS
      sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
      mv mathdef.h.new mathdef.h
 )
-

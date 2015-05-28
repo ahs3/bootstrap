@@ -22,4 +22,3 @@ then
     ARGS="$ARGS LIBDIR=${ROOTFS}/usr/lib64 SHLIBDIR=${ROOTFS}/usr/lib64"
 fi
 make $J $ARGS install
-

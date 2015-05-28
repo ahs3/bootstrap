@@ -20,4 +20,3 @@ done
 make $J install DESTDIR=${ROOTFS}
 
 fix_la $L
-

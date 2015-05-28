@@ -63,4 +63,3 @@ cp csu/crt*.o $ROOTFS/usr/lib${SUFFIX}
 cp csu/elf-init*.o $ROOTFS/usr/lib${SUFFIX}
 cp csu/libc-start*.o $ROOTFS/usr/lib${SUFFIX}
 $TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib${SUFFIX}/libc.so
-
