@@ -117,6 +117,7 @@ case $TARGET_ARCH in
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
     armv7hl)
+	TARGET=armv7l-linux-gnueabihf
 	KCONFIG=kernel-3.*-arm.config
 	KARCH=arm
 	SUFFIX=''
@@ -293,7 +294,10 @@ srpm()
 	#
 	# If the `find' in the script below takes too long, perhaps it's
 	# time to rethink this.
-	(cd $STOP && $TOP/libtool-handle-ppc64le.sh)
+	(cd $STOP/rpmbuild && $TOP/scripts/libtool-handle-ppc64le.sh)
+
+	# Fix obsolete config.sub and config.guess to support latest archs
+	(cd $STOP/rpmbuild && $TOP/scripts/config-override.sh)
 
 	cd $TOP
     fi
