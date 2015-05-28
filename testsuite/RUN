@@ -8,7 +8,7 @@
 # - the following packages NOT installed on the builders
 #     ncurses-devel
 
-STAGE1_BUILD_ARCH_LIST="x86_64 aarch64 armv7hl ppc64le ppc64 s390x"
+STAGE1_BUILD_ARCH_LIST="x86_64 i686 aarch64 armv7hl ppc64le ppc64 s390x"
 
 cd ${0%/*}/..
 TOPDIR=${PWD}
