@@ -3,6 +3,12 @@ srpm glibc
 # setup glibc
 # This path MUST be relative, not absolute
 GV=$(cd $SRC; echo glibc-2*)
+
+if [ "$TARGET_ARCH" == "armv7hl" ]; then
+  # rtkaio not supported on ARM
+  rm -rf $SRC/$GV/rtkaio
+fi
+
 GLIBCARGS="--prefix=/usr
 	--with-headers=$ROOTFS/usr/include
 	--enable-kernel=2.6.32
