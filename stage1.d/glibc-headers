@@ -32,7 +32,7 @@ echo libc_cv_gcc_builtin_expect=yes >> config.cache
 
 $SRC/$GV/configure $GLIBCARGS
 notparallel
-make $J ARCH=${KARCH} cross-compiling=yes install-headers install_root=$ROOTFS
+make DESTDIR=$ROOTFS $J ARCH=${KARCH} cross-compiling=yes install-headers
 touch $ROOTFS/usr/include/gnu/stubs.h
 touch $ROOTFS/usr/include/bits/stdio_lim.h
 
@@ -41,13 +41,79 @@ touch $ROOTFS/usr/include/bits/stdio_lim.h
   mv mathdef.h.new mathdef.h
 )
 
-
 # We also build just enough files to link libgcc.so.  The fake
-# libc.so will never actually get used.
-mkdirp $ROOTFS/usr/lib${SUFFIX}
+# libc.so will never actually get used, but simplifies the boostrap.
 make $J ARCH=${KARCH} cross-compiling=yes csu/subdir_lib
-#cp csu/crt*.o $ROOTFS/usr/lib${SUFFIX}
-for C in `cd csu; echo crt*.o`; do
-    echo "" | $TARGET-as -o $ROOTFS/usr/lib${SUFFIX}/$C
- done
-$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null -o $ROOTFS/usr/lib${SUFFIX}/libc.so
+
+mkdirp $ROOTFS/usr/lib${SUFFIX}
+for file in `cd csu; echo crt*.o`; do
+    echo "" | $TARGET-as -o $ROOTFS/usr/lib${SUFFIX}/$file
+done
+$TARGET-gcc -nostdlib -nostartfiles -shared -x c /dev/null\
+	 -o $ROOTFS/usr/lib${SUFFIX}/libc.so
+
+# If we are building x86_64, then the 32-bit multilib libgcc
+# will also need stub 32-bit libraries.
+if [ "$TARGET" = "x86_64-linux-gnu" ]; then
+
+  old_CC=$CC
+  old_CXX=$CC
+  export CC="$TARGET-gcc -m32"
+  export CXX="$TARGET-g++ -m32"
+  TARGET32="i686-pc-linux-gnu"
+  # setup 32-bit glibc headers
+  # This path MUST be relative, not absolute
+  GV=$(cd $SRC; echo glibc-2*)
+  GLIBCARGS="--prefix=/usr
+	--with-headers=$ROOTFS/usr/include
+	--enable-kernel=2.6.32
+	--enable-bind-now
+	--build $BUILD
+	--host $TARGET32
+	--disable-profile
+	--cache-file=config.cache
+	--without-cvs
+	--with-elf
+	--without-gd
+	--disable-sanity-checks
+	--with-tls
+	--with-__thread
+	--enable-obsolete-rpc
+	"
+
+  mcd $BUILDDIR/glibc32-stage1
+
+  # prefill glibc cache
+  echo libc_cv_forced_unwind=yes > config.cache
+  echo libc_cv_c_cleanup=yes >> config.cache
+  echo libc_cv_ctors_header=yes >> config.cache
+  echo ac_cv_header_cpuid_h=yes >> config.cache
+  echo libc_cv_gcc_builtin_expect=yes >> config.cache
+
+  $SRC/$GV/configure $GLIBCARGS
+  notparallel
+  make DESTDIR=$ROOTFS $J ARCH=${KARCH} cross-compiling=yes install-headers
+  touch $ROOTFS/usr/include/gnu/stubs.h
+  touch $ROOTFS/usr/include/bits/stdio_lim.h
+
+  ( cd $ROOTFS/usr/include/bits
+    sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
+    mv mathdef.h.new mathdef.h
+  )
+
+  # We also build just enough files to link libgcc.so.  The fake
+  # libc.so will never actually get used, but simplifies the boostrap.
+  make $J ARCH=${KARCH} cross-compiling=yes csu/subdir_lib
+
+  mkdirp $ROOTFS/usr/lib
+  for file in `cd csu; echo crt*.o`; do
+    echo "" | $TARGET-as --32 -o $ROOTFS/usr/lib/$file
+  done
+  $CC -m32 -nostdlib -nostartfiles -shared -x c /dev/null\
+	-o $ROOTFS/usr/lib/libc.so
+
+  CC=$old_CC
+  CXX=$old_CXX
+  export $CC
+  export $CXX
+fi

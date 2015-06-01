@@ -5,7 +5,15 @@ do
     ln -s usr/$i $ROOTFS/$i
     mkdir $ROOTFS/usr/$i
 done
-ln -s usr/lib${SUFFIX} $ROOTFS/lib
+# Do not symlink the 32-bit lib directory.
+# On x86_64 the 32-bit lib dir is a real 32-bit library directory.
+# On ppc64le the 32-bit lib dir was left as a future 32-bit library directory.
+# On aarch64 the 32-bit lib dir was left as a legacy directory.
+#XXX ln -s usr/lib${SUFFIX} $ROOTFS/lib
+if ! [ -d "$ROOTFS/lib" ]; then
+  mkdir "$ROOTFS/lib"
+fi
+
 for i in etc proc sys
 do
     mkdir $ROOTFS/$i

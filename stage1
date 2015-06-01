@@ -327,6 +327,7 @@ CONFIGARGS="--prefix=$PREFIX
 	    ${CONFIG_EXTRA}
 	    --enable-languages=c,c++
 	    --with-sysroot=$ROOTFS
+	    --with-build-sysroot=$ROOTFS
 	    --enable-threads=posix
 	    --enable-64-bit-bfd
 	    $WITHPPL
@@ -355,6 +356,7 @@ GCC_CONFIGARGS="--prefix=$PREFIX
 	    ${GCC_CONFIG_EXTRA}
 	    --enable-languages=c,c++
 	    --with-sysroot=$ROOTFS
+	    --with-build-sysroot=$ROOTFS
 	    --enable-threads=posix
 	    --enable-64-bit-bfd
 	    $WITHPPL
