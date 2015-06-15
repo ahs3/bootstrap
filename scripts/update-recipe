@@ -1,0 +1,26 @@
+#!/bin/bash
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+
+component=${1}
+branch=${2}
+stage=${3}
+recipe=${4}
+
+if [ "${stage}" == "" ]; then
+  echo ""
+  echo "Usage: update-recipe <component> <branch> <stage> [recipe]"
+  echo ""
+  echo ""
+  echo "Examples:"
+  echo "  update-recipe zlib master 1"
+  echo "  update-recipe gcc f21 1 gcc-libgcc"
+  echo ""
+  exit 1
+fi
+
+[ "${recipe}" == "" ] && recipe='*'
+
+cd ${TOPDIR}/stage${stage}.d
+git archive --remote=ssh://pkgs.fedoraproject.org/${component}.git ${branch} STAGE${stage}-${recipe} | tar -x --transform "s|^STAGE${stage}-||g"

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+GIT_BRANCH='f21'
+
+COMPONENTS='bash binutils busybox bzip2 cloog coreutils diffutils findutils
+	    gawk gmp grep gzip libselinux libsepol mpc mpfr patch pcre sed
+	    tar uboot-tools unzip util-linux which xz zlib'
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+SCRIPTS_DIR=${TOPDIR}/scripts
+
+LC_ALL=C
+
+for component in ${COMPONENTS}; do
+  echo "Updating component ${component} ..."
+  ${SCRIPTS_DIR}/update-recipe ${component} ${GIT_BRANCH} 1 2>&1 | grep -v "X11 forwarding request failed on channel"
+done
