@@ -3,8 +3,8 @@
 GIT_BRANCH='f21'
 
 COMPONENTS='bash binutils busybox bzip2 cloog coreutils diffutils findutils
-	    gawk gmp grep gzip libselinux libsepol mpc mpfr patch pcre sed
-	    tar uboot-tools unzip util-linux which xz zlib'
+	    gawk gcc glibc gmp grep gzip libselinux libsepol make mpc mpfr
+	    patch pcre sed tar uboot-tools unzip util-linux which xz zlib'
 
 cd ${0%/*}/..
 TOPDIR=${PWD}
