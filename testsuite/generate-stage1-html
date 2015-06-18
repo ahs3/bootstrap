@@ -7,7 +7,8 @@ TESTSUITE_DIR=${TOPDIR}/testsuite
 
 builders=`cat ${LOGDIR}/stage1/results-stage1.txt | cut -f1 -d' ' | sort | uniq`
 targets=`cat ${LOGDIR}/stage1/results-stage1.txt | cut -f2 -d' ' | sort | uniq`
-output="${LOGDIR}/stage1/index.html"
+output="${LOGDIR}/stage1/stage1-results.shtml"
+body_only=1
 
 # create target -> build symlinks
 for t in ${targets}; do
@@ -30,6 +31,9 @@ echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 ' > ${LOGDIR}/stage1/per-target/index.html
 
 # generate page with stage1 results
+> ${output}
+
+if [ $body_only -eq 0 ]; then
 echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
   <head>
@@ -58,11 +62,13 @@ echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
       -->
     </style>
   </head>
-  <body>
-    <h3><u>STAGE1 Results</u></h3>
+  <body>' >> ${output}
+fi
+
+echo '    <h3><u>STAGE1 Results</u></h3>
     <table>
       <tr>
-	<th>B\T</th>' > ${output}
+	<th>B\T</th>' >> ${output}
 for t in ${targets}; do
   echo "	<th><a href='per-target/${t}/'>&nbsp;${t}</a></th>" >> ${output}
 done
@@ -107,10 +113,9 @@ echo '    </table>
       <tr>
 	<td class="missing"></td><td>&nbsp;&nbsp; result missing</td>
       </tr>
-    </table>
-    <br>
+    </table>' >> ${output}
+if [ $body_only -eq 0 ]; then
+echo '    <br>
   </body>
 </html>' >> ${output}
-
-# copy URL icon
-#cp ${TESTSUITE_DIR}/url.png ${LOGDIR}/stage1/
+fi
