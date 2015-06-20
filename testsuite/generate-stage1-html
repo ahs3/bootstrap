@@ -50,6 +50,12 @@ echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 	  width: 100%;
 	  color: black;
 	}
+	h3 {
+	  text-decoration: underline;
+	}
+	h4 {
+	  text-decoration: underline;
+	}
 	td.ok {
 	  background-color: #30DF30;
 	}
@@ -58,6 +64,9 @@ echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 	}
 	td.failed {
 	  background-color: #FF4040;
+	}
+	td.skipped {
+	  background-color: #AAAAAA;
 	}
       -->
     </style>
@@ -114,6 +123,81 @@ echo '    </table>
 	<td class="missing"></td><td>&nbsp;&nbsp; result missing</td>
       </tr>
     </table>' >> ${output}
+
+# Filelist diffs table
+echo '    <br>
+    <h4>Filelist diffs</h4>
+    <table>
+      <tr>
+	<th>B1xB2\T</th>' >> ${output}
+for t in ${targets}; do
+  echo "	<th><a href='diffs/${t}/'>&nbsp;${t}</a></th>" >> ${output}
+done
+echo "      </tr>" >> ${output}
+
+# Sort filelists
+for b in ${builders}; do
+  for t in ${targets}; do
+    filelist="${LOGDIR}/stage1/${b1}/${t}/filelist.txt"
+    [ -f ${filelist} ] && cat ${filelist} | sort > ${filelist}.sorted && mv ${filelist} ${filelist}.unsorted && mv ${filelist}.sorted ${filelist} && rm -f ${filelist}.unsorted
+  done
+done
+
+builder_cnt=`echo ${builders} | wc -w`
+for idx1 in `seq 1 $((builder_cnt-1))`; do
+  for idx2 in `seq $((idx1+1)) ${builder_cnt}`; do
+    b1=`echo ${builders} | cut -d' ' -f${idx1}`
+    b2=`echo ${builders} | cut -d' ' -f${idx2}`
+    echo "      <tr>" >> ${output}
+    echo "	<th>${b1} ${b2}</th>" >> ${output}
+    for t in ${targets}; do
+      result1=`cat ${LOGDIR}/stage1/results-stage1.txt | grep "^${b1} ${t} " | cut -f3 -d' '`
+      result2=`cat ${LOGDIR}/stage1/results-stage1.txt | grep "^${b2} ${t} " | cut -f3 -d' '`
+      if [ ! "${result1}" = "*OK*" ] || [ ! "${result2}" = "*OK*" ]; then
+	echo "	<td class='skipped'></td>" >> ${output}
+	continue
+      fi
+      filelist1="${LOGDIR}/stage1/${b1}/${t}/filelist.txt"
+      filelist2="${LOGDIR}/stage1/${b2}/${t}/filelist.txt"
+      if [ -f ${filelist1} ] && [ -f ${filelist2} ]; then
+        mkdir -p ${LOGDIR}/stage1/diffs/${t}
+	diff -Naur ${filelist1} ${filelist2} > ${LOGDIR}/stage1/diffs/${t}/${b1}-${b2}.txt
+	if [ $? -eq 0 ]; then
+	  echo "	<td class='ok'></td>" >> ${output}
+	else
+	  echo "	<td class='failed'><a href='diffs/${t}/${b1}-${b2}.txt'>diff</a></td>" >> ${output}
+	fi
+      else
+	echo "	<td class='missing'></td>" >> ${output}
+      fi
+    done
+    echo "      </tr>" >> ${output}
+  done
+done
+echo '    </table>
+    <br>
+    <u>Table legend:</u>
+    <table>
+      <tr>
+	<td>B1, B2</td><td>&nbsp;&nbsp; BUILD (--build=)</td>
+      </tr>
+      <tr>
+	<td>T</td><td>&nbsp;&nbsp; TARGET (--host=,--target=)</td>
+      </tr>
+      <tr>
+	<td class="ok"></td><td>&nbsp;&nbsp; empty diff</td>
+      </tr>
+      <tr>
+	<td class="failed"><center>diff</center></td><td>&nbsp;&nbsp; non-empty diff</td>
+      </tr>
+      <tr>
+	<td class="missing"></td><td>&nbsp;&nbsp; filelist missing</td>
+      </tr>
+      <tr>
+	<td class="skipped"></td><td>&nbsp;&nbsp; skipped (incomplete build)</td>
+      </tr>
+    </table>' >> ${output}
+
 if [ $body_only -eq 0 ]; then
 echo '    <br>
   </body>

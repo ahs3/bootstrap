@@ -38,11 +38,14 @@ for arch in $STAGE1_TARGET_ARCH_LIST; do
   sed -i "s|^TARGET_ARCH=.*|TARGET_ARCH=${arch}|" stage1
 
   ./stage1
+
   mkdir -p ${LOGDIR}/$arch
   mv ${LOGDIR}/*.log ${LOGDIR}/$arch/
+
+  (cd rootfs ; find > ${LOGDIR}/$arch/filelist.txt)
+
   mv done done.${arch}
   mv install install.${arch}
-
   mv rootfs rootfs.${arch}
 done
 
