@@ -7,6 +7,7 @@ cd ${0%/*}/..
 TOPDIR=${PWD}
 LOGDIR=${TOPDIR}/logs
 TESTSUITE_DIR=${TOPDIR}/testsuite
+SCRIPTS_DIR=${TOPDIR}/scripts
 
 # run in a background
 if [ "$1" == "--screen" ]; then
@@ -22,8 +23,8 @@ TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
 mkdir -p SRPMs
 mkdir -p SRPMlocal
 cd SRPMs
-${TESTSUITE_DIR}/download-stage1-srpms
-${TESTSUITE_DIR}/download-stage2-srpms
+${SCRIPTS_DIR}/download-stage1-srpms
+${SCRIPTS_DIR}/download-stage2-srpms
 cd ..
 
 for arch in $STAGE1_TARGET_ARCH_LIST; do
