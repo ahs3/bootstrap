@@ -1,11 +1,32 @@
 srpm gcc
-mcd $BUILDDIR/gcc
+mcd $BUILDDIR/gcc-libgcc
+
+# These are for gcc cross-tools (politics sometime result in slightly
+# different arch names)
+GCC_CONFIGARGS="--prefix=$PREFIX
+            --libdir=$PREFIX/lib${SUFFIX}
+            --target=$TARGET
+            ${GCC_CONFIG_EXTRA}
+            --enable-languages=c,c++
+            --with-sysroot=$ROOTFS
+            --with-build-sysroot=$ROOTFS
+            --cache-file=config.cache
+            --disable-bootstrap
+            --enable-threads=posix
+            --enable-64-bit-bfd
+            --disable-lto
+            $WITHPPL
+"
 
 # prefill gcc cache
 echo 'lt_cv_shlibpath_overrides_runpath=no' > config.cache
 echo 'gcc_cv_libc_provides_ssp=yes' >> config.cache
 
-$SRC/gcc-*/configure $GCC_CONFIGARGS --with-headers=$ROOTFS/usr/include --cache-file=config.cache
+if [ ! "$BUILDER_ARCH" = "$TARGET_ARCH" ]; then
+  WITH_HEADERS="--with-headers=$ROOTFS/usr/include"
+fi
+
+$SRC/gcc-*/configure $GCC_CONFIGARGS $WITH_HEADERS
 notparallel
 # Pass gcc_cv_libc_provides_ssp down, because the config.cache
 # version is not passed down to the gcc subdir.

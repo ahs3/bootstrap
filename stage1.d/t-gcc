@@ -1,6 +1,23 @@
 srpm gcc
 mcd $BUILDDIR/t-gcc
-$SRC/gcc-*/configure $GCC_TCONFIGARGS --enable-linker-build-id
+
+GCC_TCONFIGARGS="--prefix=/usr
+             --libdir=/usr/lib${SUFFIX}
+             --with-sysroot=/
+             --with-build-sysroot=$ROOTFS
+             --build=$BUILD
+             --host=$TARGET
+             --target=$TARGET
+             --disable-bootstrap
+             --enable-werror=no
+             --enable-cxx
+             ${GCC_CONFIG_EXTRA}
+             --enable-languages=c,c++
+             --enable-threads=posix
+             --enable-linker-build-id
+"
+
+$SRC/gcc-*/configure $GCC_TCONFIGARGS
 notparallel
 make $J
 make $J install DESTDIR=${ROOTFS}
