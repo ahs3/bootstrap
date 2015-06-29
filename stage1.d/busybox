@@ -6,6 +6,13 @@ test -z $BUSYBOX_DEFCONFIG || make $BUSYBOX_DEFCONFIG CROSS_COMPILE=${TARGET}-
 make busybox CROSS_COMPILE=${TARGET}-
 make install CROSS_COMPILE=${TARGET}- CONFIG_PREFIX=${ROOTFS}
 
+# remove conflicting symlinks to prevent replacing the busybox binary with
+# other binaries ... it's less work than doing modifications in the defconfig
+rm -f ${ROOTFS}/bin/unzip
+rm -f ${ROOTFS}/bin/bzip2
+rm -f ${ROOTFS}/bin/bunzip2
+rm -f ${ROOTFS}/bin/bzcat
+
 # add a password file for cleaniness (even if it has no passwd)
 (
     echo "root::0:0:root:/:/bin/bash"
