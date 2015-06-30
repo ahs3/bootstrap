@@ -4,7 +4,7 @@ cat <<EOF > config.cache
 ax_cv_have_tls=yes
 scanf_cv_alloc_modifier=ms
 EOF
-$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses \
+$SRC/${1}-*/configure $TCONFIGARGS --without-ncurses --without-tinfo \
    --prefix=/usr --libexecdir=/usr/lib${SUFFIX} --libdir=/usr/lib${SUFFIX} \
    --disable-wall --cache-file=config.cache --without-python --without-systemd
 notparallel
