@@ -5,8 +5,6 @@
 # - ssh-key transferred to the builders (root account)
 # - the following packages installed on the builders
 #     byacc screen yum-utils rpm-build automake autoconf libtool make patch gcc gcc-c++ bison flex gmp-devel mpfr-devel libmpc-devel rsync gettext-devel tcl texinfo
-# - the following packages NOT installed on the builders
-#     ncurses-devel
 
 STAGE1_BUILD_ARCH_LIST="x86_64 i686 aarch64 armv7hl ppc64le ppc64 s390x"
 
