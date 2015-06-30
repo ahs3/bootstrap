@@ -413,11 +413,11 @@ case "$1" in
 	go t-binutils
 	go t-gcc
 	go make
+	# busybox needs to go first to keep the features, but to allow
+	# replacing the symlinks with full-featured binaries if required
+	go busybox
 	go sed
 	go coreutils
-	go busybox
-	# Bash must come after busybox so the `sh' symbolic link is bash,
-	# not busybox.
 	go bash
 	go util-linux
 	go tar
