@@ -1,1 +1,7 @@
-mpfr
+L=$1
+srpm $L
+mcd $BUILDDIR/t-$L
+$SRC/${L}-*/configure $TCONFIGARGS
+make $J
+make $J install DESTDIR=${ROOTFS}
+fix_la $L
