@@ -315,6 +315,10 @@ rsrpm()
 {
     srpm $1 $ROOTFS/stage2
 }
+noarch_extract()
+{
+    (cd $ROOTFS && (rpm2cpio $1 | cpio -idmv))
+}
 
 set -e
 
