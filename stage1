@@ -105,6 +105,7 @@ case $TARGET_ARCH in
 	GCC_CONFIG_EXTRA=""
 	EGLIBC_ARCH=x86
 	BUSYBOX_DEFCONFIG=defconfig
+	TARGET32=i686-linux-gnu
 	;;
     i686)
 	KCONFIG=kernel-3.*-i686.config
