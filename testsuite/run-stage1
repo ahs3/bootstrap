@@ -22,9 +22,12 @@ TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
 # download SRPMs
 mkdir -p SRPMs
 mkdir -p SRPMlocal
+mkdir -p NOARCHs
 cd SRPMs
 ${SCRIPTS_DIR}/download-stage1-srpms
 ${SCRIPTS_DIR}/download-stage2-srpms
+cd ../NOARCHs
+${SCRIPTS_DIR}/download-stage1-noarch
 cd ..
 
 for arch in $STAGE1_TARGET_ARCH_LIST; do
