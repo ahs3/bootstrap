@@ -1,3 +1,6 @@
+# FIXME! Already present in Fedora as uboot-tools.
+# No need for cloning from upstream git.
+#
 # git git://git.denx.de/u-boot.git
 if [ ! -f $BUILDDIR/u-boot/README ]
 then
