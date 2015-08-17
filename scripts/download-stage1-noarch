@@ -1,0 +1,4 @@
+#!/bin/sh
+downloader="yumdownloader --releasever=21 --enablerepo=updates-testing "
+
+$downloader automake
