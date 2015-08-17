@@ -3,6 +3,7 @@
 SCRIPTDIR := stage2.d
 FRAGDIR := recipe.mk
 RCFILE := ./scripts.rc
+LOGS_DIR := logs
 
 SCRIPTS := $(sort $(wildcard ${SCRIPTDIR}/*[0-9A-Za-z]))
 FRAGS := $(addsuffix .mk,$(addprefix ${FRAGDIR}/,$(notdir $(SCRIPTS))))
@@ -18,10 +19,8 @@ ${FRAGDIR}/%.mk : ${SCRIPTDIR}/%
 	  echo "$$base : done/$$base" ;\
 	  echo "	@true" ;\
 	  echo "done/$$base : $$deps" ;\
-	  echo "	@echo " ;\
 	  echo "	@echo Building $$base" ;\
-	  echo "	@echo " ;\
-	  echo "	@bash --rcfile ${RCFILE} -i -e ${SCRIPTDIR}/$*" ;\
+	  echo "	@bash --rcfile ${RCFILE} -i -e ${SCRIPTDIR}/$* &> ${LOGS_DIR}/$$base.log" ;\
 	  echo "	@true > done/$$base" ;\
 	  fi \
 	) > $@
