@@ -56,6 +56,7 @@
 
 TOP=/stage2
 MYDIR=${0%/*}
+LOGS_DIR=${TOP}/logs
 STAGE2=$MYDIR/stage2
 
 SRC=$TOP/rpmbuild/BUILD
@@ -114,6 +115,7 @@ fi
 # ------------------------------------------------------------
 
 mkdirp $BUILDDIR
+mkdirp $LOGS_DIR
 
 test -d /stage2/done || mkdir /stage2/done
 
