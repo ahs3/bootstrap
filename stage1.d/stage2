@@ -1,3 +1,5 @@
+
+
 # install source trees in rootfs, so stage2 will have them for
 # its builds.
 
@@ -112,5 +114,9 @@ chmod a+x $ROOTFS/init-rootfs.sh
     echo /lib$SUFFIX
     echo /usr/lib$SUFFIX
 ) > $ROOTFS/etc/ld.so.conf
+
+# install automake to make it available early in stage2 (requires perl)
+noarch_extract $TOP/NOARCHs/automake-*.rpm
+mkdir -p $ROOTFS/usr/share/aclocal
 
 echo stage2 ready
