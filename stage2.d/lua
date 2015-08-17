@@ -1,0 +1,8 @@
+#requires readline
+
+mcd $BUILDDIR/lua
+
+$SRC/lua-*/configure $TCONFIGARGS --with-compat-module
+
+make $J LIBS="-lm -ldl -lreadline" luac_LDADD="liblua.la -lm -ldl -lreadline"
+make $J install

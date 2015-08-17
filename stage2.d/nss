@@ -1,0 +1,63 @@
+#requires nspr
+#requires perl
+#requires nss-util
+#requires nss-softokn
+
+mcd $BUILDDIR/nss
+
+export BUILD_OPT=1
+export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+export NSPR_INCLUDE_DIR=/usr/include/nspr
+export NSPR_LIB_DIR=/usr/lib${SUFFIX}
+export NSS_USE_SYSTEM_SQLITE=1
+export NSS_BUILD_WITHOUT_SOFTOKEN=1
+export USE_SYSTEM_SOFTOKEN=1
+export SOFTOKEN_LIB_DIR=/usr/lib${SUFFIX}
+export NSSUTIL_INCLUDE_DIR=/usr/include/nss3
+export NSSUTIL_LIB_DIR=/usr/lib${SUFFIX}
+export USE_SYSTEM_NSSUTIL=1
+export FREEBL_INCLUDE_DIR=/usr/include/nss3
+export FREEBL_LIB_DIR=/usr/lib${SUFFIX}
+export USE_SYSTEM_FREEBL=1
+export NSS_USE_SYSTEM_FREEBL=1
+export FREEBL_NO_DEPEND=1
+export IN_TREE_FREEBL_HEADERS_FIRST=1
+export NSS_BLTEST_NOT_AVAILABLE=1
+export NSS_NO_SSL2_NO_EXPORT=1
+export NSS_ECC_MORE_THAN_SUITE_B=1
+export NSS_NO_PKCS11_BYPASS=1
+#export NSDISTMODE="copy"
+
+if [ "$SUFFIX" = "64" ]; then
+  USE_64=1
+  export USE_64
+fi
+
+(cd $SRC/nss-3.* && mkdir -p dist/private/nss && cp nss/lib/ckfw/nssck.api dist/private/nss/)
+
+make -C $SRC/nss-3.*/nss/coreconf
+make -C $SRC/nss-3.*/nss/lib/dbm
+make -C $SRC/nss-3.*/nss
+cd $SRC/nss-3.*/nss/coreconf
+make install
+cd $SRC/nss-3.*/nss/lib/dbm
+make install
+cd $SRC/nss-3.*/nss
+make install
+# Copy the binary libraries we want
+NSSLIBS="libnss3.so libnssckbi.so libnsspem.so libnsssysinit.so libsmime3.so libssl3.so"
+# BOZO: temporarily disable FIPS140 support
+#NSSLIBCHKS="libnssdbm3.chk libfreebl3.chk libsoftokn3.chk"
+NSSLIBCHKS=""
+# END BOZO
+cd $SRC/nss-3.*
+for file in $NSSLIBS $NSSLIBCHKS
+do
+  install -p -m 755 dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
+done
+# Copy the include files we want
+for file in $SRC/nss-*/dist/public/nss/*.h
+do
+  install -p -m 644 $file /usr/include/nss3/
+done

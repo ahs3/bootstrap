@@ -1,5 +1,0 @@
-        mcd $BUILDDIR/m4
-        $SRC/m4-*/configure $TCONFIGARGS
-        make $J -k
-        make $J -k install
-

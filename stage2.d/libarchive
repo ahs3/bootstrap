@@ -1,0 +1,6 @@
+mcd $BUILDDIR/libarchive
+
+$SRC/libarchive-*/configure $TCONFIGARGS
+
+make $J
+make $J install

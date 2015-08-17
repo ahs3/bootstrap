@@ -1,0 +1,11 @@
+# awful hack to prevent running aclocal ... FIXME
+(cd $SRC/gdbm-*/m4 && [ -f libtool.m4.orig ] && rm -f libtool.m4 && mv libtool.m4.orig libtool.m4) || echo ""
+
+mcd $BUILDDIR/gdbm
+
+echo "Current in: $PWD"
+
+$SRC/gdbm-*/configure $TCONFIGARGS
+
+make $J
+make $J install

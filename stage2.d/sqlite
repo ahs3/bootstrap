@@ -1,0 +1,23 @@
+#####################################################
+# sqlite is choking on sqlite_int64 definition
+#####################################################
+mcd $BUILDDIR/sqlite
+
+export CFLAGS="$RPM_OPT_FLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_DISABLE_DIRSYNC=1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 -Wall -fno-strict-aliasing"
+
+$SRC/sqlite-*/configure --disable-tcl --enable-threadsafe --enable-threads-override-locks --enable-load-extension $TCONFIGARGS
+# the compile would fail here, so on a host you need to run
+# tclsh ../../rpmbuild/BUILD/sqlite-src-3070500/tool/mksqlite3h.tcl ../../rpmbuild/BUILD/sqlite-src-3070500 > sqlite3.h
+cp ../../rpmbuild/BUILD/sqlite-src-*/sqlite3.h.stage1 sqlite3.h
+
+# Also possibly add -ldl to TLIB in the Makefile
+if egrep '^TLIBS.*ldl' Makefile > /dev/null
+then
+  true
+else
+  sed 's/^\(TLIBS = .*\)/\1 -ldl/' Makefile > Makefile.stage2
+  mv Makefile.stage2 Makefile
+fi
+
+make $J
+make $J install

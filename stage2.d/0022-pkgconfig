@@ -1,7 +1,0 @@
-#requires popt
-
-        mcd $BUILDDIR/pkg-config
-        $SRC/pkg-config-*/configure $TCONFIGARGS --disable-shared --with-installed-glib --with-installed-popt
-        make $J
-        make $J install
-

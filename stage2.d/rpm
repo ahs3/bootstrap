@@ -1,0 +1,34 @@
+#requires popt
+#requires nss-softokn
+#requires nss
+#requires file
+#requires libarchive
+#requires libdb4
+#requires redhat-rpm-config
+#requires lua
+#requires autoconf
+#requires pkgconfig
+
+
+(cd $SRC/rpm-*/ && autoreconf -vif)
+
+mcd $BUILDDIR/rpm
+
+$SRC/rpm-*/configure $TCONFIGARGS \
+	--build=${TARGET} \
+	--host=${TARGET} \
+	--target=${TARGET} \
+	CPPFLAGS="-I/usr/include/nspr -I/usr/include/nss3 -DPACKAGE -DPACKAGE_VERSION" \
+	--libdir=/usr/lib${SUFFIX} \
+	--with-external-db \
+	--disable-static \
+	--with-lua \
+	--localstatedir=/var
+
+make $J
+make $J install
+
+mkdir -p /etc/rpm
+mkdir -p /var/lib/rpm
+
+rpm --initdb

@@ -1,0 +1,11 @@
+#requires autoconf
+
+cd $SRC/file-*
+
+# awful hack to prevent running aclocal ... FIXME
+#(cd m4 && [ -f libtool.m4.orig ] && rm -f libtool.m4 && mv libtool.m4.orig libtool.m4) || echo ""
+
+./configure $TCONFIGARGS
+
+make $J
+make install

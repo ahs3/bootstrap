@@ -1,50 +1,25 @@
 #!/bin/sh
 downloader="yumdownloader --releasever=21 --source --enablerepo=updates-testing-source "
 
-$downloader filesystem \
-	    iso-codes \
-	    cpio \
-	    ncurses \
+$downloader ncurses \
 	    m4 \
-	    flex \
-	    bison \
 	    readline \
-	    texinfo \
-	    gdb \
-	    curl \
 	    nspr \
-	    pcre \
-	    chkconfig \
 	    sqlite \
 	    gdbm \
-	    pth \
-	    libtool \
 	    libdb4 \
 	    perl \
-	    openssl \
-	    gettext \
 	    popt \
-	    libffi \
-	    pkgconfig \
-	    glib2 \
 	    nss-util \
 	    nss-softokn \
 	    nss \
-	    elfutils \
-	    rsync \
-	    fakechroot \
 	    file \
-	    ustr \
-	    libusbx \
-	    libusb \
-	    tzdata \
+	    libarchive \
 	    redhat-rpm-config \
 	    rpm \
-	    cracklib \
-	    libsepol \
-	    attr \
-	    acl \
-	    libsemanage \
-	    pam \
-	    shadow-utils \
-	    strace
+	    autoconf \
+	    lua \
+	    libtool \
+	    pkgconfig \
+	    gettext \
+	    bison

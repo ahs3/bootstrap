@@ -1,0 +1,13 @@
+#requires m4
+#requires perl
+#requires gettext
+
+mcd $BUILDDIR/autoconf
+
+$SRC/autoconf-*/configure $TCONFIGARGS
+
+make $J
+make $J install
+
+mkdir -p /usr/share
+install -m 644 $TOP/rpmbuild/SOURCES/config.site /usr/share/

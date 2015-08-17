@@ -1,7 +1,0 @@
-#requires pcre
-
-mcd $BUILDDIR/libffi
-$SRC/libffi-*/configure $TCONFIGARGS
-make $J
-make $J install
-

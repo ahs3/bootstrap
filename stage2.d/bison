@@ -1,0 +1,9 @@
+#requires m4
+#requires perl
+
+mcd $BUILDDIR/bison
+
+$SRC/bison-*/configure $TCONFIGARGS
+
+make $J -k
+make $J -k install

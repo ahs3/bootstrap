@@ -1,0 +1,72 @@
+#requires nspr
+#requires perl
+#requires nss-util
+#requires sqlite
+
+mcd $BUILDDIR/nss
+
+export BUILD_OPT=1
+export PKG_CONFIG_ALLOW_SYSTEM_LIBS=1
+export PKG_CONFIG_ALLOW_SYSTEM_CFLAGS=1
+export NSPR_INCLUDE_DIR=/usr/include/nspr
+export NSPR_LIB_DIR=/usr/lib${SUFFIX}
+export NSSUTIL_INCLUDE_DIR=/usr/include/nss3
+export NSSUTIL_LIB_DIR=/usr/lib${SUFFIX}
+export FREEBL_NO_DEPEND=1
+export NSS_USE_SYSTEM_SQLITE=1
+export NSS_BUILD_SOFTOKEN_ONLY=1
+
+if [ "$SUFFIX" = "64" ]; then
+  USE_64=1
+  export USE_64
+fi
+
+# publish some header files from NSS to eliminate a
+# circular dependency -- these will be replaced when
+# the nss package gets built
+[ ! -d /usr/include/nss3 ] && mkdir /usr/include/nss3
+for ii in cryptohi/cryptohi.h cryptohi/cryptoht.h \
+          cryptohi/key.h cryptohi/keyhi.h cryptohi/keythi.h cryptohi/keyt.h \
+          certdb/certt.h certdb/cert.h certdb/certdb.h \
+          pk11wrap/secpkcs5.h pk11wrap/pk11func.h pk11wrap/pk11pub.h \
+          pk11wrap/pk11priv.h pk11wrap/secmodt.h \
+          pkcs7/secpkcs7.h pkcs7/pkcs7t.h \
+          smime/cmsreclist.h \
+          ssl/sslerr.h ssl/sslt.h ssl/ssl.h ssl/sslproto.h
+do
+  cp $SRC/nss-3.*/nss/lib/$ii /usr/include/nss3
+done
+
+for ii in freebl/blapit.h freebl/blapi.h \
+          freebl/ecl/ecl-exp.h freebl/alghmac.h \
+          freebl/secrng.h softoken/softoken.h \
+          softoken/lowkeyti.h softoken/softoknt.h \
+          freebl/ecl/ecl-curve.h
+do
+  cp $SRC/nss-softokn-3.*/nss/lib/$ii /usr/include/nss3
+done
+
+
+make -C $SRC/nss-softokn-3.*/nss/coreconf
+make -C $SRC/nss-softokn-3.*/nss/lib/dbm
+make -C $SRC/nss-softokn-3.*/nss
+
+cd $SRC/nss-softokn-3.*/nss/coreconf
+make install
+cd $SRC/nss-softokn-3.*/nss/lib/dbm
+make install
+cd $SRC/nss-softokn-3.*/nss
+make install
+# Copy the binary libraries we want
+cd $SRC/nss-softokn-3.*
+
+for file in `cd dist/*.OBJ/lib; echo *`
+do
+  install -p -m 755 dist/*.OBJ/lib/$file /usr/lib${SUFFIX}/
+done
+# Copy the include files we want
+test -d /usr/include/nss3 || mkdir -p /usr/include/nss3
+for file in $SRC/nss-*/dist/public/nss/*.h
+do
+  install -p -m 644 $file /usr/include/nss3/
+done

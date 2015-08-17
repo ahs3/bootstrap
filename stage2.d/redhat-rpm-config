@@ -1,0 +1,30 @@
+#requires libtool
+
+cd $SRC/redhat-rpm-config-*
+
+# makefile has been removed :/
+# make install
+
+RCCDIR=/usr/lib/rpm/redhat
+RPMCFGDIR=/usr/lib/rpm
+RPMFATTR=/usr/lib/rpm/fileattrs
+
+mkdir -p /usr/lib/rpm/redhat
+install -p -m 644 -t $RCCDIR macros rpmrc
+install -p -m 444 -t $RCCDIR redhat-hardened-*
+install -p -m 755 -t $RCCDIR config.*
+install -p -m 755 -t $RCCDIR dist.sh rpmsort symset-table kmodtool
+install -p -m 755 -t $RCCDIR brp-*
+
+install -p -m 755 -t $RCCDIR find-*
+mkdir -p $RCCDIR/find-provides.d
+install -p -m 644 -t $RCCDIR/find-provides.d firmware.prov modalias.prov
+
+mkdir -p $RPMCFGDIR/macros.d
+install -p -m 644 -t $RPMCFGDIR/macros.d macros.*
+
+mkdir -p $RPMFATTR
+install -p -m 644 -t $RPMFATTR *.attr
+install -p -m 755 -t $RPMCFGDIR kmod.prov
+
+cp -p /usr/share/libtool/config/config.{guess,sub} $RCCDIR/

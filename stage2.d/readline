@@ -1,0 +1,8 @@
+#requires ncurses
+
+mcd $BUILDDIR/readline
+
+$SRC/readline-*/configure $TCONFIGARGS
+
+make $J
+make $J install

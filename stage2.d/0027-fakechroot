@@ -1,8 +1,0 @@
-#requires libtool
-
-        mcd $BUILDDIR/fakechroot
-        $SRC/fakechroot-*/configure $TCONFIGARGS \
-		--disable-dependency-tracking \
-		--disable-static
-        make $J
-        make $J install
