@@ -1,0 +1,20 @@
+#!/bin/sh
+
+PRE_POST_SCRIPTS_ENABLED=1
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+LOGDIR=${TOPDIR}/logs
+TESTSUITE_DIR=${TOPDIR}/testsuite
+
+source ${TESTSUITE_DIR}/upload_config
+
+(cd ${LOGDIR} && tar czf stage2.tgz stage2)
+
+scp ${LOGDIR}/stage2.tgz ${dest}:${dest_path}
+
+if [ ${PRE_POST_SCRIPTS_ENABLED} -eq 0 ]; then
+  ssh -x ${dest} "cd ${dest_path} && rm -rf stage2 && tar xf stage2.tgz && rm -f stage2.tgz"
+else
+  ssh -x ${dest} "cd ${dest_path} && ~/bin/stage2-pre && rm -rf stage2 && tar xf stage2.tgz && ~/bin/stage2-post && rm -f stage2.tgz"
+fi

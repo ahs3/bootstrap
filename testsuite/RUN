@@ -7,6 +7,8 @@
 #     byacc screen yum-utils rpm-build automake autoconf libtool make patch gcc gcc-c++ bison flex gmp-devel mpfr-devel libmpc-devel rsync gettext-devel tcl texinfo
 
 STAGE1_BUILD_ARCH_LIST="x86_64 i686 aarch64 armv7hl ppc64le ppc64 s390x"
+STAGE1_TARGET_ARCH_LIST="$STAGE1_BUILD_ARCH_LIST"
+STAGE2_BUILD_ARCH_LIST="$STAGE1_BUILD_ARCH_LIST" # subset of STAGE1_BUILD_ARCH_LIST and STAGE1_TARGET_ARCH_LIST intersection (stripped more later in case of failed builds)
 
 cd ${0%/*}/..
 TOPDIR=${PWD}
@@ -26,6 +28,7 @@ mkdir -p ${LOGDIR} && \
 rm -rf ${LOGDIR}/* && \
 rm -rf ${TMPDIR}/fedora-bootstrap && \
 mkdir ${TMPDIR}/fedora-bootstrap && \
+sed -i "s|^STAGE1_TARGET_ARCH_LIST='.*'|STAGE1_TARGET_ARCH_LIST='${STAGE1_TARGET_ARCH_LIST}'|" testsuite/run-stage1 && \
 cp -a * ${TMPDIR}/fedora-bootstrap/ && \
 (cd ${TMPDIR} ; tar cJf fedora-bootstrap.tar.xz fedora-bootstrap) && \
 cp ${TMPDIR}/fedora-bootstrap.tar.xz .
@@ -112,3 +115,85 @@ echo "* stage1 done"
 
 echo ""
 echo "==== Entering STAGE2 ===="
+
+
+echo "* Transferring stage2 rootfs ..."
+rm -rf ${TMPDIR}/fedora-bootstrap && mkdir ${TMPDIR}/fedora-bootstrap
+default_rotation=`cat ${TESTSUITE_DIR}/builder_rotation`
+stage2_builder_array=($STAGE2_BUILD_ARCH_LIST)
+stage2_builder_count=${#stage2_builder_array[*]}
+for (( arch_index=0; arch_index<${stage2_builder_count}; arch_index++ )); do
+  arch=${stage2_builder_array[$arch_index]}
+  builder=`cat ${BUILDERS_DIR}/${arch}`
+
+  # searching for complete stage1 data
+  rotation=${default_rotation}
+  while : ; do
+    stage1_arch_index=$(((arch_index+rotation)%stage2_builder_count))
+    stage1_arch=${stage2_builder_array[$stage1_arch_index]}
+    cat ${LOGDIR}/stage1/results-stage1.txt | grep "^${stage1_arch} ${arch} \*OK\*" &> /dev/null
+    src_ok=$?
+    if [ ${src_ok} -eq 0 ] ; then
+      break;  # the current stage1_arch contains complete stage1 data, exit the loop
+    else
+      rotation=$((rotation+1))  # we don't have a working stage1 on the chosen source builder, trying the next one
+      # FIXME - infinite loop if none exists ... we wanna consider the STAGE1 list too, if all fails
+    fi
+  done
+  take_stage1_from=`cat ${BUILDERS_DIR}/${stage1_arch}`
+
+  if [ "$arch" = "$stage1_arch" ]; then # taking from the same builder, copy only
+    echo "<-> $arch: $builder"
+    ssh -x root@${builder} "cd /home/fedora-bootstrap && rm -rf /home/fedora-bootstrap/rootfs.stage2 && cp -a rootfs.${arch} rootfs.stage2"
+  else # taking from different builder (compress, transfer, transfer, uncompress)
+    echo "<- $stage1_arch: $take_stage1_from"
+    ssh -x root@${take_stage1_from} "cd /home/fedora-bootstrap && tar czf rootfs.${arch}.tgz rootfs.${arch}"
+    scp root@${take_stage1_from}:/home/fedora-bootstrap/rootfs.${arch}.tgz ${TMPDIR}/fedora-bootstrap/
+    echo "-> $arch: $builder"
+    scp ${TMPDIR}/fedora-bootstrap/rootfs.${arch}.tgz root@${builder}:/home/fedora-bootstrap/
+    ssh -x root@${builder} "cd /home/fedora-bootstrap && rm -rf /home/fedora-bootstrap/rootfs.stage2 && tar xzf rootfs.${arch}.tgz --transform 's/rootfs.${arch}/rootfs.stage2/'"
+    rm -f ${TMPDIR}/fedora-bootstrap/rootfs.${arch}.tgz
+  fi
+done
+
+echo "* Starting stage2 on the builders ..."
+# run the stage2 remotely on all builders
+for arch in $STAGE2_BUILD_ARCH_LIST ; do
+  builder=`cat ${BUILDERS_DIR}/${arch}`
+  echo "-> $arch: $builder"
+  ssh -x root@${builder} "cd /home/fedora-bootstrap && echo \"${arch}\" > i_am && ./testsuite/run-stage2 --screen"
+done
+
+echo "* Waiting for builders to finish stage2 ..."
+mkdir -p ${LOGDIR}/stage2
+while : ; do
+  stage2_done=1
+  for arch in $STAGE2_BUILD_ARCH_LIST ; do
+    if [ ! -d ${LOGDIR}/stage2/$arch ]; then
+      builder=`cat ${BUILDERS_DIR}/${arch}`
+      scp root@${builder}:/home/fedora-bootstrap/logs-stage2.tgz ${LOGDIR}/stage2/ &> /dev/null
+      if [ $? = 0 ]; then
+	mkdir -p ${LOGDIR}/stage2/$arch
+	mv ${LOGDIR}/stage2/logs-stage2.tgz ${LOGDIR}/stage2/$arch/
+	(cd ${LOGDIR}/stage2/$arch && tar xf logs-stage2.tgz && rm -f logs-stage2.tgz)
+	echo "$arch finished"
+      else
+	stage2_done=0
+      fi
+    fi
+  done
+  [ $stage2_done = 1 ] && break;
+  sleep 60
+done
+
+echo "* Processing stage2 results ..."
+for arch in $STAGE2_BUILD_ARCH_LIST ; do
+  cat ${LOGDIR}/stage2/${arch}/screenlog-stage2.txt | grep '^done!' &> /dev/null
+  if [ $? -eq 0 ]; then
+    log_failed='*OK*'
+  else
+    log_failed=`cat ${LOGDIR}/stage2/${arch}/screenlog-stage2.txt | grep "recipe for target .* failed" | cut -f2 -d"'" | cut -f2 -d"/"`
+  fi
+  echo "${arch} ${log_failed}"
+done > ${LOGDIR}/stage2/results-stage2.txt
+${TESTSUITE_DIR}/generate-stage2-html

@@ -1,0 +1,43 @@
+#!/bin/sh
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+ROOTFS_DIR=${TOPDIR}/rootfs.stage2
+STAGE2_DIR=${ROOTFS_DIR}/stage2
+LOGDIR=${STAGE2_DIR}/logs
+TESTSUITE_DIR=${TOPDIR}/testsuite
+SCRIPTS_DIR=${TOPDIR}/scripts
+
+# run in a background
+if [ "$1" == "--screen" ]; then
+  shift
+  command="${TESTSUITE_DIR}/run-stage2 $@"
+  [ -f screenlog.0 ] && mv screenlog.0 screenlog.0.old
+  screen -d -m -L $command
+  exit 0
+fi
+
+TIMESTAMP=`date +%Y-%m-%d_%H-%M-%S`
+
+I_AM=`cat ${TOPDIR}/i_am`
+
+echo ""
+echo "==== Building stage2 for ${I_AM} ===="
+
+# clean leftovers from the previous run
+rm -rf ${STAGE2_DIR}/{builds,done,logs,recipe.mk}
+
+# set the TARGET
+sed -i "s|^TARGET_ARCH=.*|TARGET_ARCH=${I_AM}|" ${STAGE2_DIR}/stage2
+
+cat << EOF > ${STAGE2_DIR}/stage2-wrap
+#!/bin/bash
+cd \${0%/*}
+./stage2
+EOF
+chmod +x ${STAGE2_DIR}/stage2-wrap
+
+chroot ${ROOTFS_DIR} stage2/stage2-wrap
+
+# if executed remotely, then make a package containing all logs (sleep required for flushing the screen log)
+[ -f screenlog.0 ] && sleep 11 && mv screenlog.0 ${LOGDIR}/screenlog-stage2.txt && cd ${LOGDIR} && tar czf logs-stage2.tgz * && mv logs-stage2.tgz ../../../

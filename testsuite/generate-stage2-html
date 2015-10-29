@@ -1,0 +1,96 @@
+#!/bin/sh
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+LOGDIR=${TOPDIR}/logs
+TESTSUITE_DIR=${TOPDIR}/testsuite
+
+builders=`cat ${LOGDIR}/stage2/results-stage2.txt | cut -f1 -d' ' | sort | uniq`
+output="${LOGDIR}/stage2/stage2-results.shtml"
+body_only=1
+
+# generate page with stage2 results
+> ${output}
+
+if [ $body_only -eq 0 ]; then
+echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>
+      Fedora Bootstrap - Results
+    </title>
+    <style type="text/css">
+      <!--
+	table a {
+	  text-decoration: none;
+	  display: block;
+	  text-align: center;
+	  width: 100%;
+	  color: black;
+	}
+	h3 {
+	  text-decoration: underline;
+	}
+	h4 {
+	  text-decoration: underline;
+	}
+	td.ok {
+	  background-color: #30DF30;
+	}
+	td.missing {
+	  background-color: #7070FF;
+	}
+	td.failed {
+	  background-color: #FF4040;
+	}
+	td.skipped {
+	  background-color: #AAAAAA;
+	}
+      -->
+    </style>
+  </head>
+  <body>' >> ${output}
+fi
+
+echo '    <h3><u>STAGE2 Results</u></h3>
+    <table>
+      <tr>
+	<th>Arch</th><th>Result</th>
+      </tr>' >> ${output}
+for b in ${builders}; do
+  echo "      <tr>" >> ${output}
+  echo "	<td><a href='${b}/'>&nbsp;${b}</a></td>" >> ${output}
+  result=`cat ${LOGDIR}/stage2/results-stage2.txt | grep "^${b} " | cut -f2 -d' '`
+  if [ "${result}" == "*OK*" ]; then
+    echo "	<td class='ok'><a href='${b}/'>&nbsp;</a></td>" >> ${output}
+  elif [ "${result}" == "*MISSING*" ]; then
+    echo "	<td class='missing'></td>" >> ${output}
+  else
+    echo "	<td class='failed'><a href='${b}/${result}.log'>${result}</a></td>" >> ${output}
+  fi
+  echo "      </tr>" >> ${output}
+done
+echo '    </table>
+    <br>' >> ${output}
+builder_rotation=`cat ${TESTSUITE_DIR}/builder_rotation`
+echo "    stage1->stage2 builder rotation: ${builder_rotation}<br>" >> ${output}
+echo '    <br>
+    <u>Table legend:</u>
+    <table>
+      <tr>
+	<td class="ok"></td><td>&nbsp;&nbsp; success</td>
+      </tr>
+      <tr>
+	<td class="failed">failing recipe</td><td>&nbsp;&nbsp; failure</td>
+      </tr>
+      <tr>
+	<td class="missing"></td><td>&nbsp;&nbsp; result missing</td>
+      </tr>
+    </table>' >> ${output}
+
+if [ $body_only -eq 0 ]; then
+echo '    <br>
+  </body>
+</html>' >> ${output}
+fi
