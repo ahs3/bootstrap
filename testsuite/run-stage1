@@ -54,4 +54,4 @@ for arch in $STAGE1_TARGET_ARCH_LIST; do
 done
 
 # if executed remotely, then make a package containing all logs (sleep required for flushing the screen log)
-[ -f screenlog.0 ] && sleep 11 && mv screenlog.0 ${LOGDIR}/screenlog-stage1.txt && cd logs && tar czf logs-stage1.tgz * && mv logs-stage1.tgz ../
+[ -f screenlog.0 ] && sleep 11 && mv screenlog.0 ${LOGDIR}/screenlog-stage1.txt && cd ${LOGDIR} && tar czf logs-stage1.tgz * && mv logs-stage1.tgz ../
