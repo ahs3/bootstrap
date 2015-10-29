@@ -26,7 +26,7 @@ mcd $BUILDDIR/glibc-stage1
 # prefill glibc cache
 echo libc_cv_forced_unwind=yes > config.cache
 echo libc_cv_c_cleanup=yes >> config.cache
-echo libc_cv_ctors_header=yes >> config.cache
+#echo libc_cv_ctors_header=yes >> config.cache
 echo ac_cv_header_cpuid_h=yes >> config.cache
 echo libc_cv_gcc_builtin_expect=yes >> config.cache
 
@@ -84,7 +84,7 @@ if [ ! "$TARGET32" = "" ]; then
   # prefill glibc cache
   echo libc_cv_forced_unwind=yes > config.cache
   echo libc_cv_c_cleanup=yes >> config.cache
-  echo libc_cv_ctors_header=yes >> config.cache
+  #echo libc_cv_ctors_header=yes >> config.cache
   echo ac_cv_header_cpuid_h=yes >> config.cache
   echo libc_cv_gcc_builtin_expect=yes >> config.cache
 
