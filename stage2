@@ -64,8 +64,16 @@ J=-j2
 
 BUILDDIR=$TOP/builds
 
-# The cross-compiler target
-TARGET=aarch64-redhat-linux-gnu
+TARGET_ARCH=aarch64
+TARGET=$TARGET_ARCH-pc-linux-gnu
+
+case $TARGET_ARCH in
+    armv7hl)
+        TARGET=armv7l-pc-linux-gnueabihf
+        ;;
+    *)
+        ;;
+esac
 
 export TARGET BUILDDIR J SRC STAGE2 MYDIR TOP
 

@@ -92,7 +92,7 @@ TARGET_ARCH=aarch64
 
 # BUSYBOX_DEFCONFIG: config file to use for busybox
 
-TARGET=$TARGET_ARCH-linux-gnu
+TARGET=$TARGET_ARCH-pc-linux-gnu
 KERNEL_RPMTARGET=$TARGET
 RPMTARGET=$TARGET
 
@@ -105,7 +105,7 @@ case $TARGET_ARCH in
 	GCC_CONFIG_EXTRA=""
 	EGLIBC_ARCH=x86
 	BUSYBOX_DEFCONFIG=defconfig
-	TARGET32=i686-linux-gnu
+	TARGET32=i686-pc-linux-gnu
 	;;
     i686)
 	KCONFIG=kernel-3.*-i686.config
@@ -127,7 +127,7 @@ case $TARGET_ARCH in
 	BUSYBOX_DEFCONFIG=defconfig
 	;;
     armv7hl)
-	TARGET=armv7l-linux-gnueabihf
+	TARGET=armv7l-pc-linux-gnueabihf
 	KCONFIG=kernel-3.*-arm.config
 	KARCH=arm
 	SUFFIX=''
