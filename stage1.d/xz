@@ -2,7 +2,7 @@ srpm xz
 mcd $BUILDDIR/$1
 $SRC/${1}-*/configure \
     --prefix=/usr \
-        --libdir=/usr/lib64 \
+    --libdir=/usr/lib${SUFFIX} \
     --build=$BUILD \
     --host=$TARGET
 make $J V=1
