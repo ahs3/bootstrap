@@ -92,7 +92,7 @@ TARGET_ARCH=aarch64
 
 # BUSYBOX_DEFCONFIG: config file to use for busybox
 
-TARGET=$TARGET_ARCH-pc-linux-gnu
+TARGET=$TARGET_ARCH-linux-gnu
 KERNEL_RPMTARGET=$TARGET
 RPMTARGET=$TARGET
 
@@ -105,7 +105,7 @@ case $TARGET_ARCH in
 	GCC_CONFIG_EXTRA=""
 	EGLIBC_ARCH=x86
 	BUSYBOX_DEFCONFIG=defconfig
-	TARGET32=i686-pc-linux-gnu
+	TARGET32=i686-linux-gnu
 	;;
     i686)
 	KCONFIG=kernel-3.*-i686.config
@@ -328,6 +328,8 @@ BUILD=`gcc -v 2>&1 | grep Target: | sed 's/.*: //'`
 # These are for cross-tools like binutils
 CONFIGARGS="--prefix=$PREFIX
             --libdir=$PREFIX/lib${SUFFIX}
+	    --build=${BUILD}boot
+	    --host=${BUILD}boot
 	    --target=$TARGET
 	    ${CONFIG_EXTRA}
 	    --enable-languages=c,c++

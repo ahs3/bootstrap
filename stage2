@@ -65,11 +65,11 @@ J=-j2
 BUILDDIR=$TOP/builds
 
 TARGET_ARCH=aarch64
-TARGET=$TARGET_ARCH-pc-linux-gnu
+TARGET=$TARGET_ARCH-linux-gnu
 
 case $TARGET_ARCH in
     armv7hl)
-        TARGET=armv7l-pc-linux-gnueabihf
+        TARGET=armv7l-linux-gnueabihf
         ;;
     *)
         ;;
