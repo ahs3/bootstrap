@@ -37,8 +37,8 @@ echo libc_cv_gcc_builtin_expect=yes >> config.cache
 
 $SRC/$GV/configure $GLIBCARGS
 notparallel
-make $J ARCH=${KARCH} cross-compiling=yes
-make DESTDIR=$ROOTFS $J ARCH=${KARCH} cross-compiling=yes install
+make $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes
+make DESTDIR=$ROOTFS $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes install
 
 ( cd $ROOTFS/usr/include/bits
   sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new
@@ -81,8 +81,8 @@ if [ ! "$TARGET32" = "" ]; then
 
   $SRC/$GV/configure $GLIBCARGS
   notparallel
-  make $J ARCH=${KARCH} cross-compiling=yes
-  make DESTDIR=$ROOTFS $J ARCH=${KARCH} cross-compiling=yes install
+  make $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes
+  make DESTDIR=$ROOTFS $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes install
 
   ( cd $ROOTFS/usr/include/bits
     sed '/ifndef.*NO_LONG_DOUBLE/,/#endif/d' < mathdef.h > mathdef.h.new

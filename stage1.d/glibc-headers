@@ -32,7 +32,7 @@ echo libc_cv_gcc_builtin_expect=yes >> config.cache
 
 $SRC/$GV/configure $GLIBCARGS
 notparallel
-make DESTDIR=$ROOTFS $J ARCH=${KARCH} cross-compiling=yes install-headers
+make DESTDIR=$ROOTFS $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes install-headers
 touch $ROOTFS/usr/include/gnu/stubs.h
 touch $ROOTFS/usr/include/bits/stdio_lim.h
 
@@ -43,7 +43,7 @@ touch $ROOTFS/usr/include/bits/stdio_lim.h
 
 # We also build just enough files to link libgcc.so.  The fake
 # libc.so will never actually get used, but simplifies the boostrap.
-make $J ARCH=${KARCH} cross-compiling=yes csu/subdir_lib
+make $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes csu/subdir_lib
 
 mkdirp $ROOTFS/usr/lib${SUFFIX}
 for file in `cd csu; echo crt*.o`; do
@@ -90,7 +90,7 @@ if [ ! "$TARGET32" = "" ]; then
 
   $SRC/$GV/configure $GLIBCARGS
   notparallel
-  make DESTDIR=$ROOTFS $J ARCH=${KARCH} cross-compiling=yes install-headers
+  make DESTDIR=$ROOTFS $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes install-headers
   touch $ROOTFS/usr/include/gnu/stubs.h
   touch $ROOTFS/usr/include/bits/stdio_lim.h
 
@@ -101,7 +101,7 @@ if [ ! "$TARGET32" = "" ]; then
 
   # We also build just enough files to link libgcc.so.  The fake
   # libc.so will never actually get used, but simplifies the boostrap.
-  make $J ARCH=${KARCH} cross-compiling=yes csu/subdir_lib
+  make $J ARCH=${KARCH} BUILD_CC=gcc cross-compiling=yes csu/subdir_lib
 
   mkdirp $ROOTFS/usr/lib
   for file in `cd csu; echo crt*.o`; do
