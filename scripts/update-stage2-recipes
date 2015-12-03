@@ -1,0 +1,17 @@
+#!/bin/bash
+
+GIT_BRANCH='f22'
+
+COMPONENTS='autoconf bison file gdbm gettext libarchive libdb4 libtool lua m4 ncurses nspr nss
+	    nss-softokn nss-util perl pkgconfig popt readline redhat-rpm-config rpm sqlite'
+
+cd ${0%/*}/..
+TOPDIR=${PWD}
+SCRIPTS_DIR=${TOPDIR}/scripts
+
+LC_ALL=C
+
+for component in ${COMPONENTS}; do
+  echo "Updating component ${component} ..."
+  ${SCRIPTS_DIR}/update-recipe ${component} ${GIT_BRANCH} 2 2>&1 | grep -v "X11 forwarding request failed on channel"
+done

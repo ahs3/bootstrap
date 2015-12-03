@@ -1,6 +1,5 @@
 #!/bin/sh
 
-pkg_installer='yum -y install'
 STAGE1_TARGET_ARCH_LIST='x86_64 i686 aarch64 armv7hl ppc64le ppc64 s390x'
 
 cd ${0%/*}/..

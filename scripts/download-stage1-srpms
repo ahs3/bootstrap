@@ -1,5 +1,5 @@
 #!/bin/sh
-downloader="yumdownloader --releasever=21 --source --enablerepo=updates-testing-source "
+downloader="dnf download --releasever=22 --source --enablerepo=updates-testing-source "
 
 $downloader kernel \
 	    binutils \

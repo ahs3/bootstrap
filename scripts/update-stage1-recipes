@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GIT_BRANCH='f21'
+GIT_BRANCH='f22'
 
 COMPONENTS='bash binutils busybox bzip2 cloog coreutils diffutils findutils
 	    gawk gcc glibc gmp grep gzip libselinux libsepol make mpc mpfr
