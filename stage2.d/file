@@ -5,6 +5,9 @@ cd $SRC/file-*
 # awful hack to prevent running aclocal ... FIXME
 #(cd m4 && [ -f libtool.m4.orig ] && rm -f libtool.m4 && mv libtool.m4.orig libtool.m4) || echo ""
 
+# required for fixing the aclocal version
+autoreconf -vif
+
 ./configure $TCONFIGARGS
 
 make $J
