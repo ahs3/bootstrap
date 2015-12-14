@@ -3,6 +3,10 @@ case "$TARGET" in
      * ) FLAGS2="" ;;
 esac
 
+if [ "$SUFFIX" = "64" ]; then
+  FLAGS2="--enable-64bit $FLAGS2"
+fi
+
 mcd $BUILDDIR/nspr
 
 $SRC/nspr-*/nspr/configure $TCONFIGARGS $FLAGS2
