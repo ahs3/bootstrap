@@ -3,12 +3,13 @@
 #####################################################
 mcd $BUILDDIR/sqlite
 
+# dirty hack - we need to replace default sources with amalgamation sources to avoid calling tclsh
+# unfortunately the patches are incompatible and cannot be applied
+(cd $SRC && rm -rf sqlite-* && tar xzf ../SOURCES/sqlite-autoconf*.tar.gz)
+
 export CFLAGS="$RPM_OPT_FLAGS -DSQLITE_ENABLE_COLUMN_METADATA=1 -DSQLITE_DISABLE_DIRSYNC=1 -DSQLITE_ENABLE_RTREE=1 -DSQLITE_SECURE_DELETE=1 -DSQLITE_ENABLE_UNLOCK_NOTIFY=1 -Wall -fno-strict-aliasing"
 
 $SRC/sqlite-*/configure --disable-tcl --enable-threadsafe --enable-threads-override-locks --enable-load-extension $TCONFIGARGS
-# the compile would fail here, so on a host you need to run
-# tclsh ../../rpmbuild/BUILD/sqlite-src-3070500/tool/mksqlite3h.tcl ../../rpmbuild/BUILD/sqlite-src-3070500 > sqlite3.h
-cp ../../rpmbuild/BUILD/sqlite-src-*/sqlite3.h.stage1 sqlite3.h
 
 # Also possibly add -ldl to TLIB in the Makefile
 if egrep '^TLIBS.*ldl' Makefile > /dev/null
