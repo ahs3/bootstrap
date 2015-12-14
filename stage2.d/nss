@@ -38,6 +38,10 @@ fi
 
 make -C $SRC/nss-3.*/nss/coreconf
 make -C $SRC/nss-3.*/nss/lib/dbm
+
+# move verref.h to the right dir
+(cd $SRC/nss-3.* && mkdir -p dist/private/nss && cp -a nss/verref.h dist/private/nss/)
+
 make -C $SRC/nss-3.*/nss
 cd $SRC/nss-3.*/nss/coreconf
 make install

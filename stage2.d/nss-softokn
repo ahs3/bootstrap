@@ -15,6 +15,7 @@ export NSSUTIL_LIB_DIR=/usr/lib${SUFFIX}
 export FREEBL_NO_DEPEND=1
 export NSS_USE_SYSTEM_SQLITE=1
 export NSS_BUILD_SOFTOKEN_ONLY=1
+export NSS_DISABLE_GTESTS=1
 
 if [ "$SUFFIX" = "64" ]; then
   USE_64=1
@@ -49,6 +50,11 @@ done
 
 make -C $SRC/nss-softokn-3.*/nss/coreconf
 make -C $SRC/nss-softokn-3.*/nss/lib/dbm
+
+# ldvector.c, pkcs11.c, and lginit.c include nss/lib/util/verref.h,
+# which is private export, move it to where it can be found.
+(cd $SRC/nss-softokn-3.* && mkdir -p dist/private/nss && cp -a nss/lib/util/verref.h dist/private/nss/)
+
 make -C $SRC/nss-softokn-3.*/nss
 
 cd $SRC/nss-softokn-3.*/nss/coreconf

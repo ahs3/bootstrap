@@ -10,6 +10,7 @@ export NSPR_INCLUDE_DIR=/usr/include/nspr
 export NSPR_LIB_DIR=/usr/lib${SUFFIX}
 export FREEBL_NO_DEPEND=1
 export NSS_USE_SYSTEM_SQLITE=1
+export NSS_DISABLE_GTESTS=1
 
 if [ "$SUFFIX" = "64" ]; then
   USE_64=1
